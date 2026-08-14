@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Tech Manthan Hackathon 2026 — Team Registration</title>
+
+<!-- Fonts & Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700&display=swap');
+
+  :root {
+    /* Design Tokens: Navchetna Theme */
+    --ink:        #1B1030;   /* Deep indigo-violet night sky */
+    --ink-2:      #2A1B49;
+    --marigold:   #FFA630;   /* Primary accent */
+    --marigold-2: #FFC15E;
+    --gulal:      #E63E7C;   /* Secondary accent */
+    --gulal-2:    #FF6FA5;
+    --cream:      #FFF8ED;   /* Card / light surface */
+    --cream-2:    #FFEFD6;
+    --ok:         #2E9E6B;
+    --err:        #E5484D;
+    --line:       rgba(255, 255, 255, 0.14);
+    --shadow:     0 20px 50px -20px rgba(15, 5, 35, 0.55);
+
+    --font-display: 'Baloo 2', 'Poppins', sans-serif;
+    --font-body:    'Inter', sans-serif;
+    --font-deva:    'Noto Sans Devanagari', 'Inter', sans-serif;
+
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  #hack-root {
+    font-family: var(--font-body);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255, 166, 48, 0.18), transparent 45%),
+      radial-gradient(circle at 90% 15%, rgba(230, 62, 124, 0.20), transparent 40%),
+      var(--ink);
+    color: var(--cream);
+    min-height: 100vh;
+    padding: 0 0 64px;
+    line-height: 1.5;
+  }
+  #hack-root * { font-family: inherit; }
+  #hack-root .deva { font-family: var(--font-deva); }
+
+  #hack-root .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 18px;
+  }
+
+  /* ---------------- Header / Hero ---------------- */
+  .hack-hero {
+    position: relative;
+    padding: 40px 18px 32px;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .hack-hero::before {
+    content: "";
+    position: absolute; inset: -40% -10% auto -10%;
+    height: 220px;
+    background: repeating-linear-gradient(90deg, var(--marigold) 0 3px, transparent 3px 26px);
+    opacity: 0.18;
+    transform: rotate(-3deg);
+  }
+  .hack-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--marigold-2); font-weight: 700;
+    background: rgba(255, 166, 48, 0.12);
+    border: 1px solid rgba(255, 166, 48, 0.35);
+    padding: 6px 14px; border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .hack-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(28px, 7vw, 42px);
+    margin: 0 0 6px;
+    background: linear-gradient(95deg, var(--marigold) 0%, var(--gulal-2) 65%, var(--gulal) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hack-subtitle {
+    font-size: 14px; color: rgba(255, 248, 237, 0.72); margin: 0;
+    max-width: 480px; margin: 0 auto;
+  }
+
+  /* ---------------- Stepper ---------------- */
+  .hack-steps {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 22px 18px 6px; max-width: 680px; margin: 0 auto;
+  }
+  .hack-step {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; color: rgba(255, 248, 237, 0.4);
+  }
+  .hack-step-dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    transition: all .25s ease;
+  }
+  .hack-step.active .hack-step-dot {
+    background: linear-gradient(135deg, var(--marigold), var(--gulal));
+    border-color: transparent; color: #1B1030;
+  }
+  .hack-step.done .hack-step-dot {
+    background: var(--ok); border-color: transparent; color: #fff;
+  }
+  .hack-step.active { color: var(--cream); }
+  .hack-step-bar { width: 20px; height: 2px; background: rgba(255, 255, 255, 0.18); border-radius: 2px; }
+  @media (max-width: 420px){ .hack-step span.label { display: none; } }
+
+  /* ---------------- Panels & Cards ---------------- */
+  .hack-panel {
+    background: var(--cream);
+    color: #241338;
+    border-radius: var(--radius);
+    padding: 24px 20px 28px;
+    margin: 18px 0;
+    box-shadow: var(--shadow);
+    animation: hack-rise .35s ease both;
+  }
+  @keyframes hack-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .hack-panel h2 {
+    font-family: var(--font-display);
+    font-size: 20px; margin: 0 0 4px; color: #1B1030;
+  }
+  .hack-panel .hint { font-size: 13px; color: #6b5f80; margin: 0 0 18px; }
+
+  .hack-field { margin-bottom: 16px; }
+  .hack-field label {
+    display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px;
+    color: #3d2c58; letter-spacing: .01em;
+  }
+  .hack-field label .req { color: var(--gulal); }
+  .hack-field label .opt { font-weight: 400; color: #8a7a9c; }
+  .hack-field input, .hack-field select {
+    width: 100%; padding: 12px 14px; font-size: 14.5px;
+    border-radius: var(--radius-sm); border: 1.5px solid #E4D9CC;
+    background: #fff; color: #241338; font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .hack-field input:focus, .hack-field select:focus {
+    outline: none; border-color: var(--gulal); box-shadow: 0 0 0 3px rgba(230, 62, 124, 0.15);
+  }
+  .hack-field .err-msg { font-size: 12px; color: var(--err); margin-top: 5px; display: none; font-weight: 600; }
+  .hack-field.invalid input, .hack-field.invalid select { border-color: var(--err); }
+  .hack-field.invalid .err-msg { display: block; }
+
+  .hack-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px){ .hack-row2 { grid-template-columns: 1fr; } }
+
+  .hack-pill-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hack-pill {
+    flex: 1; min-width: 100px; text-align: center; cursor: pointer;
+    padding: 12px 10px; border-radius: var(--radius-sm);
+    border: 1.5px solid #E4D9CC; background: #fff; font-weight: 700; font-size: 13.5px;
+    color: #3d2c58; transition: all .15s ease; user-select: none;
+  }
+  .hack-pill .sub { display: block; font-size: 11px; font-weight: 500; color: #8a7a9c; margin-top: 2px; }
+  .hack-pill.selected {
+    border-color: var(--gulal); background: linear-gradient(135deg, #FFE9F1, #FFF3E0);
+    color: var(--gulal); box-shadow: 0 0 0 3px rgba(230, 62, 124, 0.12);
+  }
+  .hack-pill.selected .sub { color: var(--gulal); }
+
+  /* Subblock container for members */
+  .hack-subblock {
+    background: #FFFBF5;
+    border: 1.5px solid #EAE0D5;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .hack-subblock.leader {
+    border-color: var(--marigold);
+    background: #FFF8EE;
+  }
+  .hack-subblock-title {
+    font-weight: 800; font-size: 14px; color: #1B1030; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hack-subblock-title i { color: var(--marigold); }
+
+  /* Buttons */
+  .hack-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px 18px; border: none; border-radius: var(--radius-sm);
+    font-family: var(--font-display); font-weight: 700; font-size: 15.5px;
+    cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .hack-btn:active { transform: scale(0.98); }
+  .hack-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .hack-btn-primary {
+    background: linear-gradient(120deg, var(--marigold), var(--gulal));
+    color: #fff; box-shadow: 0 10px 24px -8px rgba(230, 62, 124, 0.55);
+  }
+  .hack-btn-ghost {
+    background: transparent; color: #5b4a72; border: 1.5px solid #E4D9CC;
+  }
+  .hack-btn-dark { background: var(--ink); color: var(--cream); }
+  .hack-btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .hack-btn-row .hack-btn-ghost { flex: 0 0 92px; }
+  .hack-btn-row .hack-btn-primary { flex: 1; }
+
+  /* ---------------- Summary Card ---------------- */
+  .hack-summary {
+    background: linear-gradient(160deg, #241338, #1B1030);
+    color: var(--cream);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    margin: 18px 0;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 166, 48, 0.25);
+  }
+  .hack-summary h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 14px; color: var(--marigold-2); }
+  .hack-summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; font-size: 13.5px; border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  }
+  .hack-summary-row span:first-child { color: rgba(255, 248, 237, 0.6); }
+  .hack-summary-row span:last-child { font-weight: 700; text-align: right; max-width: 60%; }
+  .hack-summary-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .hack-summary-total span:first-child { font-size: 14px; font-weight: 700; }
+  .hack-summary-total span:last-child {
+    font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--marigold);
+  }
+
+  .hack-secret-box { margin-top: 18px; }
+  .hack-secret-row { display: flex; gap: 8px; }
+  .hack-secret-row input {
+    flex: 1; padding: 11px 13px; border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.08); color: var(--cream); font-weight: 600;
+    border: 1.5px solid rgba(255, 255, 255, 0.18); text-transform: uppercase; letter-spacing: .04em;
+  }
+  .hack-secret-row input::placeholder { color: rgba(255, 248, 237, 0.4); text-transform: none; letter-spacing: normal; }
+  .hack-secret-row button {
+    padding: 0 18px; border-radius: var(--radius-sm); border: none; font-weight: 700;
+    background: var(--marigold); color: #1B1030; cursor: pointer; font-size: 13px;
+  }
+  .hack-secret-msg { font-size: 12.5px; margin-top: 8px; font-weight: 600; display: none; }
+  .hack-secret-msg.ok { color: #7EE2B8; display: block; }
+  .hack-secret-msg.bad { color: #FF9AA6; display: block; }
+
+  /* Payment */
+  .hack-payment { text-align: center; }
+  .hack-upi-amount { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: #241338; margin: 4px 0 18px; }
+  .hack-payment-status {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 14px; padding: 12px; border-radius: var(--radius-sm);
+    background: #FFF3E0; color: #8a5a1a; font-size: 13.5px; font-weight: 600;
+  }
+  .hack-spinner {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2.5px solid rgba(138, 90, 26, 0.25); border-top-color: #8a5a1a;
+    animation: hack-spin .8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes hack-spin { to { transform: rotate(360deg); } }
+  .hack-payment-status.error { background: #FDE7E8; color: #B12B30; }
+  .hack-payment-status.error .hack-spinner { display: none; }
+
+  /* Ticket */
+  #hack-ticket-render {
+    background: linear-gradient(160deg, #FFF8ED, #FFEFD6);
+    border-radius: var(--radius);
+    padding: 0; overflow: hidden; position: relative;
+    box-shadow: var(--shadow); color: #241338;
+  }
+  .hack-ticket-band {
+    height: 6px; width: 100%;
+    background: repeating-linear-gradient(90deg, var(--marigold) 0 12px, var(--gulal) 12px 24px);
+  }
+  .hack-ticket-top { padding: 24px 22px 18px; position: relative; }
+  .hack-ticket-event { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: #1B1030; margin: 2px 0 2px; }
+  .hack-ticket-sub { font-size: 12px; color: #8a7a9c; margin-bottom: 16px; letter-spacing: .05em; font-weight: 700; }
+  .hack-ticket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 6px; }
+  .hack-ticket-field .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #8a7a9c; font-weight: 700; }
+  .hack-ticket-field .v { font-size: 14.5px; font-weight: 700; color: #241338; margin-top: 2px; }
+  .hack-ticket-field.amount .v { font-size: 18px; font-weight: 800; color: var(--gulal); }
+
+  .hack-ticket-perf {
+    position: relative; height: 28px;
+    background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(36, 19, 56, 0.18) 6px 7px);
+  }
+  .hack-ticket-perf::before, .hack-ticket-perf::after {
+    content: ""; position: absolute; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; background: var(--ink); border-radius: 50%;
+  }
+  .hack-ticket-perf::before { left: -12px; }
+  .hack-ticket-perf::after { right: -12px; }
+
+  .hack-ticket-bottom { padding: 18px 22px 24px; display: flex; align-items: center; gap: 16px; }
+  .hack-ticket-qr { background: #fff; padding: 8px; border-radius: 10px; flex-shrink: 0; }
+  .hack-ticket-note { font-size: 11.5px; color: #6b5f80; }
+  .hack-ticket-note .id { font-family: var(--font-display); font-weight: 800; color: #1B1030; font-size: 14px; margin-bottom: 4px; }
+  .hack-ticket-note .warn { margin-top: 6px; font-weight: 700; color: var(--gulal); }
+
+  .hack-toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+    background: #241338; color: #fff; padding: 12px 20px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow);
+    opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 999;
+    max-width: 90%; text-align: center;
+  }
+  .hack-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .hack-hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="hack-root">
+  <div class="hack-hero">
+    <div class="wrap">
+      <span class="hack-eyebrow"><i class="fa-solid fa-laptop-code"></i> Registration Open · 2026</span>
+      <h1 class="hack-title deva">टेक मंथन हैकाथॉन</h1>
+      <p class="hack-subtitle">Tech Manthan Hackathon 2026 — Register your team (3-5 members), pay seamlessly, and download your hackathon ticket.</p>
+    </div>
+  </div>
+
+  <div class="hack-steps" id="hack-stepper">
+    <div class="hack-step active" data-step="1"><div class="hack-step-dot">1</div><span class="label">Team Size</span></div>
+    <div class="hack-step-bar"></div>
+    <div class="hack-step" data-step="2"><div class="hack-step-dot">2</div><span class="label">Members</span></div>
+    <div class="hack-step-bar"></div>
+    <div class="hack-step" data-step="3"><div class="hack-step-dot">3</div><span class="label">Pay</span></div>
+    <div class="hack-step-bar"></div>
+    <div class="hack-step" data-step="4"><div class="hack-step-dot">4</div><span class="label">Ticket</span></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- STEP 1: Team Setup -->
+    <section class="hack-panel" id="hack-step-1">
+      <h2>Team Setup</h2>
+      <p class="hint">Give your team a name and choose total team size (including leader).</p>
+
+      <div class="hack-field" data-field="teamName">
+        <label>Team Name <span class="req">*</span></label>
+        <input type="text" id="f-teamName" placeholder="e.g. Code Warriors">
+        <div class="err-msg">Please enter a team name.</div>
+      </div>
+
+      <div class="hack-field" data-field="teamSize">
+        <label>Select Team Size <span class="req">*</span></label>
+        <div class="hack-pill-group" id="f-teamSize">
+          <div class="hack-pill" data-value="3">3 Members<span class="sub">₹699</span></div>
+          <div class="hack-pill" data-value="4">4 Members<span class="sub">₹899</span></div>
+          <div class="hack-pill" data-value="5">5 Members<span class="sub">₹999</span></div>
+        </div>
+        <div class="err-msg">Select your team size.</div>
+      </div>
+
+      <button class="hack-btn hack-btn-primary" onclick="HACK.goToStep(2)">Continue to Team Details →</button>
+    </section>
+
+    <!-- STEP 2: Leader & Member Details -->
+    <section class="hack-panel hack-hidden" id="hack-step-2">
+      <h2>Team Member Details</h2>
+      <p class="hint">Enter details accurately as they will appear on hackathon certificates.</p>
+
+      <div class="hack-subblock leader">
+        <div class="hack-subblock-title"><i class="fa-solid fa-crown"></i> Team Leader Details</div>
+        
+        <div class="hack-field" data-field="leaderName">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="f-leaderName" placeholder="Leader full name">
+          <div class="err-msg">Leader name is required.</div>
+        </div>
+
+        <div class="hack-row2">
+          <div class="hack-field" data-field="leaderDegree">
+            <label>Course / Degree <span class="req">*</span></label>
+            <select id="f-leaderDegree">
+              <option value="">Select course</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="B.E.">B.E.</option>
+              <option value="BCA">BCA</option>
+              <option value="MCA">MCA</option>
+              <option value="B.Sc">B.Sc</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="err-msg">Select degree.</div>
+          </div>
+          <div class="hack-field" data-field="leaderPhone">
+            <label>Phone Number <span class="req">*</span></label>
+            <input type="tel" id="f-leaderPhone" placeholder="10-digit mobile" maxlength="10">
+            <div class="err-msg">Valid 10-digit number.</div>
+          </div>
+        </div>
+
+        <div class="hack-field" data-field="leaderCollege">
+          <label>College / Institution <span class="req">*</span></label>
+          <input type="text" id="f-leaderCollege" placeholder="College name">
+          <div class="err-msg">College name is required.</div>
+        </div>
+
+        <div class="hack-field" data-field="leaderSocial">
+          <label>Social / Portfolio <span class="opt">(GitHub/LinkedIn, optional)</span></label>
+          <input type="text" id="f-leaderSocial" placeholder="@username or link">
+        </div>
+      </div>
+
+      <!-- Dynamic members container -->
+      <div id="hack-members-container"></div>
+
+      <div class="hack-btn-row">
+        <button class="hack-btn hack-btn-ghost" onclick="HACK.goToStep(1)">← Back</button>
+        <button class="hack-btn hack-btn-primary" onclick="HACK.goToStep(3)">Review & Pay →</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Review & Payment -->
+    <section class="hack-hidden" id="hack-step-3">
+      <div class="hack-summary">
+        <h2>Registration Summary</h2>
+        <div class="hack-summary-row"><span>Team Name</span><span id="s-teamName">—</span></div>
+        <div class="hack-summary-row"><span>Team Size</span><span id="s-teamSize">—</span></div>
+        <div class="hack-summary-row"><span>Team Leader</span><span id="s-leaderName">—</span></div>
+        <div class="hack-summary-row"><span>Leader Phone</span><span id="s-leaderPhone">—</span></div>
+        <div class="hack-summary-row"><span>Hackathon Fee</span><span id="s-fee">₹0</span></div>
+
+        <div class="hack-summary-total">
+          <span>Total Payable</span>
+          <span id="s-total">₹0</span>
+        </div>
+
+        <div class="hack-secret-box">
+          <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color: var(--marigold-2);">Secret / Referral Code (Optional)</label>
+          <div class="hack-secret-row">
+            <input type="text" id="f-secretCode" placeholder="VIP / SPONSOR CODE">
+            <button onclick="HACK.applySecretCode()">Apply</button>
+          </div>
+          <div class="hack-secret-msg" id="secret-msg"></div>
+        </div>
+      </div>
+
+      <div class="hack-panel hack-payment">
+        <h2>Complete Payment</h2>
+        <p class="hint">Pay securely with Razorpay — UPI, Google Pay, Cards, or Netbanking.</p>
+
+        <div class="hack-upi-amount" id="pay-amount-label">₹0</div>
+
+        <button class="hack-btn hack-btn-primary" id="hack-pay-btn" onclick="HACK.startPayment()">🔒 Pay Now</button>
+
+        <div class="hack-payment-status hack-hidden" id="hack-payment-status">
+          <div class="hack-spinner"></div>
+          <span id="hack-payment-status-text">Processing checkout...</span>
+        </div>
+      </div>
+
+      <div class="hack-btn-row wrap" style="max-width:680px; margin:0 auto;">
+        <button class="hack-btn hack-btn-ghost" onclick="HACK.goToStep(2)">← Back</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Ticket -->
+    <section class="hack-panel hack-hidden" id="hack-step-4" style="background:transparent; box-shadow:none; padding:0;">
+      <div id="hack-ticket-render">
+        <div class="hack-ticket-band"></div>
+        <div class="hack-ticket-top">
+          <div class="hack-ticket-sub">NAVCHETNA · TECH MANTHAN HACKATHON 2026</div>
+          <div class="hack-ticket-event" id="t-teamName">Team Code Warriors</div>
+          <div class="hack-ticket-grid">
+            <div class="hack-ticket-field"><div class="k">Leader</div><div class="v" id="t-leaderName">—</div></div>
+            <div class="hack-ticket-field"><div class="k">Phone</div><div class="v" id="t-phone">—</div></div>
+            <div class="hack-ticket-field"><div class="k">Team Size</div><div class="v" id="t-teamSize">—</div></div>
+            <div class="hack-ticket-field amount"><div class="k">Amount Paid</div><div class="v" id="t-amount">₹0</div></div>
+          </div>
+        </div>
+        <div class="hack-ticket-perf"></div>
+        <div class="hack-ticket-bottom">
+          <div class="hack-ticket-qr" id="hack-ticket-qrcode"></div>
+          <div class="hack-ticket-note">
+            <div class="id" id="t-ticketid">TM26-000000</div>
+            <div>Official Team Pass for Tech Manthan Hackathon 2026.</div>
+            <div class="warn">Carry College ID for all team members.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hack-btn-row" style="margin-top: 16px;">
+        <button class="hack-btn hack-btn-ghost" onclick="HACK.printTicket()">🖨 Print</button>
+        <button class="hack-btn hack-btn-primary" onclick="HACK.downloadTicket()">⬇ Download Pass</button>
+      </div>
+      <button class="hack-btn hack-btn-dark" style="margin-top:10px;" onclick="HACK.resetForm()">Register Another Team</button>
+    </section>
+
+  </div>
+</div>
+
+<div class="hack-toast" id="hack-toast"></div>
+
+<!-- External Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+(function(){
+  const FEES = { 3: 699, 4: 899, 5: 999 };
+
+  const state = {
+    teamName: "",
+    teamSize: 0,
+    fee: 0,
+    discount: 0,
+    secretCode: "",
+    leader: { name: "", degree: "", college: "", phone: "", social: "" },
+    members: [],
+    ticketId: "",
+    orderId: ""
+  };
+
+  /* Helper Functions */
+  function toast(msg){
+    const t = document.getElementById('hack-toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(window._hackToastTimer);
+    window._hackToastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function setStepper(step){
+    document.querySelectorAll('#hack-stepper .hack-step').forEach(el => {
+      const n = parseInt(el.dataset.step, 10);
+      el.classList.toggle('active', n === step);
+      el.classList.toggle('done', n < step);
+    });
+  }
+
+  function showPanel(step){
+    [1, 2, 3, 4].forEach(n => {
+      document.getElementById('hack-step-' + n).classList.toggle('hack-hidden', n !== step);
+    });
+    setStepper(step);
+    document.getElementById('hack-root').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function markInvalid(field, invalid){
+    const el = document.querySelector(`.hack-field[data-field="${field}"]`);
+    if(el) el.classList.toggle('invalid', invalid);
+  }
+
+  async function backendCall(action, payload, method = "POST") {
+    let url = `/api/${action}`;
+    let options = { method };
+
+    if (method === "GET") {
+      const qs = new URLSearchParams(payload).toString();
+      url += `?${qs}`;
+    } else {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify(payload);
+    }
+
+    const resp = await fetch(url, options);
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error || data.message || `Server error: ${resp.status}`);
+    }
+    return data;
+  }
+
+  /* Step 1 Handlers */
+  document.querySelectorAll('#f-teamSize .hack-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#f-teamSize .hack-pill').forEach(x => x.classList.remove('selected'));
+      p.classList.add('selected');
+      state.teamSize = Number(p.dataset.value);
+      state.fee = FEES[state.teamSize] || 0;
+      markInvalid('teamSize', false);
+    });
+  });
+
+  function validateStep1(){
+    state.teamName = document.getElementById('f-teamName').value.trim();
+    let ok = true;
+    if(state.teamName.length < 2) { markInvalid('teamName', true); ok = false; } else markInvalid('teamName', false);
+    if(!state.teamSize) { markInvalid('teamSize', true); ok = false; } else markInvalid('teamSize', false);
+    return ok;
+  }
+
+  /* Step 2 Dynamic Members */
+  function renderMemberFields(){
+    const container = document.getElementById('hack-members-container');
+    container.innerHTML = '';
+    const extraCount = state.teamSize - 1;
+
+    for(let i = 1; i <= extraCount; i++){
+      const block = document.createElement('div');
+      block.className = 'hack-subblock';
+      block.innerHTML = `
+        <div class="hack-subblock-title"><i class="fa-solid fa-user"></i> Member ${i + 1} Details</div>
+        <div class="hack-field" data-field="m${i}-name">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="f-m${i}-name" placeholder="Member full name">
+          <div class="err-msg">Name is required.</div>
+        </div>
+        <div class="hack-field" data-field="m${i}-role">
+          <label>Role <span class="req">*</span></label>
+          <input type="text" id="f-m${i}-role" placeholder="e.g. Frontend, Backend, UI/UX">
+          <div class="err-msg">Role is required.</div>
+        </div>
+        <div class="hack-row2">
+          <div class="hack-field" data-field="m${i}-degree">
+            <label>Course / Degree <span class="req">*</span></label>
+            <select id="f-m${i}-degree">
+              <option value="">Select course</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="B.E.">B.E.</option>
+              <option value="BCA">BCA</option>
+              <option value="MCA">MCA</option>
+              <option value="B.Sc">B.Sc</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="err-msg">Select degree.</div>
+          </div>
+          <div class="hack-field" data-field="m${i}-phone">
+            <label>Phone Number <span class="req">*</span></label>
+            <input type="tel" id="f-m${i}-phone" placeholder="10-digit mobile" maxlength="10">
+            <div class="err-msg">Valid 10-digit number.</div>
+          </div>
+        </div>
+        <div class="hack-field" data-field="m${i}-college">
+          <label>College / Institution <span class="req">*</span></label>
+          <input type="text" id="f-m${i}-college" placeholder="College name">
+          <div class="err-msg">College name is required.</div>
+        </div>
+      `;
+      container.appendChild(block);
+    }
+  }
+
+  function validateStep2(){
+    let ok = true;
+    state.leader.name = document.getElementById('f-leaderName').value.trim();
+    state.leader.degree = document.getElementById('f-leaderDegree').value;
+    state.leader.phone = document.getElementById('f-leaderPhone').value.trim();
+    state.leader.college = document.getElementById('f-leaderCollege').value.trim();
+    state.leader.social = document.getElementById('f-leaderSocial').value.trim();
+
+    const leaderChecks = [
+      ['leaderName', state.leader.name.length >= 2],
+      ['leaderDegree', !!state.leader.degree],
+      ['leaderPhone', /^[6-9]\d{9}$/.test(state.leader.phone)],
+      ['leaderCollege', state.leader.college.length >= 2]
+    ];
+
+    leaderChecks.forEach(([f, valid]) => {
+      markInvalid(f, !valid);
+      if(!valid) ok = false;
+    });
+
+    state.members = [];
+    const extraCount = state.teamSize - 1;
+    for(let i = 1; i <= extraCount; i++){
+      const name = document.getElementById(`f-m${i}-name`).value.trim();
+      const role = document.getElementById(`f-m${i}-role`).value.trim();
+      const degree = document.getElementById(`f-m${i}-degree`).value;
+      const phone = document.getElementById(`f-m${i}-phone`).value.trim();
+      const college = document.getElementById(`f-m${i}-college`).value.trim();
+
+      const mChecks = [
+        [`m${i}-name`, name.length >= 2],
+        [`m${i}-role`, role.length >= 1],
+        [`m${i}-degree`, !!degree],
+        [`m${i}-phone`, /^[6-9]\d{9}$/.test(phone)],
+        [`m${i}-college`, college.length >= 2]
+      ];
+
+      mChecks.forEach(([f, valid]) => {
+        markInvalid(f, !valid);
+        if(!valid) ok = false;
+      });
+
+      state.members.push({ name, role, degree, phone, college });
+    }
+
+    return ok;
+  }
+
+  /* Step 3: Summary & Secret Code */
+  function renderSummary(){
+    document.getElementById('s-teamName').textContent = state.teamName;
+    document.getElementById('s-teamSize').textContent = `${state.teamSize} Members`;
+    document.getElementById('s-leaderName').textContent = state.leader.name;
+    document.getElementById('s-leaderPhone').textContent = state.leader.phone;
+    
+    updateTotal();
+  }
+
+  function updateTotal(){
+    const finalAmount = Math.max(0, state.fee - state.discount);
+    document.getElementById('s-fee').textContent = `₹${state.fee}`;
+    document.getElementById('s-total').textContent = `₹${finalAmount}`;
+    document.getElementById('pay-amount-label').textContent = `₹${finalAmount}`;
+  }
+
+  async function applySecretCode() {
+    const code = document.getElementById("f-secretCode").value.trim().toUpperCase();
+    const msg = document.getElementById("secret-msg");
+
+    if (!code) {
+      msg.className = "hack-secret-msg bad";
+      msg.textContent = "Please enter a code.";
+      return;
+    }
+
+    try {
+      const res = await backendCall("validate-secret-code", { secretCode: code });
+      if (res.valid) {
+        state.secretCode = code;
+        state.discount = state.fee; // 100% discount for valid secret code
+        msg.className = "hack-secret-msg ok";
+        msg.textContent = `✓ ${res.message} (${res.label})`;
+      } else {
+        state.discount = 0;
+        state.secretCode = "";
+        msg.className = "hack-secret-msg bad";
+        msg.textContent = res.message || "Invalid or inactive code.";
+      }
+    } catch (err) {
+      state.discount = 0;
+      state.secretCode = "";
+      msg.className = "hack-secret-msg bad";
+      msg.textContent = err.message;
+    }
+    updateTotal();
+  }
+
+  /* Step 3: Payment Integration */
+  async function startPayment() {
+    const payBtn = document.getElementById("hack-pay-btn");
+    const statusBox = document.getElementById("hack-payment-status");
+    const statusText = document.getElementById("hack-payment-status-text");
+    const finalAmount = Math.max(0, state.fee - state.discount);
+
+    // Flow A: Complimentary Registration
+    if (finalAmount === 0 && state.secretCode) {
+      payBtn.disabled = true;
+      payBtn.textContent = "Processing Registration...";
+      try {
+        const res = await backendCall("record-hackathon-complimentary", {
+          teamName: state.teamName,
+          teamSize: state.teamSize,
+          leader: state.leader,
+          members: state.members,
+          secretCode: state.secretCode,
+        });
+
+        generateTicket(res.ticketId);
+        showPanel(4);
+        toast("Complimentary registration successful!");
+      } catch (err) {
+        toast("Registration error: " + err.message);
+      } finally {
+        payBtn.disabled = false;
+        payBtn.textContent = "🔒 Pay Now";
+      }
+      return;
+    }
+
+    // Flow B: Razorpay Online Payment
+    if (typeof Razorpay === "undefined") {
+      toast("Razorpay SDK failed to load. Check internet connection.");
+      return;
+    }
+
+    payBtn.disabled = true;
+    payBtn.textContent = "Creating Order...";
+
+    try {
+      const order = await backendCall("create-order", { amount: finalAmount });
+      state.orderId = order.orderId;
+
+      const options = {
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.orderId,
+        name: "Tech Manthan Hackathon 2026",
+        description: `Team: ${state.teamName}`,
+        prefill: {
+          name: state.leader.name,
+          contact: state.leader.phone,
+        },
+        theme: { color: "#FFA630" },
+        handler: async function (response) {
+          statusBox.classList.remove("hack-hidden");
+          statusText.textContent = "Verifying payment on server...";
+
+          try {
+            const verifyRes = await backendCall("verify-hackathon-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              hackathonData: {
+                teamName: state.teamName,
+                teamSize: state.teamSize,
+                leader: state.leader,
+                members: state.members,
+                amount: finalAmount,
+              },
+            });
+
+            generateTicket(verifyRes.ticketId);
+            showPanel(4);
+            toast("Payment verified & Team Pass Generated!");
+          } catch (err) {
+            toast("Verification failed: " + err.message);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            payBtn.disabled = false;
+            payBtn.textContent = "🔒 Try Payment Again";
+          },
+        },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast("Order error: " + err.message);
+      payBtn.disabled = false;
+      payBtn.textContent = "🔒 Pay Now";
+    }
+  }
+
+  /* Ticket Rendering */
+  function generateTicket(ticketId){
+    state.ticketId = ticketId;
+    document.getElementById('t-teamName').textContent = state.teamName;
+    document.getElementById('t-leaderName').textContent = state.leader.name;
+    document.getElementById('t-phone').textContent = state.leader.phone;
+    document.getElementById('t-teamSize').textContent = `${state.teamSize} Members`;
+    document.getElementById('t-amount').textContent = `₹${Math.max(0, state.fee - state.discount)}`;
+    document.getElementById('t-ticketid').textContent = ticketId;
+
+    const qrHolder = document.getElementById('hack-ticket-qrcode');
+    qrHolder.innerHTML = '';
+    if(typeof QRCode !== 'undefined'){
+      new QRCode(qrHolder, {
+        text: JSON.stringify({ ticketId, team: state.teamName, leader: state.leader.name }),
+        width: 90, height: 90, colorDark: "#1B1030", colorLight: "#ffffff"
+      });
+    }
+  }
+
+  function printTicket(){ window.print(); }
+
+  function downloadTicket(){
+    const el = document.getElementById('hack-ticket-render');
+    if(typeof html2canvas === 'undefined'){ toast('Library loading, try again.'); return; }
+    html2canvas(el, { backgroundColor: '#FFF8ED', scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `${state.teamName.replace(/\s+/g, '_')}_Ticket.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+  function resetForm(){
+    document.getElementById('f-teamName').value = '';
+    document.getElementById('f-leaderName').value = '';
+    document.getElementById('f-leaderDegree').value = '';
+    document.getElementById('f-leaderPhone').value = '';
+    document.getElementById('f-leaderCollege').value = '';
+    document.getElementById('f-leaderSocial').value = '';
+    document.getElementById('f-secretCode').value = '';
+    document.querySelectorAll('.hack-pill.selected').forEach(x => x.classList.remove('selected'));
+    state.teamSize = 0; state.fee = 0; state.discount = 0; state.secretCode = "";
+    showPanel(1);
+  }
+
+  function goToStep(step){
+    if(step === 2){
+      if(!validateStep1()){ toast('Please fill in team name and select team size.'); return; }
+      renderMemberFields();
+    }
+    if(step === 3){
+      if(!validateStep2()){ toast('Please complete all required member details.'); return; }
+      renderSummary();
+    }
+    showPanel(step);
+  }
+
+  window.HACK = {
+    goToStep, applySecretCode, startPayment, printTicket, downloadTicket, resetForm
+  };
+})();
+</script>
+
+</body>
+</html>

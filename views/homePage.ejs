@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Home.css">
-    
 </head>
 <style>
     :root {
@@ -104,6 +103,7 @@ a { text-decoration: none; color: inherit; }
     transition: var(--transition);
     cursor: pointer;
     border: none;
+    text-align: center;
 }
 
 .btn-primary, .btn-orange {
@@ -158,7 +158,7 @@ a { text-decoration: none; color: inherit; }
     position: fixed;
     top: 0; left: 0; width: 100%;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
@@ -168,7 +168,7 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 5%;
+    padding: 0 5%;
     max-width: 1400px;
     margin: 0 auto;
     height: var(--header-height);
@@ -245,16 +245,16 @@ a { text-decoration: none; color: inherit; }
     font-weight: 700;
     box-shadow: 0 4px 10px rgba(255, 107, 0, 0.3);
     transition: 0.3s;
+    display: inline-block;
 }
 .nav-btn:hover, .nav-cta:hover { background: #e05621; transform: translateY(-1px); }
 
-.menu-toggle { display: none; font-size: 1.5rem; cursor: pointer; }
+.menu-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-dark); }
 
 /* --- HERO SECTION --- */
 .hero {
     position: relative;
     min-height: 100vh;
-    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -279,7 +279,7 @@ a { text-decoration: none; color: inherit; }
     pointer-events: none;
 }
 
-.hero-content { position: relative; z-index: 5; max-width: 900px; }
+.hero-content { position: relative; z-index: 5; max-width: 900px; width: 100%; }
 
 .hero-logo-box, .hero-mini {
     color: var(--primary);
@@ -291,9 +291,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .hero h1 {
-    font-size: 4.8rem;
+    font-size: 4.5rem;
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.15;
     margin-bottom: 15px;
     letter-spacing: -1px;
     background: linear-gradient(135deg, #2D2D2D 60%, var(--text-muted));
@@ -302,7 +302,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .hero .tagline, .hero-tagline {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--primary);
     font-weight: 600;
     margin-bottom: 35px;
@@ -313,7 +313,7 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px 40px;
+    gap: 15px 30px;
     margin-bottom: 45px;
     padding: 15px 30px;
     background: #FFFFFF;
@@ -326,9 +326,15 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.05rem;
+    font-size: 1rem;
+    text-align: center;
 }
-.hero-meta span i, .hero-meta-item i { color: var(--primary); font-size: 1.2rem; }
+.hero-meta-coordinators {
+    flex-wrap: wrap;
+    justify-content: center;
+    line-height: 1.8;
+}
+.hero-meta span i, .hero-meta-item i { color: var(--primary); font-size: 1.1rem; }
 
 .hero-cta, .hero-actions {
     display: flex;
@@ -340,8 +346,8 @@ a { text-decoration: none; color: inherit; }
 /* --- STATS ROW --- */
 .stats-grid, .stats-wrapper {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 25px;
     text-align: center;
     width: 100%;
     max-width: 1100px;
@@ -393,7 +399,7 @@ a { text-decoration: none; color: inherit; }
 .countdown-container, .countdown-grid {
     display: flex;
     justify-content: center;
-    gap: 25px;
+    gap: 20px;
     margin-bottom: 35px;
     flex-wrap: wrap;
 }
@@ -403,12 +409,14 @@ a { text-decoration: none; color: inherit; }
     border: 2px solid var(--primary);
     box-shadow: 0 0 20px rgba(255, 107, 0, 0.15);
     border-radius: var(--radius-md);
-    min-width: 110px;
-    padding: 20px 10px;
+    min-width: 100px;
+    padding: 15px 10px;
+    flex: 1 1 100px;
+    max-width: 120px;
 }
 
 .countdown-time, .countdown-num {
-    font-size: 3rem;
+    font-size: 2.8rem;
     font-weight: 800;
     color: var(--primary);
     display: block;
@@ -454,7 +462,6 @@ a { text-decoration: none; color: inherit; }
 .why-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
 .why-card p { color: var(--text-muted); font-size: 0.9rem; }
 
-/* Light "highlight" style cards for contrast sections (prizes, timeline etc.) */
 .highlights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -464,19 +471,26 @@ a { text-decoration: none; color: inherit; }
     background: var(--card-light);
     color: var(--text-dark);
     border-radius: var(--radius-md);
-    padding: 40px 30px;
+    padding: 35px 25px;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     transition: 0.3s ease;
     border: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+}
+.highlight-card .nav-cta {
+    margin-top: auto;
+    align-self: center;
 }
 .highlight-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 35px rgba(255, 107, 0, 0.2);
 }
-.highlight-icon { font-size: 2.8rem; margin-bottom: 20px; display: inline-block; }
-.highlight-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: #2D2D2D; }
-.highlight-card p { color: #666666; font-size: 0.95rem; }
+.highlight-icon { font-size: 2.5rem; margin-bottom: 15px; display: inline-block; }
+.highlight-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; color: #2D2D2D; }
+.highlight-card p { color: #666666; font-size: 0.95rem; margin-bottom: 15px; }
+.coordinator-text { font-size: 0.85rem !important; color: var(--text-muted); }
 
 /* --- ABOUT SECTION --- */
 .about { background: var(--darker-navy); }
@@ -484,12 +498,13 @@ a { text-decoration: none; color: inherit; }
 .about-layout, .about-split {
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap: 60px;
+    gap: 50px;
     align-items: center;
 }
 
 .about-image img, .about-img img {
     width: 100%;
+    height: auto;
     border-radius: var(--radius-lg);
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     border: 1px solid var(--glass-border);
@@ -503,148 +518,51 @@ a { text-decoration: none; color: inherit; }
 }
 .about-text p, .about-desc p {
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     margin-bottom: 20px;
     line-height: 1.7;
 }
 
-/* --- TIMELINE --- */
-.timeline-wrapper { position: relative; max-width: 800px; margin: 0 auto; }
-
-.timeline-item { display: flex; margin-bottom: 40px; position: relative; }
-
-.timeline-badge {
-    width: 50px;
-    height: 50px;
-    background: var(--gradient-orange);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: var(--text-light);
-    z-index: 2;
-    box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
-    flex-shrink: 0;
-}
-
-.timeline-content {
-    background: var(--card-light);
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    padding: 20px 30px;
-    border-radius: var(--radius-md);
-    margin-left: 30px;
-    width: 100%;
-}
-.timeline-content h3 { font-size: 1.25rem; margin-bottom: 5px; color: var(--text-dark); }
-.timeline-content p { color: var(--text-muted); }
-
-.timeline-wrapper::before {
-    content: '';
-    position: absolute;
-    left: 25px; top: 0;
-    height: 90%; width: 2px;
-    background: var(--glass-border);
-    z-index: 1;
-}
-
-/* --- FEATURED EVENTS / PRIZES --- */
-.total-prize-box {
-    text-align: center;
-    background: rgba(255, 107, 0, 0.06);
-    border: 2px dashed var(--primary);
-    padding: 25px;
-    border-radius: var(--radius-lg);
-    max-width: 400px;
-    margin: 0 auto 50px auto;
-}
-.total-prize-box h3 { font-size: 1.2rem; color: var(--text-muted); text-transform: uppercase; }
-.total-prize-box .amount {
-    font-size: 3rem;
-    font-weight: 800;
-    color: var(--primary);
-}
-
-.prizes-main-grid, .events-grid {
+/* --- FEATURED EVENTS --- */
+.events-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
     margin-bottom: 40px;
 }
 
-.prize-card-premium, .event-card {
+.event-card {
     background: var(--card-light);
     color: var(--text-dark);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.1);
-    text-align: center;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.08);
     transition: var(--transition);
     display: flex;
     flex-direction: column;
-}
-.prize-card-premium { padding: 40px; border: 1px solid var(--glass-border); }
-.prize-card-premium:hover, .event-card:hover { transform: translateY(-6px); }
-
-.prize-card-premium.winner { box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15); border: 2px solid #FFD700; }
-.prize-card-premium.runner { box-shadow: 0 10px 30px rgba(148, 163, 184, 0.2); border: 2px solid #c0c0c0; }
-
-.prize-badge-icon { font-size: 3rem; margin-bottom: 15px; }
-.prize-card-premium.winner .prize-badge-icon { color: #d1a800; }
-.prize-card-premium.runner .prize-badge-icon { color: #94a3b8; }
-
-.prize-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 10px; color: #2D2D2D; }
-.prize-cash { font-size: 2.5rem; font-weight: 800; color: var(--secondary); margin-bottom: 25px; }
-
-.prize-perks {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-    border-top: 1px solid #E2E8F0;
-    padding-top: 25px;
-}
-.prize-perks li { display: flex; align-items: center; gap: 8px; color: #475569; }
-.prize-perks li i { color: #10B981; }
-
-.prizes-sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-
-.prize-card-mini {
-    background: var(--card-light);
-    color: var(--text-dark);
-    border-radius: var(--radius-md);
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    transition: 0.3s;
     border: 1px solid var(--glass-border);
 }
-.prize-card-mini:hover { transform: translateY(-4px); }
-.prize-card-mini i { font-size: 2rem; color: var(--secondary); margin-bottom: 10px; }
-.prize-card-mini h4 { font-size: 1.1rem; margin-bottom: 8px; color: #2D2D2D; }
-.prize-card-mini .cash { font-size: 1.5rem; font-weight: 700; color: #2D2D2D; }
+.event-card:hover { transform: translateY(-6px); }
 
-/* Event-card specific pieces (kept for compatibility) */
 .event-img-header {
-    height: 200px;
+    height: 160px;
     background: #E2E8F0;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    font-size: 3.5rem;
 }
 .event-card:nth-child(1) .event-img-header { background: linear-gradient(135deg, #3B82F6, #1E40AF); }
 .event-card:nth-child(2) .event-img-header { background: linear-gradient(135deg, var(--secondary), #991B1B); }
 .event-card:nth-child(3) .event-img-header { background: linear-gradient(135deg, #10B981, #065F46); }
 
-.event-body { padding: 30px; display: flex; flex-direction: column; flex-grow: 1; text-align: left; }
-.event-body h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 5px; color: #2D2D2D; }
-.event-subtitle { font-size: 0.9rem; font-weight: 600; color: var(--secondary); margin-bottom: 15px; text-transform: uppercase; }
-.event-details-list { margin-bottom: 25px; font-size: 0.95rem; color: #475569; }
-.event-details-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.event-details-list i { color: var(--primary); width: 16px; }
+.event-body { padding: 25px; display: flex; flex-direction: column; flex-grow: 1; text-align: left; }
+.event-body h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 5px; color: #2D2D2D; }
+.event-subtitle { font-size: 0.85rem; font-weight: 600; color: var(--secondary); margin-bottom: 15px; text-transform: uppercase; }
+.event-details-list { margin-bottom: 20px; font-size: 0.9rem; color: #475569; }
+.event-details-list li { margin-bottom: 8px; display: flex; align-items: flex-start; gap: 8px; }
+.event-details-list i { color: var(--primary); margin-top: 4px; }
 .event-pool-box {
     background: #F1F5F9;
     padding: 10px 15px;
@@ -658,127 +576,22 @@ a { text-decoration: none; color: inherit; }
 }
 .event-pool-box span { color: #065F46; font-size: 1.1rem; }
 
-/* --- REGISTRATION / PRICING --- */
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 30px;
-}
-
-.pricing-card {
-    background: var(--card-light);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    padding: 40px 30px;
-    text-align: center;
-    position: relative;
-    transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-}
-.pricing-card.recommended {
-    border: 2px solid var(--secondary);
-    background: rgba(255, 133, 52, 0.05);
-    transform: scale(1.05);
-}
-.badge-recommended {
-    position: absolute;
-    top: -15px; left: 50%;
-    transform: translateX(-50%);
-    background: var(--gradient-orange);
-    color: var(--text-light);
-    padding: 4px 15px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    border-radius: var(--radius-full);
-    text-transform: uppercase;
-}
-.pricing-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-muted); }
-.pricing-card .price { font-size: 3rem; font-weight: 800; margin-bottom: 25px; color: var(--text-dark); }
-
-.pricing-rule {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    background: var(--darker-navy);
-    padding: 15px;
-    border-radius: var(--radius-sm);
-    max-width: 600px;
-    margin: 0 auto;
-    border: 1px solid var(--glass-border);
-}
-
-/* --- SCHEDULE / EVENT DAY --- */
-.schedule-tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 40px; flex-wrap: wrap; }
-
-.tab-btn {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    color: var(--text-muted);
-    padding: 12px 30px;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: 0.3s;
-}
-.tab-btn.active, .tab-btn:hover {
-    background: var(--primary);
-    color: var(--text-light);
-    border-color: var(--primary);
-}
-
-.schedule-pane { display: none; max-width: 700px; margin: 0 auto; }
-.schedule-pane.active { display: block; }
-
-.schedule-row { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--glass-border); }
-.schedule-time { width: 180px; font-size: 1.1rem; font-weight: 700; color: var(--secondary); }
-.schedule-desc { font-size: 1.1rem; font-weight: 500; color: var(--text-dark); }
-
-/* --- SPONSORS --- */
-.sponsors-space { display: flex; flex-direction: column; gap: 40px; text-align: center; }
-
-.sponsor-tier h3 {
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-}
-
-.sponsor-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-
-.sponsor-placeholder, .sponsor-node {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid var(--glass-border);
-    padding: 20px 45px;
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: rgba(0, 0, 0, 0.2);
-    letter-spacing: 2px;
-    user-select: none;
-}
-
-.slider-container { width: 100%; overflow: hidden; padding: 20px 0; position: relative; }
-.logo-slider { display: flex; gap: 40px; width: max-content; animation: infiniteScroll 25s linear infinite; }
-
 /* --- GALLERY --- */
 .gallery { background: var(--darker-navy); }
 
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
+    gap: 20px;
     margin-bottom: 40px;
 }
 
 .gallery-item {
-    height: 250px;
+    height: 240px;
     border-radius: var(--radius-md);
     overflow: hidden;
     position: relative;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     border: 1px solid var(--glass-border);
 }
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
@@ -786,16 +599,16 @@ a { text-decoration: none; color: inherit; }
 .gallery-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to top, rgba(15,23,42,0.9), transparent);
+    background: linear-gradient(to top, rgba(15,23,42,0.85), transparent);
     opacity: 0;
     display: flex;
     align-items: flex-end;
-    padding: 20px;
+    padding: 15px;
     transition: opacity 0.3s ease;
 }
 .gallery-item:hover img { transform: scale(1.08); }
 .gallery-item:hover .gallery-overlay { opacity: 1; }
-.gallery-overlay h4 { font-size: 1.2rem; font-weight: 700; color: var(--text-light); }
+.gallery-overlay h4 { font-size: 1.1rem; font-weight: 700; color: var(--text-light); }
 .gallery-center-btn { text-align: center; }
 
 /* --- VENUE --- */
@@ -815,7 +628,6 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 10px 20px;
 }
 .venue-info h3, .venue-details h3 {
     font-size: 1.8rem;
@@ -827,103 +639,19 @@ a { text-decoration: none; color: inherit; }
     color: var(--text-dark);
 }
 .venue-info h3 i, .venue-details h3 i { color: var(--secondary); }
-.venue-info p, .venue-details p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
-
-/* --- ORGANIZERS / TEAM --- */
-.organizers-grid, .team-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.profile-card, .team-card {
-    background: var(--card-light);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    padding: 30px;
-    text-align: center;
-    transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-}
-.profile-card:hover, .team-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-
-.profile-avatar {
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    background: var(--darker-navy);
-    margin: 0 auto 20px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: var(--primary);
-    border: 2px solid var(--glass-border);
-}
-.profile-card h3 { font-size: 1.4rem; margin-bottom: 5px; color: var(--text-dark); }
-.profile-card .role { color: var(--secondary); font-weight: 600; font-size: 0.95rem; margin-bottom: 20px; }
-
-.profile-socials, .social-links { display: flex; justify-content: center; gap: 15px; }
-
-.social-icon {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.04);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s;
-    color: var(--text-dark);
-}
-.social-icon:hover { background: var(--primary); color: var(--text-light); }
-
-/* --- FAQ --- */
-.faq-wrapper { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-
-.faq-item {
-    background: var(--card-light);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-}
-
-.faq-question {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.05rem;
-    color: var(--text-dark);
-    user-select: none;
-}
-
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    padding: 0 20px;
-    color: var(--text-muted);
-    transition: max-height 0.3s ease, padding 0.3s ease;
-    font-size: 0.95rem;
-}
-.faq-item.active .faq-answer { max-height: 200px; padding-bottom: 20px; }
-.faq-item.active .faq-question i { transform: rotate(180deg); color: var(--primary); }
-.faq-question i { transition: 0.3s; }
+.venue-info p, .venue-details p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 25px; line-height: 1.6; }
 
 /* --- CONTACT --- */
 .contact { background: var(--darker-navy); padding: 60px 0; }
 
 .contact-layout {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 30px;
     text-align: center;
 }
-.contact-channel { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.contact-channel { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 140px; }
 .contact-channel .icon-box {
     width: 60px; height: 60px;
     border-radius: 50%;
@@ -937,27 +665,14 @@ a { text-decoration: none; color: inherit; }
     color: var(--text-dark);
 }
 .contact-channel:hover .icon-box { background: var(--primary); color: var(--text-light); transform: translateY(-3px); }
-.contact-channel span { font-weight: 600; font-size: 1.05rem; }
-
-/* --- REGISTRATION / CTA SECTION --- */
-.cta-section {
-    background: var(--gradient-orange);
-    border-top: 1px solid var(--glass-border);
-    border-bottom: 1px solid var(--glass-border);
-    text-align: center;
-    padding: 100px 20px;
-    position: relative;
-    color: var(--text-light);
-}
-.cta-section h2 { font-size: 3rem; font-weight: 800; margin-bottom: 10px; }
-.cta-section p { font-size: 1.3rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+.contact-channel span { font-weight: 600; font-size: 1rem; }
 
 /* --- FOOTER --- */
 footer {
     background: var(--deepest-navy);
     padding: 40px 0;
     border-top: 1px solid var(--glass-border);
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.7);
     font-size: 0.95rem;
     text-align: center;
 }
@@ -970,59 +685,79 @@ footer {
     gap: 20px;
 }
 
-.footer-links { display: flex; gap: 25px; justify-content: center; }
+.footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
 .footer-links a:hover { color: var(--text-light); }
 
-/* --- RESPONSIVE STYLES --- */
+/* --- RESPONSIVE MEDIA QUERIES (PHONE & TABLET) --- */
 @media (max-width: 1024px) {
-    .stats-grid, .stats-wrapper { grid-template-columns: repeat(3, 1fr); gap: 30px 20px; }
-    .highlights-grid, .events-grid, .gallery-grid, .prizes-main-grid { grid-template-columns: repeat(2, 1fr); }
-    .why-grid { grid-template-columns: repeat(2, 1fr); }
-    .pricing-grid { grid-template-columns: 1fr; gap: 40px; }
-    .pricing-card.recommended { transform: scale(1); }
+    .container { padding: 60px 0; }
+    .highlights-grid, .events-grid, .why-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-split, .venue-split { grid-template-columns: 1fr; gap: 30px; }
 }
 
 @media (max-width: 768px) {
-    .hero h1 { font-size: 3rem; }
-    .hero .tagline, .hero-tagline { font-size: 1.1rem; }
-    .about-layout, .about-split, .venue-layout, .venue-split,
-    .organizers-grid, .team-grid, .prizes-main-grid, .prizes-sub-grid {
-        grid-template-columns: 1fr;
-    }
+    .container { width: 92%; padding: 50px 0; }
+    .section-title { font-size: 1.9rem; }
+    .section-subtitle { font-size: 0.85rem; margin-bottom: 35px; }
+
+    /* Navigation Drawer */
+    .menu-toggle { display: block; }
     .nav-menu {
         position: fixed;
-        top: var(--header-height); left: -100%;
-        width: 100%; height: calc(100vh - var(--header-height));
-        background: var(--dark-navy);
+        top: var(--header-height);
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - var(--header-height));
+        background: #FFFFFF;
         flex-direction: column;
-        padding: 40px 0;
-        transition: 0.4s ease-in-out;
+        justify-content: flex-start;
+        padding: 40px 20px;
+        gap: 20px;
+        transition: 0.35s ease-in-out;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-top: 1px solid var(--glass-border);
     }
     .nav-menu.active { left: 0; }
-    .dropdown-menu {
-        position: relative; top: 0; width: 100%;
-        opacity: 1; visibility: visible; transform: none;
-        background: transparent; box-shadow: none; text-align: center;
-    }
-    .menu-toggle { display: block; }
-    .stats-grid, .stats-wrapper { grid-template-columns: repeat(2, 1fr); }
-    .highlights-grid, .events-grid, .gallery-grid, .why-grid { grid-template-columns: 1fr; }
-    .hero-meta, .hero-meta-grid { border-radius: 20px; }
-    .hero-cta, .hero-actions { flex-direction: column; gap: 12px; }
-    .countdown-container, .countdown-grid { gap: 10px; flex-wrap: wrap; }
-    .countdown-box, .countdown-card { min-width: 80px; padding: 12px; }
-    .countdown-time, .countdown-num { font-size: 2rem; }
-    .schedule-row { flex-direction: column; align-items: flex-start; gap: 5px; }
-    .schedule-time { width: auto; }
+    .nav-menu li { width: 100%; text-align: center; }
+    .nav-link { justify-content: center; font-size: 1.1rem; }
+    .nav-cta { display: block; width: 100%; max-width: 250px; margin: 10px auto 0; }
+
+    /* Hero */
+    .hero { min-height: auto; padding: calc(var(--header-height) + 30px) 15px 50px; }
+    .hero-mini { font-size: 1.1rem; letter-spacing: 2px; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-tagline { font-size: 1rem; margin-bottom: 25px; }
+    .hero-meta, .hero-meta-grid { border-radius: var(--radius-md); padding: 15px; gap: 12px; }
+    .hero-meta-item { font-size: 0.9rem; }
+
+    /* Highlights, Events, Grids */
+    .highlights-grid, .events-grid, .why-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .gallery-item { height: 180px; }
+
+    /* Countdown & Stats */
+    .countdown-grid { gap: 10px; }
+    .countdown-card { min-width: 70px; padding: 10px 5px; }
+    .countdown-num { font-size: 1.8rem; }
+    .countdown-lbl { font-size: 0.75rem; }
+    .stat-number, .stat-box h2 { font-size: 2.2rem; }
+
+    /* Venue & Map */
+    .venue-split { padding: 20px; }
+    .map-frame iframe { height: 260px; }
+    .venue-details h3 { font-size: 1.4rem; }
+
+    /* Footer */
+    .footer-grid { flex-direction: column; text-align: center; gap: 15px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+@media (max-width: 480px) {
+    .gallery-grid { grid-template-columns: 1fr; }
+    .gallery-item { height: 210px; }
+    .stats-wrapper { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .hero h1 { font-size: 1.9rem; }
+    .btn { width: 100%; }
 }
 </style>
 <body>
@@ -1035,16 +770,6 @@ footer {
             <ul class="nav-menu">
                 <li><a href="#" class="nav-link">Home</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
-                <li class="nav-item">
-                    <!-- <span class="nav-link">Events <i class="fa-solid fa-chevron-down" style="font-size:0.75rem;"></i></span>
-                    <ul class="dropdown-menu">
-                        <li class="dropdown-item"><a href="#schedule">Schedule</a></li>
-                        <li class="dropdown-item"><a href="#events">Hackathon</a></li>
-                        <li class="dropdown-item"><a href="#gallery">Gallery</a></li>
-                        <li class="dropdown-item"><a href="#sponsors">Sponsors</a></li>
-                        <li class="dropdown-item"><a href="#contact">Contact</a></li>
-                    </ul> -->
-                </li>
                 <li><a href="/register" class="nav-cta">Register Now</a></li>
             </ul>
         </div>
@@ -1053,39 +778,32 @@ footer {
     <!-- HERO BANNER -->
     <header class="hero">
         <div class="hero-content">
-            <br>
-            <br>
-            <br>
-            <br> 
             <div class="hero-mini">Navchetna</div>
             <h1>YUVA SHAKTI MAHOTSAV 2026</h1>
             <p class="hero-tagline">Empowering Youth • Celebrating Talent • Creating Impact</p>
             
-           <div class="hero-meta-grid">
-  <div class="hero-meta-item">
-    <i class="fa-solid fa-calendar-days"></i> 3–4 October 2026 (Sat & Sun)
-  </div>
+            <div class="hero-meta-grid">
+                <div class="hero-meta-item">
+                    <i class="fa-solid fa-calendar-days"></i> 3–4 October 2026 (Sat & Sun)
+                </div>
 
-  <div class="hero-meta-item">
-    <i class="fa-solid fa-location-dot"></i> Rang Mahal Garden, Near AG Office Pull, Gwalior
-  </div>
+                <div class="hero-meta-item">
+                    <i class="fa-solid fa-location-dot"></i> Rang Mahal Garden, Near AG Office Pull, Gwalior
+                </div>
 
-  <div class="hero-meta-item">
-    <i class="fa-solid fa-users"></i> 15,000–20,000 Expected Visitors
-  </div>
+                <div class="hero-meta-item">
+                    <i class="fa-solid fa-users"></i> 15,000–20,000 Expected Visitors
+                </div>
 
-  <div class="hero-meta-item hero-meta-coordinators">
-    <i class="fa-solid fa-address-book"></i>
-    <span class="coordinator-label"><strong>Coordinators:</strong></span>
-    <span>Piyush Narvariya (<a href="tel:7470654715">7470654715</a>)</span> •
-    <span>Khushi Soni (<a href="tel:9302534684">9302534684</a>)</span> •
-    <span>Anish Jain (<a href="tel:8319595863">8319595863</a>)</span> •
-    <span>Anjali Narvariya (<a href="tel:6260184420">6260184420</a>)</span>
-  </div>
-</div>
-            <!-- <div class="hero-actions">
-                <a href="#events" class="btn btn-orange">Register Now <i class="fa-solid fa-arrow-right"></i></a>
-            </div> -->
+                <div class="hero-meta-item hero-meta-coordinators">
+                    <i class="fa-solid fa-address-book"></i>
+                    <span class="coordinator-label"><strong>Coordinators:</strong></span>
+                    <span> - Piyush Narvariya (<a href="tel:7470654715">7470654715</a>)</span> 
+                    <span> - Khushi Soni (<a href="tel:9302534684">9302534684</a>)</span> 
+                    <span> - Anish Jain (<a href="tel:8319595863">8319595863</a>)</span> 
+                    <span> - Anjali Narvariya (<a href="tel:6260184420">6260184420</a>)</span>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -1108,7 +826,6 @@ footer {
                 <h2 data-target="100">0</h2>
                 <p>Volunteers</p>
             </div>
-            
             <div class="stat-box">
                 <h2 data-target="2">0</h2>
                 <p>Festival Days</p>
@@ -1143,171 +860,131 @@ footer {
     </section>
 
     <!-- FESTIVAL HIGHLIGHTS -->
-<section class="container" id="highlights">
+    <section class="container" id="highlights">
         <h2 class="section-title">Festival Highlights</h2>
         <p class="section-subtitle">Vibrant dimensions crafted for tomorrow's leaders</p>
         <div class="highlights-grid">
 
-            <!-- Tech Manthan Hackathon -->
             <div class="highlight-card">
                 <span class="highlight-icon">💻</span>
                 <h3>Tech Manthan Hackathon</h3>
                 <p>The ultimate innovation crucible to craft high-impact web, app, and AI architectures.</p>
-                <p class="coordinator-text"><strong>Coordinators:</strong> Rahul Kushwaha, Chitransh Shrivastava, Jayesh Shrivastava</p>
-                <br>
+                <p class="coordinator-text"><strong>Coordinators:</strong> Rahul Kushwaha, Chitransh Shrivastava</p>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- E-Sports Championship -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎮</span>
                 <h3>E-Sports Championship</h3>
                 <p>Step onto the digital battleground and dominate premium competitive multiplayer Arenas.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Akash Narvariya, Vikash Narvariya</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- लोकनृत्य - Dance Competition -->
             <div class="highlight-card">
                 <span class="highlight-icon">💃</span>
                 <h3>लोकनृत्य - Dance Competition</h3>
                 <p>Express pure artistic momentum across high-energy dynamic solo and team routines.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Nishu Sikarwar, Raj Prajapati, Ganga Sharma, Dinesh Jeevtani</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- युवा- वाणी : Open Mic -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎤</span>
                 <h3>युवा- वाणी : Open Mic</h3>
                 <p>Own the professional center-stage microphone through poetry, standup comedy, or vocals.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Rhythem Raizada, Khushi Sharma, Anshika Sharma</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- Business & Exhibition Expo -->
             <div class="highlight-card">
                 <span class="highlight-icon">🛍️</span>
                 <h3>Business & Exhibition Expo</h3>
                 <p>Discover indigenous student entrepreneurial innovations alongside multi-cuisine food pavilions.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Rashi Shirothiya, Shweta Chauhan, Kirtan Gurjar, Naman Jain</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- रंग-ए-भारत - Cultural Fashion Show -->
             <div class="highlight-card">
                 <span class="highlight-icon">✨</span>
                 <h3>रंग-ए-भारत - Cultural Fashion Show</h3>
                 <p>Flourish on the runway representing heritage and contemporary style in our flagship fashion show.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Anshika Sharma, Sarthak Sahu</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- DJ Night -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎧</span>
                 <h3>DJ Night</h3>
                 <p>Lose yourself in the rhythm and celebrate the festival spirit with an epic live music experience.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Anish Jain, Vaani Gupta, Sarthak Sahu</p>
-                <br>
             </div>
 
-            <!-- Beyond the Frame -->
             <div class="highlight-card">
                 <span class="highlight-icon">📸</span>
                 <h3>Beyond the Frame - Photography & Reel</h3>
                 <p>Capture the perfect angle in this premium Photography & Reel making competition.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Aman Gupta, Muskan Khan</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- रंगोत्सव: Drawing Competition -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎨</span>
                 <h3>रंगोत्सव: Drawing Competition</h3>
                 <p>Unleash your imagination and let your brush strokes tell powerful stories on paper.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Shalini Shukla, Arpit Sharma, Babli Kushwah, Betal Ken</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- कलमकार - Essay Competition -->
             <div class="highlight-card">
                 <span class="highlight-icon">✍️</span>
                 <h3>कलमकार - Essay Competition</h3>
                 <p>Channel the power of literature and articulate perspectives through creative written expression.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Arman Khan, Kalpana Mudgal</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- भारत बोध : Quiz Competition -->
             <div class="highlight-card">
                 <span class="highlight-icon">🧠</span>
                 <h3>भारत बोध : Quiz Competition</h3>
                 <p>Test your intellect, speed, and knowledge across comprehensive national awareness rounds.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Jatin Soni, Harshita Yadav</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- धर्मगाथा : रामायण - महाभारत ज्ञान क्विज -->
             <div class="highlight-card">
                 <span class="highlight-icon">📜</span>
                 <h3>धर्मगाथा : रामायण - महाभारत ज्ञान क्विज</h3>
                 <p>Delve deep into epic histories and showcase your mastery of timeless Indian epics.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Vivek Bhadauria, Gunjan Jha</p>
-                <br>
                 <a href="/register" class="nav-cta">Register Now</a>
             </div>
 
-            <!-- Fun & Game Zone -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎯</span>
                 <h3>Fun & Game Zone</h3>
                 <p>Take a break from the pressure, enjoy casual gaming booths, and participate in engaging games.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Pratyasha Singh, Lavanya Sharma, Shubham Malik</p>
-                <br>
-                
             </div>
 
-            <!-- Canvas Live Sketching -->
             <div class="highlight-card">
                 <span class="highlight-icon">🖌️</span>
                 <h3>Canvas Live Sketching</h3>
                 <p>Witness real-time masterclasses and raw creativity unfold live on the canvas.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Ankit Rathore, Ayushi Goyal</p>
-                <br>
-                
             </div>
 
-            <!-- Yuva Kavi Sammelan -->
             <div class="highlight-card">
                 <span class="highlight-icon">🎙️</span>
                 <h3>Yuva Kavi Sammelan</h3>
                 <p>A prestigious gathering of profound poetry, rhythm, and satire by celebrated young minds.</p>
                 <p class="coordinator-text"><strong>Coordinators:</strong> Ramanuj Parashar, Anshika Sharma, Sharda</p>
-                <br>
-                
             </div>
+
             <div class="highlight-card">
-
                 <span class="highlight-icon">📱</span>
-
                 <h3>Digital Influencers Meetup</h3>
-
                 <p>Network and collaborate with top content creators steering today's digital media. (Entry by Invitation Only)</p>
-
-                <br>
-
-               
-
             </div>
         </div>
     </section>
@@ -1332,7 +1009,6 @@ footer {
         <h2 class="section-title" id="events">Featured Events</h2>
         <p class="section-subtitle">Compete with the best to claim honor and glory</p>
         <div class="events-grid">
-            <!-- Event 1 -->
             <div class="event-card">
                 <div class="event-img-header">💻</div>
                 <div class="event-body">
@@ -1348,7 +1024,7 @@ footer {
                     <a href="/register" target="_blank" class="btn btn-purple" style="width:100%;">Register</a>
                 </div>
             </div>
-            <!-- Event 2 -->
+
             <div class="event-card">
                 <div class="event-img-header">🎮</div>
                 <div class="event-body">
@@ -1364,7 +1040,7 @@ footer {
                     <a href="/register" target="_blank" class="btn btn-purple" style="width:100%;">Register</a>
                 </div>
             </div>
-            <!-- Event 3 -->
+
             <div class="event-card">
                 <div class="event-img-header">💃</div>
                 <div class="event-body">
@@ -1413,40 +1089,18 @@ footer {
         </div>
     </section>
 
-    <!-- SPONSORS PARTNERS -->
-    <!-- <section class="container" id="sponsors">
-        <h2 class="section-title">Strategic Sponsors</h2>
-        <p class="section-subtitle">Backed by ecosystems prioritizing future generations</p>
-        <div class="slider-container">
-            <div class="logo-slider">
-                 Row set 1 -->
-                <!-- <div class="sponsor-node">GURUKUL FOUNDATION</div>
-                <div class="sponsor-node">TECH SPONSOR</div>
-                <div class="sponsor-node">CREATIVE MEDIA</div>
-                <div class="sponsor-node">ENERGY DRINKS</div>
-                <div class="sponsor-node">CAMPUS PARTNER</div>
-                Row set 2 (Repeated duplicate track ensuring loop continuity seamlessly) -->
-                <!-- <div class="sponsor-node">GURUKUL FOUNDATION</div>
-                <div class="sponsor-node">TECH SPONSOR</div>
-                <div class="sponsor-node">CREATIVE MEDIA</div>
-                <div class="sponsor-node">ENERGY DRINKS</div>
-                <div class="sponsor-node">CAMPUS PARTNER</div>
-            </div>
-        </div>
-    </section> -->
-
     <!-- GALLERY PREVIEW -->
     <section class="gallery" id="gallery">
         <div class="container">
             <h2 class="section-title">Gallery Preview</h2>
             <p class="section-subtitle">Moments captured across unforgettable festival grounds</p>
             <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="image/image-1.jpeg" alt="Hackathon Frame">
+                       <div class="gallery-item">
+                    <img src="image/image-18.jpeg" alt="Hackathon Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
                 <div class="gallery-item">
-                    <img src="image/image-2.jpeg" alt="Dance Performance Frame">
+                    <img src="image/image-1.jpeg" alt="Dance Performance Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
                 <div class="gallery-item">
@@ -1481,10 +1135,10 @@ footer {
                     <img src="image/image-10.jpeg" alt="Food Court Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
-                <div class="gallery-item">
+                <!-- <div class="gallery-item">
                     <img src="image/image-11.jpeg" alt="Arts Showcase Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
-                </div>
+                </div> -->
                 <div class="gallery-item">
                     <img src="image/image-11.jpeg" alt="Hackathon Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
@@ -1514,7 +1168,7 @@ footer {
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
                 <div class="gallery-item">
-                    <img src="image/image-18.jpeg" alt="Dance Performance Frame">
+                    <img src="image/image-2.jpeg" alt="Dance Performance Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
                 <div class="gallery-item">
@@ -1525,18 +1179,18 @@ footer {
                     <img src="image/image-20.jpeg" alt="Concert Stage Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
-                <div class="gallery-item">
+                <!-- <div class="gallery-item">
                     <img src="image/image-21.jpeg" alt="Food Court Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
-                </div>
+                </div> -->
                 <div class="gallery-item">
                     <img src="image/image-22.jpeg" alt="Arts Showcase Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
-                <div class="gallery-item">
+                <!-- <div class="gallery-item">
                     <img src="image/image-23.jpeg" alt="Hackathon Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
-                </div>
+                </div> -->
                 <div class="gallery-item">
                     <img src="image/image-24.jpeg" alt="Dance Performance Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
@@ -1573,18 +1227,18 @@ footer {
                     <img src="image/image-32.jpeg" alt="Concert Stage Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
-                <div class="gallery-item">
+                <!-- <div class="gallery-item">
                     <img src="image/image-33.jpeg" alt="Food Court Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
-                </div>
+                </div> -->
                 <div class="gallery-item">
                     <img src="image/image-34.jpeg" alt="Arts Showcase Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
                 </div>
-                    <div class="gallery-item">
+                    <!-- <div class="gallery-item">
                     <img src="image/image-35.jpeg" alt="Dance Performance Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
-                </div>
+                </div> -->
                 <div class="gallery-item">
                     <img src="image/image-36.jpeg" alt="Gaming Arena Frame">
                     <div class="gallery-overlay"><h4>Navchetna 2025</h4></div>
@@ -1639,7 +1293,7 @@ footer {
     <!-- CONTACT SECTION -->
     <section class="contact" id="contact">
         <div class="container contact-layout">
-            <a href="tel: +918982607644" class="contact-channel">
+            <a href="tel:+918982607644" class="contact-channel">
                 <div class="icon-box"><i class="fa-solid fa-phone"></i></div>
                 <span>Call Center</span>
             </a>
@@ -1674,9 +1328,9 @@ footer {
         </div>
     </footer>
 
-    <!-- INTERACTION LOGIC ENGINES -->
+    <!-- JAVASCRIPT -->
     <script>
-        // --- MOBILE MENU ---
+        // Mobile Toggle
         const menuToggle = document.getElementById('mobile-menu');
         const navMenu = document.querySelector('.nav-menu');
 
@@ -1687,7 +1341,16 @@ footer {
             icon.classList.toggle('fa-xmark');
         });
 
-        // --- COUNTDOWN TIMING ENGINE ---
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                const icon = menuToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-xmark');
+            });
+        });
+
+        // Countdown Timer
         const launchDate = new Date("October 03, 2026 09:00:00").getTime();
 
         function handleClock() {
@@ -1717,7 +1380,7 @@ footer {
         setInterval(handleClock, 1000);
         handleClock();
 
-        // --- ANIMATING NUMERICAL STATS ---
+        // Statistics Counter
         const statElements = document.querySelectorAll('.stat-box h2');
         const processingSpeed = 50;
 

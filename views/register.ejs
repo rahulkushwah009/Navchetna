@@ -359,6 +359,25 @@
   .nysm-toast.show{ opacity:1; transform:translate(-50%, 0); }
 
   .nysm-hidden{ display:none !important; }
+  #f-teamSlot {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #8a7a9c;
+  outline: none;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #333;
+  border-radius: 0;
+}
+
+#f-teamSlot:focus {
+  border-bottom: 2px solid #6c4ab6;
+}
+
+#f-teamSlot::placeholder {
+  color: #ede6e6;
+}
 </style>
 </head>
 <body>
@@ -451,8 +470,8 @@
         <br>
 <br>
         <br>
-      <label><span style="font-weight:normal; color:#8a7a9c;"></span></label>
-          <input type="text" id="f-teamSlot" placeholder="">
+      <!-- <label><span style="font-weight:normal; color:#8a7a9c;"></span></label> -->
+          <input type="text" id="f-teamSlot" placeholder="Slip No. here ( For Team Only )">
     </section>
 
     <!-- STEP 2 : Multi-Event selection -->
@@ -584,7 +603,6 @@
     { 
       id: "esports", 
       name: "E-Sports Championship", 
-      coordinators: "Akash Narvariya, Vikash Narvariya", 
       isEsports: true,
       solo: { junior: 200, senior: 200 },
       group: { junior: 200, senior: 200 } // ₹200 Flat for Squad
@@ -592,31 +610,26 @@
     { 
       id: "rangotsav", 
       name: "रंगोत्सव : Drawing Competition", 
-      coordinators: "Shalini Shukla, Arpit Sharma, Babli Kushwah, Betal Ken", 
       junior: 20, senior: 50 
     },
     { 
       id: "bharatbodh", 
-      name: "भारत बोध : Quiz Competition", 
-      coordinators: "Jatin Soni, Harshita Yadav", 
+      name: "भारत बोध : Quiz Competition",  
       junior: 20, senior: 50 
     },
     { 
       id: "techmanthan", 
       name: "Tech Manthan Hackathon", 
-      coordinators: "Rahul Kushwaha, Chitransh Shrivastava, Jayesh Shrivastava", 
       junior: 99, senior: 99 
     },
     { 
       id: "yuvavani", 
-      name: "युवा-वाणी : Open Mic", 
-      coordinators: "Rhythem Raizada, Khushi Sharma, Anshika Sharma", 
+      name: "युवा-वाणी : Open Mic",  
       junior: 49, senior: 99 
     },
     { 
       id: "loknritya", 
       name: "लोकनृत्य : Dance Competition", 
-      coordinators: "Nishu Sikarwar, Raj Prajapati, Ganga Sharma, Dinesh Jeevtani", 
       dance: true,
       solo: { junior: 49, senior: 99 }, 
       group: { junior: 20, senior: 50 } 
@@ -624,25 +637,21 @@
     { 
       id: "rangebharat", 
       name: "रंग-ए-भारत : Cultural Fashion Show", 
-      coordinators: "Anshika Sharma, Sarthak Sahu", 
       junior: 49, senior: 99 
     },
     { 
       id: "beyondframe", 
       name: "Beyond the Frame : Photography & Reel Competition", 
-      coordinators: "Aman Gupta, Muskan Khan", 
       junior: 99, senior: 99 
     },
     { 
       id: "kalamkar", 
       name: "कलमकार : Essay Competition", 
-      coordinators: "Arman Khan, Kalpana Mudgal", 
       junior: 20, senior: 50 
     },
     { 
       id: "dharmagatha", 
       name: "धर्मगाथा : रामायण - महाभारत ज्ञान क्विज", 
-      coordinators: "Vivek Bhadauria, Gunjan Jha", 
       junior: 20, senior: 50 
     }
   ];

@@ -388,6 +388,7 @@
     <section class="nysm-panel" id="nysm-step-1">
       <h2>Participant Details</h2>
       <p class="hint">Tell us who is registering.</p>
+      
 
       <div class="nysm-field" data-field="fullName">
         <label>Full Name <span class="req">*</span></label>
@@ -421,10 +422,7 @@
       </div>
 
       <div class="nysm-row2">
-        <div class="nysm-field" data-field="teamSlot">
-          <label>Team / Slot Number <span style="font-weight:normal; color:#8a7a9c;">(Optional)</span></label>
-          <input type="text" id="f-teamSlot" placeholder="e.g. Slot-A / Team-04">
-        </div>
+        <!-- -->
         <div class="nysm-field" data-field="reference">
           <label>Reference Name <span style="font-weight:normal; color:#8a7a9c;">(Optional)</span></label>
           <input type="text" id="f-reference" placeholder="Who referred you?">
@@ -450,6 +448,11 @@
       </div>
 
       <button class="nysm-btn nysm-btn-primary" onclick="NYSM.goToStep(2)">Continue to Event Selection →</button>
+        <br>
+<br>
+        <br>
+      <label><span style="font-weight:normal; color:#8a7a9c;"></span></label>
+          <input type="text" id="f-teamSlot" placeholder="">
     </section>
 
     <!-- STEP 2 : Multi-Event selection -->

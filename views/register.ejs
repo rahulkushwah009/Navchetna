@@ -360,24 +360,24 @@
 
   .nysm-hidden{ display:none !important; }
   #f-teamSlot {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid #8a7a9c;
-  outline: none;
-  background: transparent;
-  padding: 8px 0;
-  font-size: 14px;
-  color: #333;
-  border-radius: 0;
-}
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #8a7a9c;
+    outline: none;
+    background: transparent;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #333;
+    border-radius: 0;
+  }
 
-#f-teamSlot:focus {
-  border-bottom: 2px solid #6c4ab6;
-}
+  #f-teamSlot:focus {
+    border-bottom: 2px solid #6c4ab6;
+  }
 
-#f-teamSlot::placeholder {
-  color: #ede6e6;
-}
+  #f-teamSlot::placeholder {
+    color: #ede6e6;
+  }
 </style>
 </head>
 <body>
@@ -441,7 +441,6 @@
       </div>
 
       <div class="nysm-row2">
-        <!-- -->
         <div class="nysm-field" data-field="reference">
           <label>Reference Name <span style="font-weight:normal; color:#8a7a9c;">(Optional)</span></label>
           <input type="text" id="f-reference" placeholder="Who referred you?">
@@ -467,11 +466,8 @@
       </div>
 
       <button class="nysm-btn nysm-btn-primary" onclick="NYSM.goToStep(2)">Continue to Event Selection →</button>
-        <br>
-<br>
-        <br>
-      <!-- <label><span style="font-weight:normal; color:#8a7a9c;"></span></label> -->
-          <input type="text" id="f-teamSlot" placeholder="Slip No. here ( For Team Only )">
+      <br><br><br>
+      <input type="text" id="f-teamSlot" placeholder="Slip No. here ( For Team Only )">
     </section>
 
     <!-- STEP 2 : Multi-Event selection -->
@@ -480,9 +476,6 @@
       <p class="hint">Select <b>one or more</b> events to participate in<span id="f-category-echo"></span>.</p>
       
       <div id="nysm-event-list"></div>
-
-      <!-- Invite Only Section Note -->
-      
 
       <div class="nysm-btn-row">
         <button class="nysm-btn nysm-btn-ghost" onclick="NYSM.goToStep(1)">← Back</button>
@@ -597,15 +590,17 @@
   };
 
   /* ==========================================================================
-     EVENT CATALOGUE: E-Sports with Solo / Squad (Max 4)
+     EVENT CATALOGUE: E-Sports with Solo / Duo / Group / Squad
      ========================================================================== */
   const EVENTS = [
-    { 
-      id: "esports", 
-      name: "E-Sports Championship", 
+    {
+      id: "esports",
+      name: "E-Sports Championship",
       isEsports: true,
-      solo: { junior: 200, senior: 200 },
-      group: { junior: 200, senior: 200 } // ₹200 Flat for Squad
+      solo: { junior: 50, senior: 50 },
+      duo: { junior: 100, senior: 100 },
+      group: { junior: 150, senior: 150 },
+      squad: { junior: 200, senior: 200 }
     },
     { 
       id: "rangotsav", 
@@ -668,24 +663,26 @@
   function getEventFee(ev, category, participantType, groupCount) {
     if (!category) return 0;
 
+    const catKey = category === "Junior" ? 'junior' : 'senior';
+
     if (ev.dance) {
       if (participantType === "Solo") {
-        return category === "Junior" ? ev.solo.junior : ev.solo.senior;
+        return ev.solo[catKey];
       }
       if (participantType === "Group") {
-        const per = category === "Junior" ? ev.group.junior : ev.group.senior;
+        const per = ev.group[catKey];
         const n = Math.max(parseInt(groupCount, 10) || 0, 0);
         return per * n;
       }
-      return category === "Junior" ? ev.solo.junior : ev.solo.senior;
+      return ev.solo[catKey];
     }
     
-    // E-Sports calculation (Solo vs Squad flat ₹200)
+    // E-Sports calculation (Solo ₹50, Duo ₹100, Group/Trio ₹150, Squad ₹200)
     if (ev.isEsports) {
-      if (participantType === "Group" || participantType === "Squad") {
-        return category === "Junior" ? ev.group.junior : ev.group.senior;
-      }
-      return category === "Junior" ? ev.solo.junior : ev.solo.senior;
+      if (participantType === "Duo") return ev.duo[catKey];
+      if (participantType === "Group") return ev.group[catKey];
+      if (participantType === "Squad") return ev.squad[catKey];
+      return ev.solo[catKey];
     }
 
     return category === "Junior" ? ev.junior : ev.senior;
@@ -777,12 +774,13 @@
       const isSelected = !!state.selectedEvents[ev.id];
       const card = document.createElement('div');
       card.className = 'nysm-event-card' + (isSelected ? ' selected' : '');
+      const catKey = state.category === 'Junior' ? 'junior' : 'senior';
       
       let feeText;
       if(ev.dance){
-        feeText = `Solo: ₹${ev.solo[state.category==='Junior'?'junior':'senior']} | Group: ₹${ev.group[state.category==='Junior'?'junior':'senior']}/member`;
+        feeText = `Solo: ₹${ev.solo[catKey]} | Group: ₹${ev.group[catKey]}/member`;
       } else if(ev.isEsports) {
-        feeText = `Solo: ₹${ev.solo.senior} | Squad (Max 4): ₹${ev.group.senior}/team`;
+        feeText = `Solo: ₹${ev.solo[catKey]} | Duo: ₹${ev.duo[catKey]} | Group: ₹${ev.group[catKey]} | Squad: ₹${ev.squad[catKey]}`;
       } else {
         feeText = `Fee: ₹${state.category==='Junior' ? ev.junior : ev.senior}`;
       }
@@ -792,7 +790,7 @@
           <div class="nysm-checkbox">${isSelected ? '✓' : ''}</div>
           <div style="flex:1;">
             <div class="nysm-event-name">${ev.name}</div>
-            <div class="nysm-event-coordinators">Coordinators: ${ev.coordinators}</div>
+            <div class="nysm-event-coordinators">${ev.coordinators ? 'Coordinators: ' + ev.coordinators : ''}</div>
             <div class="nysm-event-fee">${feeText}</div>
             
             <!-- Dance Sub-options -->
@@ -809,20 +807,20 @@
               </div>
             ` : ''}
 
-            <!-- E-Sports Sub-options (Solo vs Squad/Group - Max 4 Members) -->
+            <!-- E-Sports Sub-options -->
             ${ev.isEsports && isSelected ? `
               <div class="nysm-sub-config-box" onclick="event.stopPropagation()">
                 <label style="font-size:12px; font-weight:700; color:#3d2c58;">E-Sports Mode:</label>
-                <div style="display:flex; gap:8px; margin:6px 0;">
-                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType || state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo (₹200)</button>
-                  <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Group'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Group')">Squad (₹200/Team)</button>
+                <div style="display:flex; gap:6px; margin:6px 0; flex-wrap:wrap;">
+                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType || state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo (₹50)</button>
+                  <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Duo'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Duo')">Duo (₹100)</button>
+                  <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Group'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Group')">Trio/3P (₹150)</button>
+                  <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Squad'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Squad')">Squad/4P (₹200)</button>
                 </div>
-                ${state.selectedEvents[ev.id].participantType==='Group' ? `
-                  <div style="margin-top:6px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <input type="text" placeholder="Squad / Team Name" value="${state.selectedEvents[ev.id].teamName||''}" oninput="NYSM.setTeamName('${ev.id}', this.value)" style="padding:8px; font-size:12.5px; border:1px solid #E4D9CC; border-radius:8px;">
-                    <input type="number" min="2" max="4" placeholder="Players (2 to 4)" value="${state.selectedEvents[ev.id].groupCount||''}" oninput="NYSM.setGroupCount('${ev.id}', this.value)" style="padding:8px; font-size:12.5px; border:1px solid #E4D9CC; border-radius:8px;">
+                ${state.selectedEvents[ev.id].participantType !== 'Solo' ? `
+                  <div style="margin-top:6px;">
+                    <input type="text" placeholder="Squad / Team Name" value="${state.selectedEvents[ev.id].teamName||''}" oninput="NYSM.setTeamName('${ev.id}', this.value)" style="padding:8px; font-size:12.5px; width:100%; border:1px solid #E4D9CC; border-radius:8px;">
                   </div>
-                  <small style="color:#78668f; font-size:11px; margin-top:3px; display:block;">* Maximum 4 players per squad.</small>
                 ` : ''}
               </div>
             ` : ''}
@@ -846,7 +844,7 @@
       state.selectedEvents[ev.id] = {
         id: ev.id,
         name: ev.name,
-        coordinators: ev.coordinators,
+        coordinators: ev.coordinators || '',
         participantType: (ev.dance || ev.isEsports) ? 'Solo' : '',
         groupCount: (ev.dance || ev.isEsports) ? 1 : 0,
         teamName: ""
@@ -858,10 +856,17 @@
   function setSubOption(eventId, type){
     if(state.selectedEvents[eventId]){
       state.selectedEvents[eventId].participantType = type;
-      if(type === 'Group'){
-        state.selectedEvents[eventId].groupCount = eventId === 'esports' ? 4 : 2;
+      if(eventId === 'esports'){
+        if(type === 'Solo') state.selectedEvents[eventId].groupCount = 1;
+        else if(type === 'Duo') state.selectedEvents[eventId].groupCount = 2;
+        else if(type === 'Group') state.selectedEvents[eventId].groupCount = 3;
+        else if(type === 'Squad') state.selectedEvents[eventId].groupCount = 4;
       } else {
-        state.selectedEvents[eventId].groupCount = 1;
+        if(type === 'Group'){
+          state.selectedEvents[eventId].groupCount = 2;
+        } else {
+          state.selectedEvents[eventId].groupCount = 1;
+        }
       }
       renderEvents();
     }
@@ -928,8 +933,8 @@
       row.className = 'nysm-events-breakdown-item';
       
       let details = '';
-      if(ev.participantType === 'Group'){
-        details = ` (Squad/Group${ev.teamName ? ' - Team: '+ev.teamName : ''} [${ev.groupCount} Members])`;
+      if(ev.participantType && ev.participantType !== 'Solo'){
+        details = ` (${ev.participantType}${ev.teamName ? ' - Team: '+ev.teamName : ''}${ev.groupCount > 1 ? ' ['+ev.groupCount+' Members]' : ''})`;
       } else if(ev.participantType === 'Solo'){
         details = ' (Solo)';
       }
@@ -1226,7 +1231,7 @@
       let evNames = "Mahotsav Pass";
       if (selectedList.length > 0) {
         evNames = selectedList.map(e => {
-          let extra = e.participantType === 'Group' ? ` (${e.teamName ? e.teamName + ' - ' : ''}${e.groupCount || 4}P)` : '';
+          let extra = (e.participantType && e.participantType !== 'Solo') ? ` (${e.teamName ? e.teamName + ' - ' : ''}${e.groupCount || 4}P)` : '';
           return (e.name || "Event") + extra;
         }).join(' • ');
       }

@@ -435,8 +435,8 @@
         </div>
         <div class="nysm-field" data-field="age">
           <label>Age (4 - 40 Years) <span class="req">*</span></label>
-          <input type="number" id="f-age" min="10" max="30" placeholder="e.g. 19">
-          <div class="err-msg">Please enter a valid age between 10 and 30.</div>
+          <input type="number" id="f-age" min="4" max="40" placeholder="e.g. 19">
+          <div class="err-msg">Please enter a valid age between 4 and 40.</div>
         </div>
       </div>
 
@@ -594,8 +594,17 @@
      ========================================================================== */
   const EVENTS = [
     {
-      id: "esports",
-      name: "E-Sports Championship",
+      id: "esports Free Fire",
+      name: "E-Sports Free Fire Championship",
+      isEsports: true,
+      solo: { junior: 50, senior: 50 },
+      duo: { junior: 100, senior: 100 },
+      group: { junior: 150, senior: 150 },
+      squad: { junior: 200, senior: 200 }
+    },
+    {
+      id: "esports PUBG",
+      name: "E-Sports PUBG Championship",
       isEsports: true,
       solo: { junior: 50, senior: 50 },
       duo: { junior: 100, senior: 100 },
@@ -628,6 +637,11 @@
       dance: true,
       solo: { junior: 49, senior: 99 }, 
       group: { junior: 20, senior: 50 } 
+    },
+    { 
+      id: "rangebharat", 
+      name: "रंग-ए-भारत : Cultural Fashion Show", 
+      junior: 49, senior: 99 
     },
     { 
       id: "beyondframe", 

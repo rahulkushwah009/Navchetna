@@ -383,6 +383,203 @@ app.post("/api/record-hackathon-complimentary", async (req, res) => {
   }
 });
 
+const nightEventRegistrationSchema = new mongoose.Schema(
+  {
+    ticketId: { type: String, required: true, unique: true, index: true },
+    event: { type: String, enum: ["bhajan", "dj"], required: true },
+    eventLabel: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
+    mobile: { type: String, required: true, trim: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
+    college: { type: String, required: true, trim: true },
+    course: { type: String, required: true, trim: true },
+    collegeIdNumber: { type: String, default: "", trim: true }, // Text ID for DJ Night
+    hasMember2: { type: Boolean, default: false },
+    member2: {
+      name: { type: String, default: "", trim: true },
+      mobile: { type: String, default: "", trim: true },
+    },
+    amount: { type: Number, required: true, min: 0 },
+    secretCode: { type: String, default: "", trim: true, uppercase: true },
+    status: {
+      type: String,
+      enum: ["PENDING", "PAID", "COMPLIMENTARY", "FAILED"],
+      default: "PENDING",
+    },
+    razorpayOrderId: { type: String, default: "" },
+    razorpayPaymentId: { type: String, default: "" },
+    razorpaySignature: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
+const NightEventRegistration =
+  mongoose.models.NightEventRegistration ||
+  mongoose.model("NightEventRegistration", nightEventRegistrationSchema);
+
+// 1. GET: Render the DJ / Bhajan page
+app.get("/NightEventRegistration", (req, res) => {
+  res.render("djform");
+});
+
+// Helper for Night Event ticket IDs
+function generateNightTicketId(event) {
+  const randomNum = Math.floor(100000 + Math.random() * 900000);
+  const prefix = event === "dj" ? "DJ" : "BHJ";
+  return `NYSM26-${prefix}-${randomNum}`;
+}
+
+// 2. POST: Verify Razorpay Payment and Save Night Event Registration
+app.post("/api/dj/verify-payment", async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      participantData,
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ error: "Missing payment tokens." });
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "rzp_test_secret")
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ error: "Invalid payment signature." });
+    }
+
+    const existing = await NightEventRegistration.findOne({ razorpayOrderId: razorpay_order_id });
+    if (existing) {
+      return res.json({
+        status: existing.status,
+        ticketId: existing.ticketId,
+        name: existing.name,
+        mobile: existing.mobile,
+        college: existing.college,
+        amount: existing.amount,
+        event: existing.event,
+        eventLabel: existing.eventLabel,
+      });
+    }
+
+    const event = participantData.event === "dj" ? "dj" : "bhajan";
+    const hasMember2 = Boolean(participantData.hasMember2);
+    const amount = event === "dj" ? (hasMember2 ? 500 : 300) : 99;
+    const ticketId = generateNightTicketId(event);
+    const eventLabel = event === "dj" ? "DJ Night" : "Bhajan Clubbing";
+
+    const reg = new NightEventRegistration({
+      ticketId,
+      event,
+      eventLabel,
+      name: String(participantData.name || "").trim(),
+      mobile: String(participantData.mobile || "").trim(),
+      email: String(participantData.email || "").trim(),
+      college: String(participantData.college || "").trim(),
+      course: String(participantData.course || "").trim(),
+      collegeIdNumber: event === "dj" ? String(participantData.collegeIdNumber || "").trim() : "",
+      hasMember2,
+      member2: {
+        name: hasMember2 ? String(participantData.name2 || "").trim() : "",
+        mobile: hasMember2 ? String(participantData.mobile2 || "").trim() : "",
+      },
+      amount,
+      status: "PAID",
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+    });
+
+    await reg.save();
+
+    return res.json({
+      status: "PAID",
+      ticketId: reg.ticketId,
+      name: reg.name,
+      mobile: reg.mobile,
+      college: reg.college,
+      amount: reg.amount,
+      event: reg.event,
+      eventLabel: reg.eventLabel,
+    });
+  } catch (err) {
+    console.error("Payment verification error:", err);
+    return res.status(500).json({ error: "Payment verification failed: " + err.message });
+  }
+});
+
+// 3. POST: Record Complimentary Entry for Night Event
+app.post("/api/dj/record-complimentary", async (req, res) => {
+  try {
+    const {
+      event,
+      name,
+      mobile,
+      email,
+      college,
+      course,
+      collegeIdNumber,
+      hasMember2,
+      name2,
+      mobile2,
+      secretCode,
+    } = req.body;
+
+    const validCode = await SecretCode.findOne({
+      code: String(secretCode).trim().toUpperCase(),
+      isActive: true,
+    });
+
+    if (!validCode) {
+      return res.status(403).json({ error: "Invalid or inactive secret code." });
+    }
+
+    const selectedEvent = event === "dj" ? "dj" : "bhajan";
+    const ticketId = generateNightTicketId(selectedEvent);
+    const eventLabel = selectedEvent === "dj" ? "DJ Night" : "Bhajan Clubbing";
+
+    const reg = new NightEventRegistration({
+      ticketId,
+      event: selectedEvent,
+      eventLabel,
+      name: String(name || "").trim(),
+      mobile: String(mobile || "").trim(),
+      email: String(email || "").trim(),
+      college: String(college || "").trim(),
+      course: String(course || "").trim(),
+      collegeIdNumber: selectedEvent === "dj" ? String(collegeIdNumber || "").trim() : "",
+      hasMember2: Boolean(hasMember2),
+      member2: {
+        name: hasMember2 ? String(name2 || "").trim() : "",
+        mobile: hasMember2 ? String(mobile2 || "").trim() : "",
+      },
+      amount: 0,
+      secretCode: validCode.code,
+      status: "COMPLIMENTARY",
+    });
+
+    await reg.save();
+
+    return res.json({
+      status: "COMPLIMENTARY",
+      ticketId: reg.ticketId,
+      name: reg.name,
+      mobile: reg.mobile,
+      college: reg.college,
+      amount: 0,
+      event: reg.event,
+      eventLabel: reg.eventLabel,
+    });
+  } catch (err) {
+    console.error("Complimentary registration error:", err);
+    return res.status(500).json({ error: "Complimentary registration failed: " + err.message });
+  }
+});
+
 // ======================================
 // 404 Handler & Server Start
 // ======================================

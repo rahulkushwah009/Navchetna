@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Bhajan Clubbing / DJ Night | Navchetna 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root {
+  --text-main: #4a2b0f;
+  --text-muted: #8a5a2a;
+  --glass-bg: rgba(255, 245, 230, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --input-border: #c28838;
+  --input-focus: #e65c00;
+  --btn-bg: linear-gradient(135deg, #f59e0b, #ea580c);
+  --btn-hover: linear-gradient(135deg, #d97706, #c2410c);
+  --btn-text: #fff;
+  --bg-color: #fff3c4;
+}
+
+body.theme-dj {
+  --text-main: #ffffff;
+  --text-muted: #a78bfa;
+  --glass-bg: rgba(20, 10, 35, 0.7);
+  --glass-border: rgba(236, 72, 153, 0.35);
+  --input-border: #06b6d4;
+  --input-focus: #ec4899;
+  --btn-bg: linear-gradient(135deg, #ec4899, #8b5cf6);
+  --btn-hover: linear-gradient(135deg, #db2777, #7c3aed);
+  --btn-text: #fff;
+  --bg-color: #0f0715;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+  background-color: var(--bg-color);
+  transition: background-color 0.6s ease, color 0.6s ease;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .brand { font-family: 'Fraunces', serif; }
+
+.bg-layer {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1;
+  transition: opacity 0.6s ease-in-out;
+}
+#bg-bhajan { background: radial-gradient(circle at 50% 0%, #fff8e1 0%, #fcd34d 40%, #ea580c 100%); opacity: 1; }
+#bg-dj { background: radial-gradient(circle at 50% 0%, #2e1065 0%, #0f0715 60%, #000000 100%); opacity: 0; }
+body.theme-dj #bg-bhajan { opacity: 0; }
+body.theme-dj #bg-dj { opacity: 1; }
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.5s ease;
+}
+
+.floating-input { border-color: var(--input-border); color: var(--text-main); }
+.floating-input:focus { border-color: var(--input-focus); }
+.floating-label { color: var(--text-muted); }
+.floating-input:focus ~ .floating-label,
+.floating-input:not(:placeholder-shown) ~ .floating-label { color: var(--input-focus); }
+.floating-input::placeholder { color: transparent; }
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+}
+.animate-flame { animation: flicker 3s infinite alternate ease-in-out; }
+
+@keyframes eqPulse {
+  0% { height: 10px; }
+  50% { height: 40px; }
+  100% { height: 15px; }
+}
+.eq-bar { animation: eqPulse 0.5s infinite alternate ease-in-out; transform-origin: bottom; }
+.eq-bar:nth-child(2) { animation-delay: 0.1s; animation-duration: 0.6s;}
+.eq-bar:nth-child(3) { animation-delay: 0.2s; animation-duration: 0.4s;}
+.eq-bar:nth-child(4) { animation-delay: 0.3s; animation-duration: 0.7s;}
+.eq-bar:nth-child(5) { animation-delay: 0.15s; animation-duration: 0.5s;}
+.eq-bar:nth-child(6) { animation-delay: 0.25s; animation-duration: 0.65s;}
+
+.hero-art-scene { transition: opacity 0.5s ease, transform 0.5s ease; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.hero-art-dj { opacity: 0; transform: scale(0.95); pointer-events: none; }
+.hero-art-bhajan { opacity: 1; transform: scale(1); pointer-events: none; }
+body.theme-dj .hero-art-bhajan { opacity: 0; transform: scale(0.95); }
+body.theme-dj .hero-art-dj { opacity: 1; transform: scale(1); }
+
+.btn-primary { background: var(--btn-bg); color: var(--btn-text); transition: all 0.3s ease; }
+.btn-primary:hover { background: var(--btn-hover); transform: translateY(-2px); box-shadow: 0 10px 20px -10px var(--input-focus); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.event-card { transition: all 0.3s ease; border: 2px solid transparent; }
+.event-card.is-active {
+  border-color: var(--input-focus);
+  background: var(--glass-bg);
+  box-shadow: 0 0 20px -5px var(--input-focus);
+}
+
+.ticket-container {
+  background: linear-gradient(160deg, #FFF8ED, #FFEFD6);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,0.4);
+  color: #241338;
+}
+.ticket-perf {
+  position: relative; height: 26px;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(36,19,56,0.2) 6px 7px);
+}
+.ticket-perf::before, .ticket-perf::after {
+  content: ""; position: absolute; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; background: var(--bg-color); border-radius: 50%;
+}
+.ticket-perf::before { left: -11px; }
+.ticket-perf::after { right: -11px; }
+</style>
+</head>
+<body class="antialiased selection:bg-orange-500 selection:text-white">
+
+<div id="bg-bhajan" class="bg-layer"></div>
+<div id="bg-dj" class="bg-layer"></div>
+
+<header class="fixed w-full top-0 z-50 glass-panel border-b-0 rounded-none">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <span class="brand text-xl font-bold tracking-wider">NAVCHETNA <span class="opacity-70">2026</span></span>
+    <span class="text-sm font-medium opacity-80 hidden sm:block">3–4 Oct · Rang Mahal Garden, Gwalior</span>
+  </div>
+</header>
+
+<main class="pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 items-start">
+
+  <!-- Left: Event Picker Hero Scene -->
+  <section class="lg:w-5/12 w-full lg:sticky lg:top-32" aria-label="Event selector">
+    <div class="relative w-full h-64 sm:h-80 mb-8 rounded-3xl overflow-hidden glass-panel flex items-center justify-center">
+      <svg class="hero-art-scene hero-art-bhajan" viewBox="0 0 280 190" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <circle cx="140" cy="105" r="82" fill="none" stroke="#d97706" stroke-opacity="0.3" stroke-width="1"/>
+        <circle cx="140" cy="105" r="60" fill="none" stroke="#d97706" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="2 6"/>
+        <circle cx="140" cy="105" r="38" fill="none" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="2"/>
+        <path d="M100 132 Q140 150 180 132 Q176 118 140 118 Q104 118 100 132 Z" fill="#92400e"/>
+        <ellipse cx="140" cy="132" rx="40" ry="7" fill="#78350f"/>
+        <circle cx="140" cy="112" r="5" fill="#fcd34d"/>
+        <path class="flame animate-flame" d="M140 108 C133 96 137 84 140 76 C143 84 147 96 140 108 Z" fill="url(#flameGrad)"/>
+        <defs>
+          <radialGradient id="flameGrad" cx="50%" cy="70%" r="70%">
+            <stop offset="0%" stop-color="#fff8e1"/>
+            <stop offset="55%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#ea580c"/>
+          </radialGradient>
+        </defs>
+      </svg>
+
+      <svg class="hero-art-scene hero-art-dj" viewBox="0 0 280 190" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <circle cx="140" cy="95" r="86" fill="none" stroke="#ec4899" stroke-opacity="0.3" stroke-width="1.5"/>
+        <line x1="10" y1="95" x2="54" y2="95" stroke="#06b6d4" stroke-opacity="0.5" stroke-width="2"/>
+        <line x1="226" y1="95" x2="270" y2="95" stroke="#ec4899" stroke-opacity="0.5" stroke-width="2"/>
+        <g class="eq-bars" transform="translate(0, 50)">
+          <rect class="eq-bar" x="90" y="20" width="10" height="40" rx="3" fill="#06b6d4"/>
+          <rect class="eq-bar" x="108" y="20" width="10" height="40" rx="3" fill="#ec4899"/>
+          <rect class="eq-bar" x="126" y="20" width="10" height="40" rx="3" fill="#06b6d4"/>
+          <rect class="eq-bar" x="144" y="20" width="10" height="40" rx="3" fill="#ec4899"/>
+          <rect class="eq-bar" x="162" y="20" width="10" height="40" rx="3" fill="#06b6d4"/>
+          <rect class="eq-bar" x="180" y="20" width="10" height="40" rx="3" fill="#ec4899"/>
+        </g>
+        <rect x="105" y="118" width="70" height="52" rx="8" fill="#1e1b4b" stroke="#ec4899" stroke-opacity="0.8" stroke-width="2"/>
+        <circle cx="140" cy="136" r="10" fill="none" stroke="#06b6d4" stroke-width="3"/>
+        <circle cx="140" cy="136" r="4" fill="#06b6d4"/>
+        <circle cx="140" cy="156" r="6" fill="none" stroke="#ec4899" stroke-width="3"/>
+      </svg>
+    </div>
+
+    <p class="text-sm uppercase tracking-widest font-semibold opacity-80 mb-2">Yuva Shakti Mahotsav</p>
+    <h1 class="text-4xl sm:text-5xl font-bold mb-4 leading-tight">Pick your night.</h1>
+    <p class="text-lg opacity-80 mb-8">One quiet, one loud. Choose the room you want to be in.</p>
+
+    <div class="flex flex-col sm:flex-row gap-4" role="radiogroup" aria-label="Choose an event">
+      <button type="button" class="event-card is-active flex-1 p-5 rounded-2xl text-left bg-black/5 hover:bg-black/10 cursor-pointer relative overflow-hidden group" data-event="bhajan">
+        <div class="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-yellow-500/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <span class="text-3xl block mb-2">🪔</span>
+        <span class="block font-bold text-xl mb-1">Bhajan Clubbing</span>
+        <span class="block text-xs opacity-70 mb-3">Devotional · Community</span>
+        <span class="inline-block px-3 py-1 bg-amber-500/20 rounded-full text-sm font-semibold">₹99</span>
+      </button>
+
+      <button type="button" class="event-card flex-1 p-5 rounded-2xl text-left bg-black/5 hover:bg-black/10 cursor-pointer relative overflow-hidden group" data-event="dj">
+        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <span class="text-3xl block mb-2">🎧</span>
+        <span class="block font-bold text-xl mb-1">DJ Night</span>
+        <span class="block text-xs opacity-70 mb-3">High Energy · EDM</span>
+        <span class="inline-block px-3 py-1 bg-pink-500/20 rounded-full text-sm font-semibold">₹300 / ₹500 (Duo)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Right: Form & Flow Steps -->
+  <section class="lg:w-7/12 w-full">
+    <!-- STEP 1: Registration Form -->
+    <div class="glass-panel p-6 sm:p-10 rounded-3xl" id="formPanel">
+      <h2 class="text-2xl font-bold mb-6 border-b border-gray-400/30 pb-4">Registration Details</h2>
+
+      <div id="formError" class="hidden mb-6 px-4 py-3 rounded-lg bg-red-500/10 text-red-600 text-sm font-medium" role="alert"></div>
+
+      <form id="regForm" novalidate class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <div class="relative z-0 w-full group">
+            <input type="text" id="name" required placeholder=" " autocomplete="name" class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="name" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Full Name</label>
+          </div>
+
+          <div class="relative z-0 w-full group">
+            <input type="tel" id="mobile" required inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" placeholder=" " autocomplete="tel" class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="mobile" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile Number</label>
+          </div>
+
+          <div class="relative z-0 w-full group md:col-span-2">
+            <input type="email" id="email" required placeholder=" " autocomplete="email" class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="email" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email Address</label>
+          </div>
+
+          <div class="relative z-0 w-full group">
+            <input type="text" id="college" required placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="college" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">College / Institute Name</label>
+          </div>
+
+          <div class="relative z-0 w-full group">
+            <input type="text" id="course" required placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="course" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Course &amp; Year</label>
+          </div>
+
+          <!-- Text College ID Input for DJ Night -->
+          <div class="relative z-0 w-full group md:col-span-2 hidden" id="idCardField">
+            <input type="text" id="collegeIdNumber" placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+            <label for="collegeIdNumber" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">College Roll / ID Card Number (Required for DJ Night)</label>
+          </div>
+        </div>
+
+        <div id="addMemberRow" class="pt-2 hidden">
+          <button type="button" id="addMemberBtn" class="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Add a second member <span class="font-normal opacity-70 ml-2">(₹500 for 2, instead of ₹300 solo)</span>
+          </button>
+        </div>
+
+        <div id="member2Block" class="hidden bg-black/5 p-5 rounded-2xl border border-gray-400/20 mt-4 space-y-6">
+          <div class="flex justify-between items-center border-b border-gray-400/30 pb-3">
+            <h3 class="text-lg font-bold">Member 2 Details</h3>
+            <button type="button" id="removeMemberBtn" class="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors">Remove</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="relative z-0 w-full group">
+              <input type="text" id="name2" placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+              <label for="name2" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Full Name</label>
+            </div>
+            <div class="relative z-0 w-full group">
+              <input type="tel" id="mobile2" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
+              <label for="mobile2" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Mobile Number</label>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="toReviewBtn" class="btn-primary w-full py-4 rounded-xl text-lg font-bold uppercase tracking-wider flex justify-center items-center gap-2 mt-6">
+          <span>Review & Proceed →</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: Summary + Secret Code + Payment Execution -->
+    <div class="glass-panel p-6 sm:p-10 rounded-3xl hidden" id="reviewPanel">
+      <h2 class="text-2xl font-bold mb-6 border-b border-gray-400/30 pb-4">Registration Summary</h2>
+
+      <div class="space-y-3 text-sm pb-6 border-b border-gray-400/20">
+        <div class="flex justify-between"><span class="opacity-75">Event</span><strong id="s-event" class="text-base font-semibold">—</strong></div>
+        <div class="flex justify-between"><span class="opacity-75">Full Name</span><strong id="s-name" class="font-semibold">—</strong></div>
+        <div class="flex justify-between"><span class="opacity-75">Mobile Number</span><strong id="s-mobile" class="font-semibold">—</strong></div>
+        <div class="flex justify-between"><span class="opacity-75">College</span><strong id="s-college" class="font-semibold">—</strong></div>
+        <div class="flex justify-between hidden" id="s-idCardRow"><span class="opacity-75">ID Number</span><strong id="s-idNumber" class="font-semibold">—</strong></div>
+        <div class="flex justify-between hidden" id="s-member2Row"><span class="opacity-75">Member 2</span><strong id="s-member2" class="font-semibold">—</strong></div>
+        <div class="flex justify-between hidden" id="s-codeRow"><span class="opacity-75">Applied Code</span><strong id="s-code" class="text-emerald-500 font-semibold">—</strong></div>
+        <div class="flex justify-between text-lg pt-3 border-t border-gray-400/20"><span class="font-semibold">Payable Amount</span><strong id="s-amount" class="text-2xl font-bold text-amber-500">₹99</strong></div>
+      </div>
+
+      <!-- Secret Code Area -->
+      <div class="mt-6 mb-8">
+        <label class="block text-xs font-bold uppercase tracking-wider opacity-75 mb-2">Secret / Complimentary Code (Optional)</label>
+        <div class="flex gap-2">
+          <input type="text" id="secretCodeInput" placeholder="ENTER CODE" class="floating-input flex-1 px-4 py-2.5 rounded-xl bg-black/5 border uppercase tracking-wider text-sm font-semibold outline-none focus:ring-0">
+          <button type="button" id="applyCodeBtn" class="px-5 py-2.5 rounded-xl bg-amber-500 font-bold text-sm text-black hover:bg-amber-400 transition-colors">Apply</button>
+        </div>
+        <p id="secretMsg" class="text-xs font-semibold mt-2 hidden"></p>
+      </div>
+
+      <!-- Payment / Complimentary Button Triggers -->
+      <div id="paymentActionBlock">
+        <button type="button" id="payNowBtn" class="btn-primary w-full py-4 rounded-xl text-lg font-bold uppercase tracking-wider flex justify-center items-center gap-2">
+          <span id="payBtnLabel">🔒 Pay Now</span>
+        </button>
+        <p id="payStatusMsg" class="text-xs text-center mt-3 opacity-70 hidden">Processing payment...</p>
+      </div>
+
+      <div id="compActionBlock" class="hidden">
+        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-center mb-4 text-sm font-medium">
+          Complimentary Entry Activated! No payment required.
+        </div>
+        <button type="button" id="confirmCompBtn" class="btn-primary w-full py-4 rounded-xl text-lg font-bold uppercase tracking-wider flex justify-center items-center gap-2">
+          Confirm Free Registration →
+        </button>
+      </div>
+
+      <button type="button" id="backToFormBtn" class="w-full mt-4 text-sm font-semibold opacity-70 hover:opacity-100 transition-opacity">← Edit Details</button>
+    </div>
+
+    <!-- STEP 3: Instant Ticket Pass Generation -->
+    <div id="successPanel" class="glass-panel p-6 sm:p-10 rounded-3xl hidden">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-2" id="successIcon">🪔</div>
+        <h2 class="text-3xl font-bold mb-1">You're on the list!</h2>
+        <p class="text-sm opacity-80">Show this ticket ID and your ID card at the entry gate.</p>
+      </div>
+
+      <div class="ticket-container max-w-md mx-auto mb-6" id="ticketCard">
+        <div class="h-2 w-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600"></div>
+        <div class="p-6">
+          <div class="text-xs tracking-widest uppercase font-bold text-gray-500 mb-1">NAVCHETNA 2026 · ADMIT PASS</div>
+          <div class="text-xl font-bold text-gray-900 mb-4" id="t-eventLabel">—</div>
+          <div class="grid grid-cols-2 gap-4 text-sm mb-2">
+            <div><span class="block text-xs uppercase text-gray-500 font-semibold">Participant</span><strong id="t-name" class="font-bold text-gray-900">—</strong></div>
+            <div><span class="block text-xs uppercase text-gray-500 font-semibold">Mobile</span><strong id="t-mobile" class="font-bold text-gray-900">—</strong></div>
+            <div><span class="block text-xs uppercase text-gray-500 font-semibold">College</span><strong id="t-college" class="font-bold text-gray-900">—</strong></div>
+            <div><span class="block text-xs uppercase text-gray-500 font-semibold">Amount</span><strong id="t-amount" class="font-bold text-pink-600">—</strong></div>
+          </div>
+        </div>
+        <div class="ticket-perf"></div>
+        <div class="p-6 flex items-center justify-between gap-4">
+          <div>
+            <div class="text-xs uppercase text-gray-500 font-semibold mb-1">Ticket Pass ID</div>
+            <div class="text-lg font-extrabold tracking-wider text-gray-900" id="t-ticketId">NYSM26-000000</div>
+            <div class="text-xs text-gray-500 mt-1">Rang Mahal Garden, Gwalior</div>
+          </div>
+          <div id="ticketQr" class="bg-white p-2 rounded-xl shadow-sm"></div>
+        </div>
+      </div>
+
+      <div class="flex gap-4 max-w-md mx-auto">
+        <button type="button" onclick="window.print()" class="flex-1 py-3 rounded-xl border border-gray-400/30 text-sm font-bold hover:bg-black/5 transition-colors">🖨 Print</button>
+        <button type="button" id="downloadTicketBtn" class="flex-1 btn-primary py-3 rounded-xl text-sm font-bold">⬇ Download</button>
+      </div>
+      <div class="text-center mt-6">
+        <button type="button" id="againBtn" class="text-sm font-semibold underline opacity-75 hover:opacity-100">Register someone else</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="py-8 text-center opacity-70 text-sm relative z-10">
+  <p>Organized by Gurukul Dream Foundation · Rang Mahal Garden, AG Office Road, Gwalior</p>
+</footer>
+
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const RAZORPAY_KEY = "<%= process.env.RAZORPAY_KEY_ID || 'rzp_test_key' %>";
+
+  const body = document.body;
+  const eventCards = document.querySelectorAll('.event-card');
+  const idCardField = document.getElementById('idCardField');
+  const addMemberRow = document.getElementById('addMemberRow');
+  const addMemberBtn = document.getElementById('addMemberBtn');
+  const member2Block = document.getElementById('member2Block');
+  const removeMemberBtn = document.getElementById('removeMemberBtn');
+  const formError = document.getElementById('formError');
+
+  const formPanel = document.getElementById('formPanel');
+  const reviewPanel = document.getElementById('reviewPanel');
+  const successPanel = document.getElementById('successPanel');
+
+  let currentEvent = 'bhajan';
+  let hasMember2 = false;
+  let pricing = { bhajan: { solo: 99 }, dj: { solo: 300, duo: 500 } };
+  let appliedSecret = null;
+
+  function showError(msg) {
+    formError.textContent = msg;
+    formError.classList.remove('hidden');
+    formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function clearError() { formError.classList.add('hidden'); }
+
+  function updateEventSelection() {
+    eventCards.forEach(card => {
+      const active = card.dataset.event === currentEvent;
+      card.classList.toggle('is-active', active);
+    });
+
+    if (currentEvent === 'dj') {
+      body.classList.add('theme-dj');
+      idCardField.classList.remove('hidden');
+      if (!hasMember2) addMemberRow.classList.remove('hidden');
+    } else {
+      body.classList.remove('theme-dj');
+      idCardField.classList.add('hidden');
+      addMemberRow.classList.add('hidden');
+      hasMember2 = false;
+      member2Block.classList.add('hidden');
+    }
+  }
+
+  eventCards.forEach(card => {
+    card.addEventListener('click', () => {
+      currentEvent = card.dataset.event;
+      clearError();
+      updateEventSelection();
+    });
+  });
+
+  addMemberBtn.addEventListener('click', () => {
+    hasMember2 = true;
+    member2Block.classList.remove('hidden');
+    addMemberRow.classList.add('hidden');
+  });
+
+  removeMemberBtn.addEventListener('click', () => {
+    hasMember2 = false;
+    member2Block.classList.add('hidden');
+    addMemberRow.classList.remove('hidden');
+    document.getElementById('name2').value = '';
+    document.getElementById('mobile2').value = '';
+  });
+
+  // Step 1 Validation & Proceed to Step 2
+  document.getElementById('toReviewBtn').addEventListener('click', () => {
+    clearError();
+    const name = document.getElementById('name').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const college = document.getElementById('college').value.trim();
+    const course = document.getElementById('course').value.trim();
+    const idNum = document.getElementById('collegeIdNumber').value.trim();
+
+    if (!name || name.length < 2) return showError('Please enter a valid full name.');
+    if (!/^[6-9]\d{9}$/.test(mobile)) return showError('Enter a valid 10-digit mobile number.');
+    if (!email || !email.includes('@')) return showError('Enter a valid email address.');
+    if (!college) return showError('Please enter your college name.');
+    if (!course) return showError('Please enter your course details.');
+
+    if (currentEvent === 'dj') {
+      if (!idNum) return showError('College Roll / ID Card number is required for DJ Night.');
+      if (hasMember2) {
+        const n2 = document.getElementById('name2').value.trim();
+        const m2 = document.getElementById('mobile2').value.trim();
+        if (!n2) return showError('Please enter Member 2 name.');
+        if (!/^[6-9]\d{9}$/.test(m2)) return showError('Please enter a valid mobile number for Member 2.');
+      }
+    }
+
+    // Populate Summary
+    const fee = (currentEvent === 'dj' && hasMember2) ? pricing.dj.duo : (currentEvent === 'dj' ? pricing.dj.solo : pricing.bhajan.solo);
+    document.getElementById('s-event').textContent = currentEvent === 'dj' ? 'DJ Night' : 'Bhajan Clubbing';
+    document.getElementById('s-name').textContent = name;
+    document.getElementById('s-mobile').textContent = mobile;
+    document.getElementById('s-college').textContent = `${college} (${course})`;
+
+    const idRow = document.getElementById('s-idCardRow');
+    if (currentEvent === 'dj') {
+      idRow.classList.remove('hidden');
+      document.getElementById('s-idNumber').textContent = idNum;
+    } else {
+      idRow.classList.add('hidden');
+    }
+
+    const m2Row = document.getElementById('s-member2Row');
+    if (hasMember2 && currentEvent === 'dj') {
+      m2Row.classList.remove('hidden');
+      document.getElementById('s-member2').textContent = `${document.getElementById('name2').value.trim()} (${document.getElementById('mobile2').value.trim()})`;
+    } else {
+      m2Row.classList.add('hidden');
+    }
+
+    refreshPriceDisplay(fee);
+
+    formPanel.classList.add('hidden');
+    reviewPanel.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('backToFormBtn').addEventListener('click', () => {
+    reviewPanel.classList.add('hidden');
+    formPanel.classList.remove('hidden');
+  });
+
+  function getActiveFee() {
+    return (currentEvent === 'dj' && hasMember2) ? pricing.dj.duo : (currentEvent === 'dj' ? pricing.dj.solo : pricing.bhajan.solo);
+  }
+
+  function refreshPriceDisplay(baseFee) {
+    const amountEl = document.getElementById('s-amount');
+    const payBlock = document.getElementById('paymentActionBlock');
+    const compBlock = document.getElementById('compActionBlock');
+
+    if (appliedSecret) {
+      amountEl.textContent = '₹0';
+      amountEl.classList.add('text-emerald-500');
+      payBlock.classList.add('hidden');
+      compBlock.classList.remove('hidden');
+    } else {
+      amountEl.textContent = '₹' + baseFee;
+      amountEl.classList.remove('text-emerald-500');
+      payBlock.classList.remove('hidden');
+      compBlock.classList.add('hidden');
+    }
+  }
+
+  // Secret Code Validation
+  document.getElementById('applyCodeBtn').addEventListener('click', async () => {
+    const code = document.getElementById('secretCodeInput').value.trim().toUpperCase();
+    const msgEl = document.getElementById('secretMsg');
+    const codeRow = document.getElementById('s-codeRow');
+
+    if (!code) {
+      msgEl.textContent = 'Please enter a code.';
+      msgEl.className = 'text-xs font-semibold mt-2 text-red-500 block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/validate-secret-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secretCode: code })
+      });
+      const data = await res.json();
+
+      if (data.valid) {
+        appliedSecret = code;
+        msgEl.textContent = `✓ ${data.message} (${data.label})`;
+        msgEl.className = 'text-xs font-semibold mt-2 text-emerald-500 block';
+        codeRow.classList.remove('hidden');
+        document.getElementById('s-code').textContent = code;
+      } else {
+        appliedSecret = null;
+        msgEl.textContent = data.message || 'Invalid or expired code.';
+        msgEl.className = 'text-xs font-semibold mt-2 text-red-500 block';
+        codeRow.classList.add('hidden');
+      }
+    } catch {
+      appliedSecret = null;
+      msgEl.textContent = 'Error verifying code. Try again.';
+      msgEl.className = 'text-xs font-semibold mt-2 text-red-500 block';
+    }
+
+    refreshPriceDisplay(getActiveFee());
+  });
+
+  function buildPayload() {
+    return {
+      event: currentEvent,
+      name: document.getElementById('name').value.trim(),
+      mobile: document.getElementById('mobile').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      college: document.getElementById('college').value.trim(),
+      course: document.getElementById('course').value.trim(),
+      collegeIdNumber: currentEvent === 'dj' ? document.getElementById('collegeIdNumber').value.trim() : '',
+      hasMember2: currentEvent === 'dj' && hasMember2,
+      name2: hasMember2 ? document.getElementById('name2').value.trim() : '',
+      mobile2: hasMember2 ? document.getElementById('mobile2').value.trim() : '',
+      secretCode: appliedSecret || ''
+    };
+  }
+
+  // Razorpay Payment Integration
+  document.getElementById('payNowBtn').addEventListener('click', async () => {
+    const payBtn = document.getElementById('payNowBtn');
+    const statusMsg = document.getElementById('payStatusMsg');
+    const originalText = document.getElementById('payBtnLabel').textContent;
+
+    payBtn.disabled = true;
+    statusMsg.classList.remove('hidden');
+    statusMsg.textContent = 'Connecting with payment gateway…';
+
+    try {
+      const fee = getActiveFee();
+      const orderRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: fee })
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || orderData.error) throw new Error(orderData.error || 'Failed to initialize order');
+
+      const participantPayload = buildPayload();
+
+      const rzp = new Razorpay({
+        key: orderData.keyId || RAZORPAY_KEY,
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        order_id: orderData.orderId,
+        name: "Navchetna Yuva Shakti Mahotsav",
+        description: currentEvent === 'dj' ? 'DJ Night Pass' : 'Bhajan Clubbing Pass',
+        prefill: {
+          name: participantPayload.name,
+          email: participantPayload.email,
+          contact: participantPayload.mobile
+        },
+        theme: { color: currentEvent === 'dj' ? '#ec4899' : '#ea580c' },
+        handler: async function(response) {
+          statusMsg.textContent = 'Verifying payment with server…';
+          try {
+            const verifyRes = await fetch('/api/dj/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                participantData: participantPayload
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) throw new Error(verifyData.error || 'Verification failed');
+
+            displayFinalTicket(verifyData);
+          } catch (vErr) {
+            alert('Verification issue: ' + vErr.message);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            payBtn.disabled = false;
+            statusMsg.classList.add('hidden');
+          }
+        }
+      });
+
+      rzp.open();
+    } catch (err) {
+      alert(err.message);
+      payBtn.disabled = false;
+      statusMsg.classList.add('hidden');
+    }
+  });
+
+  // Complimentary Registration Confirmation
+  document.getElementById('confirmCompBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('confirmCompBtn');
+    btn.disabled = true;
+    btn.textContent = 'Registering Free Spot…';
+
+    try {
+      const res = await fetch('/api/dj/record-complimentary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload())
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+      displayFinalTicket(data);
+    } catch (err) {
+      alert(err.message);
+      btn.disabled = false;
+      btn.textContent = 'Confirm Free Registration →';
+    }
+  });
+
+  // Render Final Admittance Ticket
+  function displayFinalTicket(data) {
+    document.getElementById('t-ticketId').textContent = data.ticketId;
+    document.getElementById('t-eventLabel').textContent = data.eventLabel;
+    document.getElementById('t-name').textContent = data.name;
+    document.getElementById('t-mobile').textContent = data.mobile;
+    document.getElementById('t-college').textContent = data.college;
+    document.getElementById('t-amount').textContent = data.status === 'COMPLIMENTARY' ? 'Complimentary' : '₹' + data.amount;
+    document.getElementById('successIcon').textContent = data.event === 'dj' ? '🎧' : '🪔';
+
+    const qrHolder = document.getElementById('ticketQr');
+    qrHolder.innerHTML = '';
+    new QRCode(qrHolder, {
+      text: `TICKET:${data.ticketId}|NAME:${data.name}|EVENT:${data.eventLabel}|STATUS:${data.status}`,
+      width: 80,
+      height: 80,
+      colorDark: "#1B1030",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    reviewPanel.classList.add('hidden');
+    successPanel.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Download Ticket Card as Image
+  document.getElementById('downloadTicketBtn').addEventListener('click', () => {
+    const el = document.getElementById('ticketCard');
+    html2canvas(el, { scale: 2 }).then(canvas => {
+      const a = document.createElement('a');
+      a.download = `ticket-${document.getElementById('t-ticketId').textContent}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+  });
+
+  document.getElementById('againBtn').addEventListener('click', () => {
+    document.getElementById('regForm').reset();
+    hasMember2 = false;
+    appliedSecret = null;
+    document.getElementById('secretMsg').className = 'text-xs font-semibold mt-2 hidden';
+    member2Block.classList.add('hidden');
+    successPanel.classList.add('hidden');
+    formPanel.classList.remove('hidden');
+    updateEventSelection();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  updateEventSelection();
+});
+</script>
+</body>
+</html>

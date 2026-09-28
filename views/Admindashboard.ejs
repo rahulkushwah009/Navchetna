@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin Overview | Navchetna: Yuva Shakti Mahotsav 2026</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              800: '#1e3a8a',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tap-active:active { transform: scale(0.98); }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/20 text-slate-950 font-black">
+          <i class="fa-solid fa-fire text-lg"></i>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Gurukul Dream Foundation</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+            Navchetna 2026
+            <span class="hidden sm:inline-block text-[11px] font-normal text-slate-400">| Yuva Shakti Mahotsav</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Quick Role Info / Logout -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-slate-200">Super Admin</span>
+          <span class="text-slate-500 font-mono text-[10px]">(<%= staff.email %>)</span>
+        </div>
+        <a href="/manage-staff" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+          <i class="fa-solid fa-user-gear"></i> <span class="hidden md:inline">Staff</span>
+        </a>
+        <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- ================= NAVBAR ================= -->
+ <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
+      <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
+        <a href="/dashboard" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie"></i> Admin Overview
+        </a>
+        <a href="/desk" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-id-card"></i> Event Day Desk
+        </a>
+        <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-network-wired"></i> Contact Distribution
+        </a>
+        <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+  <i class="fa-solid fa-clipboard-check"></i> Master Desk
+  <% if (typeof kpis !== 'undefined' && kpis && kpis.pendingCorrections) { %>
+    <span class="bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold"><%= kpis.pendingCorrections %></span>
+  <% } %>
+</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-5">
+
+    <!-- 1. TOP 6 OPERATIONAL KPI CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      
+      <!-- Total Registrations -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">Total Registrations</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-slate-900"><%= kpis.totalReg %></span>
+          <i class="fa-solid fa-users text-blue-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-emerald-600 font-semibold mt-1">100% Verified DB</span>
+      </div>
+
+      <!-- Present Today -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">Present Today</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-emerald-600"><%= kpis.presentCount %></span>
+          <i class="fa-solid fa-user-check text-emerald-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-slate-500 font-medium mt-1"><%= kpis.presentPct %>% Checked In</span>
+      </div>
+
+      <!-- Tokens Issued -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">Tokens Issued</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-indigo-600"><%= kpis.tokensIssued %></span>
+          <i class="fa-solid fa-ticket text-indigo-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-indigo-500 font-medium mt-1">Pre-printed sequence</span>
+      </div>
+
+      <!-- Performances Done -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">Performances Done</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-purple-600"><%= kpis.performancesDone %></span>
+          <i class="fa-solid fa-award text-purple-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-purple-500 font-medium mt-1">Live Coordinator feed</span>
+      </div>
+
+      <!-- Calls Made -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">Calls Made</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-blue-600"><%= kpis.callsMade %></span>
+          <i class="fa-solid fa-phone-volume text-blue-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-blue-500 font-medium mt-1">CRM Follow-ups</span>
+      </div>
+
+      <!-- WhatsApp Sent -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase">WhatsApp Sent</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-extrabold text-green-600"><%= kpis.whatsappSent %></span>
+          <i class="fa-brands fa-whatsapp text-green-600/30 text-lg"></i>
+        </div>
+        <span class="text-[10px] text-emerald-500 font-medium mt-1">Confirmed delivery</span>
+      </div>
+    </div>
+
+    <!-- 2. SPEED DESK, FOLLOW-UP HEALTH & PARTICIPANT STATS -->
+    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      
+      <!- Event Day Speed Access Card -->
+      <!-- <div class="bg-gradient-to-br from-slate-900 to-blue-900 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Desk Operation
+          </div>
+          <h3 class="text-lg font-bold">Event Day Speed Desk</h3>
+          <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+            Continuous high-velocity check-in mode with automatic search input re-focus and instant pre-printed token confirmation.
+          </p>
+        </div>
+        <div class="mt-4 flex gap-2 relative z-10">
+          <a href="/desk" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md tap-active transition">
+            <i class="fa-solid fa-bolt"></i> Open Speed Desk
+          </a>
+          <a href="/distribution" class="bg-slate-800/80 hover:bg-slate-700 text-white font-semibold px-3 py-2 rounded-xl text-xs border border-slate-700 tap-active">
+            Auto Distribute
+          </a>
+        </div>
+      </div> -->
+
+      <!-- Follow-Up Coverage Bar -->
+      <!-- <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Follow-Up Coverage</h4>
+            <span class="text-xs font-extrabold text-blue-600"><%= kpis.followupCoveragePct %>%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: <%= kpis.followupCoveragePct %>%"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100 text-center">
+            <div>
+              <span class="text-[10px] text-slate-400 block">Assigned</span>
+              <span class="text-sm font-bold text-slate-800"><%= kpis.assignedCount %></span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block">Contacted</span>
+              <span class="text-sm font-bold text-emerald-600"><%= kpis.contactedCount %></span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block">Pending</span>
+              <span class="text-sm font-bold text-amber-500"><%= kpis.pendingFollowups %></span>
+            </div>
+          </div>
+        </div>
+        <a href="/followup" class="w-full mt-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-2 rounded-xl border border-slate-200 text-center block tap-active">
+          View Assigned Follow-Ups →
+        </a>
+      </div> -->
+
+      <!-- Category Demographics -->
+      <!-- <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Participant Demographics</h4>
+          <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-100">
+            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap text-indigo-500"></i> Junior (School)</span>
+            <span class="font-bold text-slate-800"><%= kpis.juniorCount %></span>
+          </div>
+          <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-100">
+            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-user-graduate text-purple-500"></i> Senior (College/Open)</span>
+            <span class="font-bold text-slate-800"><%= kpis.seniorCount %></span>
+          </div>
+          <div class="flex items-center justify-between text-xs py-1.5">
+            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-indian-rupee-sign text-emerald-600"></i> Paid Registrations</span>
+            <span class="font-bold text-emerald-600"><%= kpis.paidCount %></span>
+          </div>
+        </div>
+        <a href="/corrections" class="w-full mt-3 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold py-2 rounded-xl border border-amber-200 flex items-center justify-center gap-1.5 tap-active">
+          <i class="fa-solid fa-bell text-amber-600"></i> Pending Corrections (<%= kpis.pendingCorrections %>)
+        </a>
+      </div>
+    </div> -->
+
+    <!-- 3. EVENT-WISE LIVE TRACKER TABLE (12 EVENTS) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Event-wise Live Tracker (12 Events)</h3>
+          <p class="text-xs text-slate-500">Live breakdown of registrations, token issuance, check-in, and stage status</p>
+        </div>
+        <a href="/reports" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 self-start sm:self-auto">
+          <i class="fa-solid fa-download"></i> Export Event Stats
+        </a>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-700">
+          <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-3">Event Code &amp; Name</th>
+              <th class="px-3 py-3">Prefix</th>
+              <th class="px-3 py-3 text-center">Total</th>
+              <th class="px-3 py-3 text-center">Junior</th>
+              <th class="px-3 py-3 text-center">Senior</th>
+              <th class="px-3 py-3 text-center">Tokens</th>
+              <th class="px-3 py-3 text-center">Present</th>
+              <th class="px-3 py-3 text-center">Done</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% eventStats.forEach(ev => { %>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-4 py-3">
+                  <div class="font-extrabold text-slate-900"><%= ev.name %></div>
+                  <span class="text-[10px] text-slate-400 font-mono"><%= ev.eventCode %></span>
+                </td>
+                <td class="px-3 py-3 font-mono font-bold text-blue-600"><%= ev.prefix %></td>
+                <td class="px-3 py-3 text-center font-bold text-slate-900"><%= ev.total %></td>
+                <td class="px-3 py-3 text-center text-slate-600"><%= ev.junior %></td>
+                <td class="px-3 py-3 text-center text-slate-600"><%= ev.senior %></td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-indigo-600"><%= ev.tokens %></td>
+                <td class="px-3 py-3 text-center font-bold text-emerald-600"><%= ev.present %></td>
+                <td class="px-3 py-3 text-center font-bold text-purple-600"><%= ev.done %></td>
+                <td class="px-4 py-3 text-right">
+                  <a href="/coordinator?eventId=<%= ev.eventId %>" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-[11px] inline-flex items-center gap-1 transition">
+                    Open Stage →
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

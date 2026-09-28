@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Event Coordinator Dashboard | Navchetna 2026</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { 800: '#1e3a8a', 900: '#0f172a' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tap-active:active { transform: scale(0.97); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/20 text-slate-950 font-black">
+          <i class="fa-solid fa-masks-theater text-lg"></i>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Gurukul Dream Foundation</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+            Navchetna 2026
+            <span class="hidden sm:inline-block text-[11px] font-normal text-slate-400">| Stage Coordinator</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-slate-200"><%= staff.role === 'ADMIN' ? 'Super Admin' : 'Stage Coordinator' %></span>
+          <span class="text-slate-400 font-mono text-[10px] hidden sm:inline">(<%= staff.email %>)</span>
+        </div>
+        <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
+      <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
+        <% if (staff.role === 'ADMIN') { %>
+          <a href="/dashboard" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie"></i> Admin Overview
+          </a>
+        <% } %>
+        <a href="/coordinator" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-masks-theater"></i> Coordinator Stage Desk
+        </a>
+        <a href="/rules" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-id-card"></i> Rules
+        </a>
+        <% if (staff.role === 'ADMIN') { %>
+          <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+            <i class="fa-solid fa-network-wired"></i> Contact Distribution
+          </a>
+          <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+            <i class="fa-solid fa-clipboard-check"></i> Master Desk
+          </a>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-4">
+
+    <% if (error) { %>
+      <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <% if (success) { %>
+      <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+        <span><%= success %></span>
+      </div>
+    <% } %>
+
+    <!-- Header & Assigned Event Banner -->
+    <div class="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-800 uppercase tracking-wider">
+          <i class="fa-solid fa-microphone-lines"></i> Live Stage Queue Management
+        </span>
+        <h2 class="text-xl sm:text-2xl font-black text-white mt-1"><%= eventName %></h2>
+        <p class="text-xs text-slate-400 mt-0.5">Manage participant confirmations, calls, and live stage workflow.</p>
+      </div>
+
+      <!-- Quick Metrics Counters -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-center">
+          <div class="text-[10px] uppercase font-bold text-slate-400">Total</div>
+          <div class="text-base sm:text-lg font-black text-white"><%= stats.totalAssigned %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-center">
+          <div class="text-[10px] uppercase font-bold text-emerald-400">Will Come</div>
+          <div class="text-base sm:text-lg font-black text-emerald-400"><%= stats.willComeCount %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-center">
+          <div class="text-[10px] uppercase font-bold text-rose-400">Won't Come</div>
+          <div class="text-base sm:text-lg font-black text-rose-400"><%= stats.willNotComeCount %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-center">
+          <div class="text-[10px] uppercase font-bold text-amber-400">No Pickup</div>
+          <div class="text-base sm:text-lg font-black text-amber-400"><%= stats.notPickedCount %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Real-Time Search Bar -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+      <form action="/coordinator" method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 text-xs">
+        
+        <div class="relative md:col-span-2">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input 
+            type="text" 
+            name="search" 
+            value="<%= filters.search %>"
+            placeholder="Search Name, Mobile, Slot, Token..." 
+            class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+
+        <div>
+          <select name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">All Categories</option>
+            <option value="JUNIOR" <%= filters.category === 'JUNIOR' ? 'selected' : '' %>>Junior</option>
+            <option value="SENIOR" <%= filters.category === 'SENIOR' ? 'selected' : '' %>>Senior</option>
+            <option value="OPEN" <%= filters.category === 'OPEN' ? 'selected' : '' %>>Open</option>
+          </select>
+        </div>
+
+        <div>
+          <select name="entryStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">All Desk Statuses</option>
+            <option value="PRESENT" <%= filters.entryStatus === 'PRESENT' ? 'selected' : '' %>>Present At Desk</option>
+            <option value="PENDING" <%= filters.entryStatus === 'PENDING' ? 'selected' : '' %>>Not Checked In</option>
+          </select>
+        </div>
+
+        <!-- Follow-up / Remark Filter -->
+        <div>
+          <select name="followupStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">All Call Remarks</option>
+            <option value="WILL_COME" <%= filters.followupStatus === 'WILL_COME' ? 'selected' : '' %>>Will Come</option>
+            <option value="WILL_NOT_COME" <%= filters.followupStatus === 'WILL_NOT_COME' ? 'selected' : '' %>>Will Not Come</option>
+            <option value="CALL_NOT_PICKED" <%= filters.followupStatus === 'CALL_NOT_PICKED' ? 'selected' : '' %>>Call Not Picked</option>
+            <option value="PENDING" <%= filters.followupStatus === 'PENDING' ? 'selected' : '' %>>Pending</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl tap-active transition shadow-sm">
+            <i class="fa-solid fa-filter"></i> Filter
+          </button>
+          <a href="/coordinator" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl tap-active transition" title="Reset Filters">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ================= PARTICIPANT CARDS GRID ================= -->
+    <% if (participantCards.length === 0) { %>
+      <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl mb-3">
+          <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-700">No Participants Found</h3>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+          No participants match your criteria. Try changing or clearing your search filters.
+        </p>
+      </div>
+    <% } else { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% participantCards.forEach(p => { 
+          const isPresent = p.entryStatus === 'PRESENT';
+          const hasToken = p.tokenNumber && p.tokenNumber.trim() !== '';
+        %>
+          
+          <div id="card_<%= p.trackingId %>" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden animate-fadeIn">
+            
+            <!-- Card Header -->
+            <div class="p-4 border-b border-slate-100 space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                    <%= p.category %>
+                  </span>
+                  <span class="text-[10px] font-mono text-slate-400 ml-1">Slot: <strong><%= p.teamSlot %></strong></span>
+                  <h3 class="text-base font-extrabold text-slate-900 mt-1"><%= p.fullName %></h3>
+                </div>
+
+                <div class="text-right">
+                  <% if (hasToken) { %>
+                    <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-800 border border-blue-200 font-mono font-black text-xs px-2.5 py-1 rounded-lg">
+                      <i class="fa-solid fa-ticket text-[10px]"></i> <%= p.tokenNumber %>
+                    </span>
+                  <% } else { %>
+                    <span class="inline-block bg-slate-100 text-slate-400 text-[10px] font-semibold px-2 py-0.5 rounded">
+                      No Token
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-500 space-y-0.5">
+                <div class="font-bold text-slate-800 truncate" title="<%= p.eventName %>">
+                  <i class="fa-solid fa-trophy text-amber-500 mr-1"></i> <%= p.eventName %>
+                </div>
+                <div class="truncate text-[11px]" title="<%= p.school %>">
+                  <i class="fa-solid fa-graduation-cap text-slate-400 mr-1"></i> <%= p.school %> (<%= p.classCourse %>)
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Body: Contact & Attendance Strip -->
+            <div class="p-4 bg-slate-50/70 border-b border-slate-100 space-y-2.5 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Contact Number:</span>
+                <span class="font-mono font-bold text-slate-800"><%= p.mobile %></span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Desk Attendance:</span>
+                <% if (isPresent) { %>
+                  <span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                    <i class="fa-solid fa-circle-check"></i> Present at Entry
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full font-semibold text-[10px]">
+                    <i class="fa-solid fa-clock"></i> Not Checked In
+                  </span>
+                <% } %>
+              </div>
+
+              <!-- Quick Communication Action Buttons -->
+              <div class="pt-1 flex items-center gap-2">
+                <a 
+                  href="tel:<%= p.mobile %>" 
+                  onclick="logQuickAction('<%= p.trackingId %>', 'CALLED')"
+                  class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded-xl text-center flex items-center justify-center gap-1.5 tap-active transition text-xs shadow-sm"
+                >
+                  <i class="fa-solid fa-phone"></i> Call
+                </a>
+
+                <a 
+                  href="https://wa.me/91<%= p.mobile.replace(/\D/g,'') %>?text=<%= encodeURIComponent('Hello ' + p.fullName + ', regarding your performance in ' + p.eventName + ' at Navchetna 2026:') %>" 
+                  target="_blank"
+                  onclick="logQuickAction('<%= p.trackingId %>', 'WHATSAPP')"
+                  class="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 font-bold py-1.5 rounded-xl text-center flex items-center justify-center gap-1.5 tap-active transition text-xs"
+                >
+                  <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+                </a>
+              </div>
+
+              <!-- ================= REMARK ACTION STRIP ================= -->
+              <div class="pt-2 border-t border-slate-200/80">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Call / Event Remark:</span>
+                  <span id="remarkBadge_<%= p.trackingId %>">
+                    <% if (p.followupStatus === 'WILL_COME') { %>
+                      <span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <i class="fa-solid fa-check"></i> Will Come
+                      </span>
+                    <% } else if (p.followupStatus === 'WILL_NOT_COME') { %>
+                      <span class="inline-flex items-center gap-1 text-rose-700 bg-rose-100 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <i class="fa-solid fa-xmark"></i> Will Not Come
+                      </span>
+                    <% } else if (p.followupStatus === 'CALL_NOT_PICKED') { %>
+                      <span class="inline-flex items-center gap-1 text-amber-700 bg-amber-100 border border-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <i class="fa-solid fa-phone-slash"></i> Call Not Picked
+                      </span>
+                    <% } else { %>
+                      <span class="text-slate-400 text-[10px] font-medium">Pending Remark</span>
+                    <% } %>
+                  </span>
+                </div>
+
+                <!-- 3 Action Remark Buttons -->
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button 
+                    type="button" 
+                    onclick="updateRemarkStatus('<%= p.trackingId %>', 'WILL_COME')"
+                    class="bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-300 text-emerald-800 text-[10.5px] font-bold py-1.5 px-1 rounded-lg tap-active transition text-center leading-tight flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    <span>Will Come</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    onclick="updateRemarkStatus('<%= p.trackingId %>', 'WILL_NOT_COME')"
+                    class="bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border border-rose-300 text-rose-800 text-[10.5px] font-bold py-1.5 px-1 rounded-lg tap-active transition text-center leading-tight flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <i class="fa-solid fa-circle-xmark text-rose-600"></i>
+                    <span>Won't Come</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    onclick="updateRemarkStatus('<%= p.trackingId %>', 'CALL_NOT_PICKED')"
+                    class="bg-amber-50 hover:bg-amber-100 active:bg-amber-200 border border-amber-300 text-amber-800 text-[10.5px] font-bold py-1.5 px-1 rounded-lg tap-active transition text-center leading-tight flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <i class="fa-solid fa-phone-slash text-amber-600"></i>
+                    <span>Not Picked</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Card Footer: Live Stage Workflow Controls -->
+            <div class="p-3 bg-white space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <!-- <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Stage Status:</span>
+                <span id="statusBadge_<%= p.trackingId %>" class="font-bold font-mono">
+                  <% if (p.stageStatus === 'WAITING_BACKSTAGE') { %>
+                    <span class="text-amber-600"><i class="fa-solid fa-person-shelter"></i> Backstage</span>
+                  <% } else if (p.stageStatus === 'ON_STAGE') { %>
+                    <span class="text-blue-600 animate-pulse"><i class="fa-solid fa-microphone"></i> On Stage Now</span>
+                  <% } else if (p.stageStatus === 'PERFORMANCE_DONE') { %>
+                    <span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> Completed</span>
+                  <% } else { %>
+                    <span class="text-slate-400"><i class="fa-solid fa-hourglass-start"></i> Waiting</span>
+                  <% } %>
+                </span> -->
+              </div>
+
+              <!-- Action Status Buttons for Stage Progress -->
+              <div class="grid grid-cols-3 gap-1.5 pt-1 text-[11px]">
+                <!---->
+              </div> 
+            </div>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+  </main>
+
+  <!-- Client-Side Stage & Remark Script -->
+  <script>
+    async function updateRemarkStatus(trackingId, followupStatus) {
+      try {
+        const res = await fetch("/api/coordinator/update-followup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trackingId, followupStatus }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.message || "Failed to update follow-up remark");
+          return;
+        }
+
+        const badge = document.getElementById(`remarkBadge_${trackingId}`);
+        if (badge) {
+          if (followupStatus === "WILL_COME") {
+            badge.innerHTML = `<span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check"></i> Will Come</span>`;
+          } else if (followupStatus === "WILL_NOT_COME") {
+            badge.innerHTML = `<span class="inline-flex items-center gap-1 text-rose-700 bg-rose-100 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-xmark"></i> Will Not Come</span>`;
+          } else if (followupStatus === "CALL_NOT_PICKED") {
+            badge.innerHTML = `<span class="inline-flex items-center gap-1 text-amber-700 bg-amber-100 border border-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-phone-slash"></i> Call Not Picked</span>`;
+          } else {
+            badge.innerHTML = `<span class="text-slate-400 text-[10px] font-medium">Pending Remark</span>`;
+          }
+        }
+      } catch (err) {
+        alert("Network error updating remark: " + err.message);
+      }
+    }
+
+    async function updateStageStatus(trackingId, stageStatus) {
+      try {
+        const res = await fetch("/api/coordinator/update-stage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trackingId, stageStatus }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.message || "Failed to update stage status");
+          return;
+        }
+
+        const badge = document.getElementById(`statusBadge_${trackingId}`);
+        if (badge) {
+          if (stageStatus === "WAITING_BACKSTAGE") {
+            badge.innerHTML = `<span class="text-amber-600"><i class="fa-solid fa-person-shelter"></i> Backstage</span>`;
+          } else if (stageStatus === "ON_STAGE") {
+            badge.innerHTML = `<span class="text-blue-600 animate-pulse"><i class="fa-solid fa-microphone"></i> On Stage Now</span>`;
+          } else if (stageStatus === "PERFORMANCE_DONE") {
+            badge.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> Completed</span>`;
+          } else {
+            badge.innerHTML = `<span class="text-slate-400"><i class="fa-solid fa-hourglass-start"></i> Waiting</span>`;
+          }
+        }
+      } catch (err) {
+        alert("Error communicating with stage server: " + err.message);
+      }
+    }
+
+    async function logQuickAction(trackingId, actionType) {
+      try {
+        await fetch("/api/coordinator/update-followup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trackingId, actionType }),
+        });
+      } catch (e) {
+        console.warn("Could not log action:", e);
+      }
+    }
+  </script>
+</body>
+</html>

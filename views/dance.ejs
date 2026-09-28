@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dance Competition Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            cream: {
+              50: '#FFFAF3',
+              100: '#FFF8EE',
+              200: '#FDF4E5',
+              border: '#E8DFD1'
+            },
+            appDark: '#120F1D',
+            cardBg: '#FFFDF9',
+            brandOrange: '#F9882B',
+            brandPink: '#EB3B6B',
+          },
+          boxShadow: {
+            'custom-card': '0 20px 45px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+            'btn-gradient': '0 8px 25px -4px rgba(235, 59, 107, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 10%, #2A1F3D 0%, #151124 60%, #0D0A17 100%);
+      min-height: 100vh;
+      color: #2D2338;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .warm-input {
+      background-color: #FFFFFF;
+      border: 1.5px solid #E2D9CC;
+      color: #2D2338;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .warm-input:focus {
+      outline: none;
+      border-color: #F9882B;
+      box-shadow: 0 0 0 3px rgba(249, 136, 43, 0.15);
+    }
+    .warm-input::placeholder {
+      color: #9C9488;
+      font-weight: 400;
+    }
+
+    .toggle-pill {
+      background-color: #FFFFFF;
+      border: 1.5px solid #E2D9CC;
+      color: #382D47;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .toggle-pill:hover {
+      background-color: #FAF6F0;
+      border-color: #D3C7B5;
+    }
+    .toggle-pill.active {
+      background: linear-gradient(135deg, rgba(249, 136, 43, 0.08), rgba(235, 59, 107, 0.08));
+      border-color: #E2486A;
+      color: #B51D48;
+      box-shadow: 0 2px 8px -2px rgba(235, 59, 107, 0.25);
+    }
+
+    /* Segmented Top Switcher */
+    .top-segment-btn {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .top-segment-btn.active {
+      background: linear-gradient(90deg, #F9882B 0%, #EC3F6F 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(235, 59, 107, 0.4);
+    }
+
+    .btn-gradient-submit {
+      background: linear-gradient(90deg, #F9882B 0%, #EC3F6F 100%);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s;
+    }
+    .btn-gradient-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px -4px rgba(236, 63, 111, 0.55);
+    }
+    .btn-gradient-submit:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8CEBE;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 md:p-10 flex items-center justify-center">
+
+  <div class="w-full max-w-xl mx-auto my-auto">
+    <!-- Top Brand Header[cite: 1] -->
+    <div class="text-center mb-5">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-orange-200 text-xs font-semibold backdrop-blur-md mb-2.5 border border-white/10 shadow-sm">
+        <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span>By Gurukul Dream Foundation</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-pink-300 tracking-tight">
+        Navchetna Yuva Shakti Mahotsav 2026
+      </h1>
+      <p id="portalSubheading" class="text-xs sm:text-sm text-purple-200/80 mt-1.5 font-medium">Solo Dance Competition Registration Portal</p>
+    </div>
+
+    <!-- Top Mode Switcher Button: SOLO DANCE | GROUP DANCE -->
+    <div class="mb-5 bg-[#1F1932] p-1.5 rounded-2xl border border-white/10 flex items-center shadow-lg">
+      <button 
+        type="button" 
+        id="btnModeSolo" 
+        class="top-segment-btn active flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        SOLO DANCE
+      </button>
+      <button 
+        type="button" 
+        id="btnModeGroup" 
+        class="top-segment-btn text-purple-200/70 hover:text-white flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        GROUP DANCE
+      </button>
+    </div>
+
+    <!-- Main Card[cite: 1] -->
+    <div class="bg-cardBg rounded-3xl p-6 sm:p-9 shadow-custom-card border border-[#F2E8D9]">
+      <form id="danceRegistrationForm" novalidate>
+        
+        <!-- STEP 1: Main Event & Ticket Mandatory Info[cite: 1] -->
+        <div class="border-b border-[#EFE7D8] pb-6 mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/70 px-2.5 py-0.5 rounded-full">Step 1</span>
+              <h2 class="text-xl font-bold text-[#2A1D36] mt-1">Ticket & Event Details</h2>
+            </div>
+            <span class="text-xs font-medium text-red-500 bg-red-50 px-2 py-1 rounded-md border border-red-200/50">* Mandatory</span>
+          </div>
+
+          <!-- Ticket / Slip ID[cite: 1] -->
+          <div class="mb-4">
+            <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="mainTicketId">
+              Ticket ID / Registration Number / Slip ID <span class="text-pink-600">*</span>
+            </label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="mainTicketId" 
+                name="mainTicketId"
+                placeholder="e.g. SLIP-2026-9842 or NYSM-891" 
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm font-medium focus:ring-0 uppercase tracking-wider"
+                required
+              >
+              <div class="absolute right-3.5 top-3.5 text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group/Crew Name (Visible ONLY in GROUP mode) -->
+          <div id="groupNameFieldWrapper" class="mb-4 hidden">
+            <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="groupName">
+              Dance Crew / Group Name <span class="text-pink-600">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="groupName" 
+              name="groupName" 
+              placeholder="e.g. Rhythm Strikers / Urban Pulse" 
+              class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+            >
+          </div>
+
+          <!-- Category Selection[cite: 1] -->
+          <div>
+            <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5">
+              Category <span class="text-pink-600">*</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3" id="categoryGroup">
+              <button 
+                type="button" 
+                data-name="category" 
+                data-value="Junior (Up to 12th)" 
+                class="toggle-pill active py-3 px-2 rounded-xl text-xs sm:text-sm text-center">
+                Junior (Up to 12th)
+              </button>
+              <button 
+                type="button" 
+                data-name="category" 
+                data-value="Senior (College / Open)" 
+                class="toggle-pill py-3 px-2 rounded-xl text-xs sm:text-sm text-center">
+                Senior (College / Open)
+              </button>
+            </div>
+            <input type="hidden" id="selectedCategory" name="category" value="Junior (Up to 12th)">
+          </div>
+        </div>
+
+        <!-- STEP 2: Participant / Group Leader Details[cite: 1] -->
+        <div class="border-b border-[#EFE7D8] pb-6 mb-7">
+          <div class="mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/70 px-2.5 py-0.5 rounded-full">Step 2</span>
+              <h2 id="step2Title" class="text-xl sm:text-2xl font-bold text-[#2A1D36] tracking-tight">Participant Details</h2>
+            </div>
+            <p id="step2Subtitle" class="text-xs sm:text-sm text-[#736A7A] mt-0.5">Tell us about the dancer.</p>
+          </div>
+
+          <!-- Full Name[cite: 1] -->
+          <div class="mb-4">
+            <label id="fullNameLabel" class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="participantFullName">
+              Full Name <span class="text-pink-600">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="participantFullName" 
+              name="participantFullName" 
+              placeholder="Enter full name" 
+              class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+              required
+            >
+          </div>
+
+          <!-- Mobile Number & Age Row[cite: 1] -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
+            <div>
+              <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="participantMobile">
+                Mobile Number <span class="text-pink-600">*</span>
+              </label>
+              <input 
+                type="tel" 
+                id="participantMobile" 
+                name="participantMobile" 
+                maxlength="10"
+                pattern="[0-9]{10}"
+                placeholder="10-digit mobile" 
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="participantAge">
+                Age (10 - 30 Years) <span class="text-pink-600">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="participantAge" 
+                name="participantAge" 
+                min="10" 
+                max="30" 
+                placeholder="e.g. 19" 
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Gender Selection[cite: 1] -->
+          <div>
+            <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5">
+              Gender <span class="text-pink-600">*</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3" id="genderGroup">
+              <button 
+                type="button" 
+                data-name="gender" 
+                data-value="Male" 
+                class="toggle-pill active py-3 px-2 rounded-xl text-xs sm:text-sm text-center">
+                Male
+              </button>
+              <button 
+                type="button" 
+                data-name="gender" 
+                data-value="Female" 
+                class="toggle-pill py-3 px-2 rounded-xl text-xs sm:text-sm text-center">
+                Female
+              </button>
+            </div>
+            <input type="hidden" id="selectedGender" name="gender" value="Male">
+          </div>
+        </div>
+
+        <!-- STEP 3: Group Size (Visible ONLY for Group Dance) -->
+        <div id="groupSizeSection" class="border-b border-[#EFE7D8] pb-6 mb-7 hidden">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/70 px-2.5 py-0.5 rounded-full">Step 3</span>
+              <h2 class="text-xl font-bold text-[#2A1D36] mt-1">Group Size</h2>
+              <p class="text-xs sm:text-sm text-[#736A7A]">Specify total number of dancers in your group.</p>
+            </div>
+          </div>
+
+          <div class="bg-[#FFF8EE] p-5 rounded-2xl border border-[#E9DFD0]">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <label class="text-sm font-bold text-[#3B2D4A] block">
+                  Total Participants in Group <span class="text-pink-600">*</span>
+                </label>
+                <span class="text-xs text-gray-500">Including leader (Allowed: 3 to 25 members)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  id="btnDecreaseMembers" 
+                  class="w-10 h-10 rounded-xl bg-white border border-[#D5C9B7] text-gray-700 font-bold flex items-center justify-center hover:bg-orange-50 hover:border-orange-400 active:scale-95 transition text-lg">
+                  –
+                </button>
+                <input 
+                  type="number" 
+                  id="participantCountInput" 
+                  value="5" 
+                  min="3" 
+                  max="25" 
+                  class="w-20 h-10 text-center warm-input rounded-xl font-bold text-base"
+                >
+                <button 
+                  type="button" 
+                  id="btnIncreaseMembers" 
+                  class="w-10 h-10 rounded-xl bg-white border border-[#D5C9B7] text-gray-700 font-bold flex items-center justify-center hover:bg-orange-50 hover:border-orange-400 active:scale-95 transition text-lg">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Music Track OR YouTube Link (One is strictly Mandatory) -->
+        <div class="border-b border-[#EFE7D8] pb-6 mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span id="stepMusicBadge" class="text-[11px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/70 px-2.5 py-0.5 rounded-full">Step 3</span>
+              <h2 class="text-xl font-bold text-[#2A1D36] mt-1">Music / Performance Track</h2>
+              <p class="text-xs sm:text-sm text-[#736A7A]">Provide either an audio file OR a YouTube song link <span class="text-pink-600 font-bold">*</span></p>
+            </div>
+            <span class="text-[11px] font-bold text-pink-700 bg-pink-100/70 px-2.5 py-1 rounded-full border border-pink-200">
+              1 Option Mandatory
+            </span>
+          </div>
+
+          <!-- Option A: File Upload[cite: 1] -->
+          <div id="dropZone" class="border-2 border-dashed border-[#D5C9B7] hover:border-orange-400 bg-white/70 rounded-2xl p-5 text-center transition cursor-pointer relative">
+            <input 
+              type="file" 
+              id="songFileInput" 
+              accept="audio/mp3, audio/wav, audio/mpeg, audio/m4a, audio/ogg" 
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+            <div class="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+              <div class="w-11 h-11 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+              </div>
+              <p class="text-sm font-semibold text-[#2D2338]">Option A: Upload Audio Track (Max 4 min)</p>
+              <p class="text-xs text-gray-500">MP3, WAV, M4A, OGG (Max 25MB)</p>
+            </div>
+          </div>
+
+          <!-- Audio Status Display[cite: 1] -->
+          <div id="audioStatusCard" class="hidden mt-3 p-3.5 rounded-xl bg-orange-50/70 border border-orange-200">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex-shrink-0 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                </div>
+                <div class="truncate">
+                  <p id="audioFileName" class="text-xs sm:text-sm font-bold text-[#2D2338] truncate">track.mp3</p>
+                  <p id="audioFileSize" class="text-[11px] text-gray-500">2.4 MB</p>
+                </div>
+              </div>
+              <button type="button" id="btnClearAudio" class="text-xs text-red-600 hover:underline font-semibold ml-2">Remove</button>
+            </div>
+            <span id="audioDurationBadge" class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+              Checking...
+            </span>
+            <audio id="audioPreviewElement" controls class="w-full h-8 mt-2"></audio>
+            <div id="audioWarningMsg" class="hidden mt-2 p-2 rounded-lg bg-red-100 text-red-700 text-xs font-semibold">
+              Track duration exceeds maximum limit of 4 minutes (240s).
+            </div>
+          </div>
+
+          <!-- OR Divider -->
+          <div class="relative my-4">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-[#E8DEC0]"></div></div>
+            <div class="relative flex justify-center text-xs uppercase"><span class="bg-cardBg px-3 font-bold text-gray-400">OR</span></div>
+          </div>
+
+          <!-- Option B: YouTube Song Link Input -->
+          <div>
+            <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="youtubeUrlInput">
+              Option B: YouTube Song / Audio Link
+            </label>
+            <div class="relative">
+              <input 
+                type="url" 
+                id="youtubeUrlInput" 
+                name="youtubeUrl"
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." 
+                class="warm-input w-full pl-10 pr-4 py-3 rounded-xl text-xs sm:text-sm"
+              >
+              <div class="absolute left-3.5 top-3.5 text-red-500">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              </div>
+            </div>
+            <p id="musicValidationHint" class="text-[11px] text-gray-500 mt-1.5 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-orange-500 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Either upload an audio track above or paste a valid YouTube video link.
+            </p>
+          </div>
+        </div>
+
+        <!-- Submit Button[cite: 1] -->
+        <div>
+          <button 
+            type="submit" 
+            id="submitBtn"
+            class="btn-gradient-submit w-full py-3.5 px-6 rounded-2xl text-white font-bold text-base sm:text-lg tracking-wide shadow-btn-gradient flex items-center justify-center gap-2">
+            <span>Complete Registration</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Slip Modal[cite: 1] -->
+  <div id="successModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-cardBg max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-[#F2E8D9] max-h-[92vh] overflow-y-auto">
+      <div class="text-center pb-4 border-b border-[#EFE7D8]">
+        <div class="w-14 h-14 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-[#2A1D36]">Registration Confirmed!</h3>
+        <p class="text-xs text-gray-500 mt-1">Navchetna Yuva Shakti Mahotsav 2026 • Gurukul Dream Foundation</p>
+      </div>
+
+      <!-- Printable Slip Area[cite: 1] -->
+      <div id="printSlipArea" class="my-5 p-5 bg-[#FFF8EE] rounded-2xl border border-[#E8DEC0]">
+        <div class="flex justify-between items-start border-b border-[#DFD3BE] pb-3 mb-3">
+          <div>
+            <p class="text-[10px] uppercase font-bold text-orange-600 tracking-wider">Gurukul Dream Foundation</p>
+            <h4 id="slipDanceMode" class="text-lg font-black text-[#2A1D36]">Solo Dance</h4>
+            <p id="slipCategory" class="text-xs text-gray-600">Junior Category</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-gray-500 block">Ticket / Slip ID</span>
+            <span id="slipTicketId" class="text-sm font-mono font-bold text-pink-700 bg-pink-100/60 px-2 py-0.5 rounded">TKT-000</span>
+          </div>
+        </div>
+
+        <div class="text-xs space-y-2 text-[#3D314A]">
+          <div id="slipCrewRow" class="flex justify-between hidden">
+            <span class="text-gray-500">Group Name:</span>
+            <span id="slipCrewName" class="font-semibold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span id="slipLeaderLabel" class="text-gray-500">Dancer Name:</span>
+            <span id="slipParticipantName" class="font-semibold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Contact Number:</span>
+            <span id="slipMobile" class="font-semibold">-</span>
+          </div>
+          <div id="slipParticipantsRow" class="flex justify-between hidden">
+            <span class="text-gray-500">Total Participants:</span>
+            <span id="slipTotalDancers" class="font-bold text-orange-700">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-500">Music Source:</span>
+            <span id="slipMusicSource" class="font-semibold text-emerald-700 text-right truncate max-w-[220px]">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons[cite: 1] -->
+      <div class="flex flex-col sm:flex-row gap-2.5">
+        <button 
+          type="button" 
+          id="btnPrintSlip" 
+          class="flex-1 py-3 px-4 rounded-xl bg-[#2D2338] text-white font-bold text-xs sm:text-sm hover:bg-black transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Print Slip
+        </button>
+        <button 
+          type="button" 
+          id="btnCopyJson" 
+          class="flex-1 py-3 px-4 rounded-xl border border-[#D5C9B7] text-[#2D2338] font-bold text-xs sm:text-sm hover:bg-white transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Registration Data
+        </button>
+      </div>
+
+      <div class="mt-4 text-center">
+        <button 
+          type="button" 
+          id="btnCloseModal" 
+          class="text-xs text-gray-500 hover:text-gray-800 underline">
+          Close & Register Another
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification[cite: 1] -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 bg-[#2D2338] text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs sm:text-sm z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <span id="toastIcon">⚠️</span>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      mode: 'SOLO', // 'SOLO' | 'GROUP'
+      category: 'Junior (Up to 12th)',
+      gender: 'Male',
+      participantCount: 5,
+      uploadedAudio: {
+        file: null,
+        duration: 0,
+        isValid: true
+      },
+      youtubeUrl: ''
+    };
+
+    // DOM References
+    const btnModeSolo = document.getElementById('btnModeSolo');
+    const btnModeGroup = document.getElementById('btnModeGroup');
+    const portalSubheading = document.getElementById('portalSubheading');
+    const groupNameFieldWrapper = document.getElementById('groupNameFieldWrapper');
+    const groupNameInput = document.getElementById('groupName');
+    const groupSizeSection = document.getElementById('groupSizeSection');
+    const step2Title = document.getElementById('step2Title');
+    const step2Subtitle = document.getElementById('step2Subtitle');
+    const fullNameLabel = document.getElementById('fullNameLabel');
+    const stepMusicBadge = document.getElementById('stepMusicBadge');
+
+    const participantCountInput = document.getElementById('participantCountInput');
+    const btnDecreaseMembers = document.getElementById('btnDecreaseMembers');
+    const btnIncreaseMembers = document.getElementById('btnIncreaseMembers');
+
+    const songFileInput = document.getElementById('songFileInput');
+    const btnClearAudio = document.getElementById('btnClearAudio');
+    const audioStatusCard = document.getElementById('audioStatusCard');
+    const audioFileName = document.getElementById('audioFileName');
+    const audioFileSize = document.getElementById('audioFileSize');
+    const audioDurationBadge = document.getElementById('audioDurationBadge');
+    const audioWarningMsg = document.getElementById('audioWarningMsg');
+    const audioPreviewElement = document.getElementById('audioPreviewElement');
+    const youtubeUrlInput = document.getElementById('youtubeUrlInput');
+
+    const form = document.getElementById('danceRegistrationForm');
+    const mainTicketIdInput = document.getElementById('mainTicketId');
+    const participantFullNameInput = document.getElementById('participantFullName');
+    const participantMobileInput = document.getElementById('participantMobile');
+    const participantAgeInput = document.getElementById('participantAge');
+
+    const successModal = document.getElementById('successModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnPrintSlip = document.getElementById('btnPrintSlip');
+    const btnCopyJson = document.getElementById('btnCopyJson');
+    let lastRegisteredPayload = null;
+
+    const SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxtGlMD8MbNOrWfz0-_2a2pYvtYhOr66bhc6u53z8Pl4r5GgbTAeMiURkpDsK4pNPCx/exec';
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result.split(',')[1]);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function sendToGoogle(payload) {
+      const f = state.uploadedAudio.file;
+      const body = { ...payload, audio: null };
+      if (f) {
+        body.audio = { name: f.name, mimeType: f.type, base64: await fileToBase64(f) };
+      }
+      const res = await fetch(SHEET_WEBAPP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body)
+      });
+      const out = await res.json();
+      if (!out.ok) throw new Error(out.error || 'Script error');
+    }
+    // Toast helper
+    function showToast(message, icon = '⚠️') {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMsg').innerText = message;
+      document.getElementById('toastIcon').innerText = icon;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+
+    // Toggle Solo / Group Mode
+    function setRegistrationMode(mode) {
+      state.mode = mode;
+      if (mode === 'SOLO') {
+        btnModeSolo.className = 'top-segment-btn active flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider';
+        btnModeGroup.className = 'top-segment-btn text-purple-200/70 hover:text-white flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider';
+        
+        portalSubheading.textContent = 'Solo Dance Competition Registration Portal';
+        groupNameFieldWrapper.classList.add('hidden');
+        groupSizeSection.classList.add('hidden');
+
+        step2Title.textContent = 'Participant Details';
+        step2Subtitle.textContent = 'Tell us about the solo dancer.';
+        fullNameLabel.innerHTML = 'Full Name <span class="text-pink-600">*</span>';
+        stepMusicBadge.textContent = 'Step 3';
+      } else {
+        btnModeGroup.className = 'top-segment-btn active flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider';
+        btnModeSolo.className = 'top-segment-btn text-purple-200/70 hover:text-white flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 tracking-wider';
+
+        portalSubheading.textContent = 'Group Dance Competition Registration Portal';
+        groupNameFieldWrapper.classList.remove('hidden');
+        groupSizeSection.classList.remove('hidden');
+
+        step2Title.textContent = 'Group Leader Details';
+        step2Subtitle.textContent = 'Tell us who is leading the dance group.';
+        fullNameLabel.innerHTML = 'Leader Full Name <span class="text-pink-600">*</span>';
+        stepMusicBadge.textContent = 'Step 4';
+      }
+    }
+
+    btnModeSolo.addEventListener('click', () => setRegistrationMode('SOLO'));
+    btnModeGroup.addEventListener('click', () => setRegistrationMode('GROUP'));
+
+    // Pill Selector logic
+    function setupToggleGroup(containerId, hiddenInputId, onUpdate) {
+      const container = document.getElementById(containerId);
+      const buttons = container.querySelectorAll('.toggle-pill');
+      const hiddenInput = document.getElementById(hiddenInputId);
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const val = btn.getAttribute('data-value');
+          hiddenInput.value = val;
+          if (onUpdate) onUpdate(val);
+        });
+      });
+    }
+
+    setupToggleGroup('categoryGroup', 'selectedCategory', (val) => state.category = val);
+    setupToggleGroup('genderGroup', 'selectedGender', (val) => state.gender = val);
+
+    // Group size counter
+    function updateMemberCount(newVal) {
+      let val = Math.max(3, Math.min(25, newVal));
+      state.participantCount = val;
+      participantCountInput.value = val;
+    }
+
+    btnDecreaseMembers.addEventListener('click', () => updateMemberCount(state.participantCount - 1));
+    btnIncreaseMembers.addEventListener('click', () => updateMemberCount(state.participantCount + 1));
+    participantCountInput.addEventListener('change', (e) => updateMemberCount(parseInt(e.target.value, 10) || 3));
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function isYouTubeUrl(url) {
+      if (!url) return false;
+      const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|shorts\/)|youtu\.be\/)[\w-]{11}(\S+)?$/i;
+      return pattern.test(url.trim());
+    }
+
+    // Audio file handling
+    songFileInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+
+      audioStatusCard.classList.remove('hidden');
+      audioFileName.textContent = file.name;
+      audioFileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      audioDurationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800';
+      audioDurationBadge.textContent = 'Calculating duration...';
+      audioWarningMsg.classList.add('hidden');
+
+      const objectUrl = URL.createObjectURL(file);
+      audioPreviewElement.src = objectUrl;
+
+      const tempAudio = new Audio();
+      tempAudio.src = objectUrl;
+      
+      tempAudio.addEventListener('loadedmetadata', function() {
+        const duration = tempAudio.duration;
+        state.uploadedAudio.duration = duration;
+        state.uploadedAudio.file = file;
+
+        if (duration > 240) {
+          state.uploadedAudio.isValid = false;
+          audioDurationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700';
+          audioDurationBadge.textContent = `${formatTime(duration)} (Exceeds 4 min limit)`;
+          audioWarningMsg.classList.remove('hidden');
+          showToast('Music track exceeds the 4-minute maximum allowed limit.', '⚠️');
+        } else {
+          state.uploadedAudio.isValid = true;
+          audioDurationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800';
+          audioDurationBadge.textContent = `Duration: ${formatTime(duration)} (Valid)`;
+          audioWarningMsg.classList.add('hidden');
+          showToast('Audio track loaded and validated!', '🎵');
+        }
+      });
+
+      tempAudio.addEventListener('error', function() {
+        audioDurationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700';
+        audioDurationBadge.textContent = 'Failed to inspect audio';
+        state.uploadedAudio.isValid = false;
+      });
+    });
+
+    btnClearAudio.addEventListener('click', () => {
+      songFileInput.value = '';
+      state.uploadedAudio = { file: null, duration: 0, isValid: true };
+      audioPreviewElement.pause();
+      audioPreviewElement.src = '';
+      audioStatusCard.classList.add('hidden');
+    });
+
+    // Form Submission & Mandatory Checks
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Ticket validation
+      const ticketId = mainTicketIdInput.value.trim();
+      if (!ticketId) {
+        showToast('Ticket ID / Slip ID is mandatory.', '⚠️');
+        mainTicketIdInput.focus();
+        return;
+      }
+
+      // Group Name check for GROUP mode
+      let crewName = '';
+      if (state.mode === 'GROUP') {
+        crewName = groupNameInput.value.trim();
+        if (!crewName) {
+          showToast('Please enter Dance Crew / Group Name.', '⚠️');
+          groupNameInput.focus();
+          return;
+        }
+      }
+
+      // Dancer / Leader Name
+      const dancerName = participantFullNameInput.value.trim();
+      if (!dancerName) {
+        showToast('Please enter Participant / Leader Name.', '⚠️');
+        participantFullNameInput.focus();
+        return;
+      }
+
+      // Mobile check
+      const dancerPhone = participantMobileInput.value.trim();
+      if (!/^\d{10}$/.test(dancerPhone)) {
+        showToast('Mobile number must be exactly 10 digits.', '⚠️');
+        participantMobileInput.focus();
+        return;
+      }
+
+      // Age check
+      const dancerAge = parseInt(participantAgeInput.value, 10);
+      if (isNaN(dancerAge) || dancerAge < 10 || dancerAge > 30) {
+        showToast('Age must be between 10 and 30 years.', '⚠️');
+        participantAgeInput.focus();
+        return;
+      }
+
+      // MANDATORY MUSIC CHECK: Either valid Audio File OR valid YouTube Link
+      const ytUrl = youtubeUrlInput.value.trim();
+      const hasAudioFile = !!state.uploadedAudio.file;
+      const hasYouTubeLink = ytUrl.length > 0;
+
+      if (!hasAudioFile && !hasYouTubeLink) {
+        showToast('Submission blocked: Upload an Audio Track OR provide a YouTube link!', '⚠️');
+        youtubeUrlInput.focus();
+        return;
+      }
+
+      if (hasAudioFile && !state.uploadedAudio.isValid) {
+        showToast('Uploaded track duration exceeds 4 minutes. Please trim or remove it.', '⚠️');
+        return;
+      }
+
+      if (!hasAudioFile && hasYouTubeLink && !isYouTubeUrl(ytUrl)) {
+        showToast('Please enter a valid YouTube video link (e.g. https://youtu.be/...)', '⚠️');
+        youtubeUrlInput.focus();
+        return;
+      }
+
+      let musicSummary = '';
+      if (hasAudioFile) {
+        musicSummary = `Audio File: ${state.uploadedAudio.file.name} (${formatTime(state.uploadedAudio.duration)})`;
+      } else {
+        musicSummary = `YouTube: ${ytUrl}`;
+      }
+
+      // Build registration payload
+      lastRegisteredPayload = {
+        festival: "Navchetna Yuva Shakti Mahotsav 2026",
+        organizer: "Gurukul Dream Foundation",
+        ticketId: ticketId.toUpperCase(),
+        danceMode: state.mode,
+        groupName: state.mode === 'GROUP' ? crewName : 'N/A (Solo)',
+        category: document.getElementById('selectedCategory').value,
+        dancer: {
+          fullName: dancerName,
+          mobile: dancerPhone,
+          age: dancerAge,
+          gender: document.getElementById('selectedGender').value,
+        },
+        participantsCount: state.mode === 'GROUP' ? state.participantCount : 1,
+        music: {
+          type: hasAudioFile ? 'Uploaded Track' : 'YouTube Link',
+          details: hasAudioFile ? state.uploadedAudio.file.name : ytUrl,
+          duration: hasAudioFile ? formatTime(state.uploadedAudio.duration) : 'YouTube Video'
+        },
+        registeredAt: new Date().toLocaleString()
+      };
+
+      // Populate Slip
+      document.getElementById('slipDanceMode').textContent = `${state.mode === 'SOLO' ? 'Solo' : 'Group'} Dance Registration`;
+      document.getElementById('slipCategory').textContent = lastRegisteredPayload.category;
+      document.getElementById('slipTicketId').textContent = lastRegisteredPayload.ticketId;
+
+      if (state.mode === 'GROUP') {
+        document.getElementById('slipCrewRow').classList.remove('hidden');
+        document.getElementById('slipCrewName').textContent = lastRegisteredPayload.groupName;
+        document.getElementById('slipLeaderLabel').textContent = 'Group Leader:';
+        document.getElementById('slipParticipantsRow').classList.remove('hidden');
+        document.getElementById('slipTotalDancers').textContent = `${state.participantCount} Dancers (Including Leader)`;
+      } else {
+        document.getElementById('slipCrewRow').classList.add('hidden');
+        document.getElementById('slipLeaderLabel').textContent = 'Solo Dancer:';
+        document.getElementById('slipParticipantsRow').classList.add('hidden');
+      }
+
+      document.getElementById('slipParticipantName').textContent = `${dancerName} (${lastRegisteredPayload.dancer.gender}, ${dancerAge}y)`;
+      document.getElementById('slipMobile').textContent = dancerPhone;
+      document.getElementById('slipMusicSource').textContent = musicSummary;
+      sendToGoogle(lastRegisteredPayload)
+        .then(() => showToast('Saved to registration sheet!', '✅'))
+        .catch((err) => showToast('Error: ' + err.message, '⚠️'));
+
+      successModal.classList.remove('hidden');
+    });
+
+    btnCloseModal.addEventListener('click', () => {
+      successModal.classList.add('hidden');
+      form.reset();
+      btnClearAudio.click();
+      youtubeUrlInput.value = '';
+      updateMemberCount(5);
+      setRegistrationMode('SOLO');
+    });
+
+    btnPrintSlip.addEventListener('click', () => {
+      const slipContent = document.getElementById('printSlipArea').innerHTML;
+      const printWindow = window.open('', '_blank', 'width=650,height=700');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Registration Slip - ${lastRegisteredPayload?.ticketId || 'Slip'}</title>
+            <style>
+              body { font-family: sans-serif; padding: 25px; color: #222; }
+              .slip-box { border: 2px dashed #999; padding: 20px; border-radius: 12px; }
+              h2, h3, h4 { margin: 4px 0; }
+              table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+              td { padding: 6px 4px; border-bottom: 1px solid #eee; font-size: 13px; }
+            </style>
+          </head>
+          <body>
+            <div class="slip-box">
+              <div style="text-align:center;margin-bottom:15px;border-bottom:1px solid #ddd;padding-bottom:10px;">
+                <h2 style="margin:0;color:#c2410c;">Navchetna Yuva Shakti Mahotsav 2026</h2>
+                <h4 style="margin:4px 0;color:#555;">Presented by Gurukul Dream Foundation</h4>
+              </div>
+              ${slipContent}
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    });
+
+    btnCopyJson.addEventListener('click', () => {
+      if (!lastRegisteredPayload) return;
+      const dataStr = JSON.stringify(lastRegisteredPayload, null, 2);
+      const dummyInput = document.createElement('textarea');
+      dummyInput.value = dataStr;
+      document.body.appendChild(dummyInput);
+      dummyInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('Registration details copied to clipboard!', '📋');
+      } catch (err) {
+        showToast('Failed to copy data.', '⚠️');
+      }
+      document.body.removeChild(dummyInput);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setRegistrationMode('SOLO');
+    });
+  </script>
+</body>
+</html>

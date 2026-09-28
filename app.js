@@ -616,6 +616,13 @@ app.post("/api/record-complimentary", async (req, res) => {
   }
 });
 
+app.get('/dance', async (req, res) => {
+  res.render('dance', {
+    pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
+  });
+});
+
+
 // ======================================
 // Night Event (Bhajan / DJ) Registration Schema
 // ======================================

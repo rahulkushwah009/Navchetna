@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Master Desk & Ticket Manager | Navchetna 2026</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { 800: '#1e3a8a', 900: '#0f172a' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tap-active:active { transform: scale(0.98); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-animate { animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/20 text-slate-950 font-black">
+          <i class="fa-solid fa-fire text-lg"></i>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Gurukul Dream Foundation</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+            Navchetna 2026
+            <span class="hidden sm:inline-block text-[11px] font-normal text-slate-400">| Yuva Shakti Mahotsav</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Quick Role Info / Logout -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-slate-200">Super Admin</span>
+          <span class="text-slate-500 font-mono text-[10px]">(<%= staff.email %>)</span>
+        </div>
+        <a href="/staff" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+          <i class="fa-solid fa-user-gear"></i> <span class="hidden md:inline">Staff</span>
+        </a>
+        <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- ================= NAVBAR ================= -->
+   <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
+      <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
+        <a href="/dashboard" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie"></i> Admin Overview
+        </a>
+        <a href="/desk" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-id-card"></i> Event Day Desk
+        </a>
+        <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-network-wired"></i> Contact Distribution
+        </a>
+        <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+  <i class="fa-solid fa-clipboard-check"></i> Master Desk
+  <% if (typeof kpis !== 'undefined' && kpis && kpis.pendingCorrections) { %>
+    <span class="bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold"><%= kpis.pendingCorrections %></span>
+  <% } %>
+</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-4">
+
+    <!-- Flash Messages -->
+    <% if (error) { %>
+      <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <% if (success) { %>
+      <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+        <span><%= success %></span>
+      </div>
+    <% } %>
+
+    <!-- Header & Live Filter Panel -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Master Ticket Control Desk</h2>
+            <p class="text-xs text-slate-500">Track real-time desk attendance, assigned staff follow-ups, and manage ticket data.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200">
+            Total Matches: <span class="text-blue-700"><%= tickets.length %></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Filter Form -->
+      <form action="/corrections" method="GET" class="space-y-3 pt-3 border-t border-slate-100 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+          
+          <!-- Free Text Search -->
+          <div class="relative sm:col-span-2">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              name="search" 
+              value="<%= filters.search %>"
+              placeholder="Search Ticket (7266), Name, Phone, Slot..." 
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+
+          <!-- Event Filter -->
+          <div>
+            <select name="eventId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Competitions / Events</option>
+              <% events.forEach(ev => { %>
+                <option value="<%= ev.eventId %>" <%= filters.eventId === ev.eventId ? 'selected' : '' %>>
+                  <%= ev.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div>
+            <select name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL" <%= filters.category === 'ALL' ? 'selected' : '' %>>All Categories (Junior & Senior)</option>
+              <option value="JUNIOR" <%= filters.category === 'JUNIOR' ? 'selected' : '' %>>Junior</option>
+              <option value="SENIOR" <%= filters.category === 'SENIOR' ? 'selected' : '' %>>Senior</option>
+            </select>
+          </div>
+
+          <!-- Attendance Filter -->
+          <div>
+            <select name="entryStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL" <%= filters.entryStatus === 'ALL' ? 'selected' : '' %>>All Entry Statuses</option>
+              <option value="PRESENT" <%= filters.entryStatus === 'PRESENT' ? 'selected' : '' %>>Present At Desk</option>
+              <option value="PENDING" <%= filters.entryStatus === 'PENDING' ? 'selected' : '' %>>Not Checked In</option>
+            </select>
+          </div>
+
+          <!-- Staff Filter -->
+          <div>
+            <select name="staffId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Staff Members</option>
+              <% staffList.forEach(s => { %>
+                <option value="<%= s._id %>" <%= filters.staffId === String(s._id) ? 'selected' : '' %>>
+                  Assigned: <%= s.email %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Follow-up Status -->
+          <div>
+            <select name="followupStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL" <%= filters.followupStatus === 'ALL' ? 'selected' : '' %>>All Follow-Up States</option>
+              <option value="CONTACTED" <%= filters.followupStatus === 'CONTACTED' ? 'selected' : '' %>>Contacted / Done</option>
+              <option value="PENDING" <%= filters.followupStatus === 'PENDING' ? 'selected' : '' %>>Pending Follow-Up</option>
+            </select>
+          </div>
+
+          <!-- Apply Filter Buttons -->
+          <div class="flex items-center gap-2">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs tap-active transition shadow-sm">
+              <i class="fa-solid fa-filter"></i> Apply
+            </button>
+            <a href="/corrections" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs tap-active transition" title="Clear Filters">
+              <i class="fa-solid fa-rotate-left"></i>
+            </a>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Master Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-900 text-slate-300 font-bold uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <th class="py-3 px-3.5">Ticket &amp; Slot</th>
+              <th class="py-3 px-3.5">Participant Details</th>
+              <th class="py-3 px-3.5">Events &amp; Manual Tokens</th>
+              <th class="py-3 px-3.5">Desk Entry</th>
+              <th class="py-3 px-3.5">Staff Assigned</th>
+              <th class="py-3 px-3.5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if (tickets.length === 0) { %>
+              <tr>
+                <td colspan="6" class="p-8 text-center text-slate-400">
+                  <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </div>
+                  <p class="font-bold text-slate-600">No participants found</p>
+                  <p class="text-[11px] mt-0.5">Try adjusting your search query or reset the filter settings above.</p>
+                </td>
+              </tr>
+            <% } else { %>
+              <% tickets.forEach(ticket => { %>
+                <tr class="hover:bg-slate-50/80 transition">
+                  
+                  <!-- Ticket & Slot -->
+                  <td class="py-3 px-3.5 align-top">
+                    <div class="font-mono font-bold text-blue-700 text-xs">
+                      <%= ticket.ticketId %>
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">
+                      Slot: <strong class="text-slate-800"><%= ticket.teamSlot || 'N/A' %></strong>
+                    </div>
+                    <span class="inline-block mt-1 px-2 py-0.2 rounded-full text-[10px] font-bold <%= ticket.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' %>">
+                      ₹<%= ticket.amount || 0 %> <%= ticket.status %>
+                    </span>
+                  </td>
+
+                  <!-- Participant Info -->
+                  <td class="py-3 px-3.5 align-top">
+                    <div class="font-bold text-slate-900"><%= ticket.fullName %></div>
+                    <div class="text-slate-500 text-[11px] font-mono"><%= ticket.mobile %></div>
+                    <div class="text-slate-400 text-[10px] truncate max-w-[180px] mt-0.5" title="<%= ticket.school %>">
+                      <%= ticket.school %> (<%= ticket.classCourse %>)
+                    </div>
+                    <span class="inline-block mt-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                      <%= ticket.category %>
+                    </span>
+                  </td>
+
+                  <!-- Events & Tokens -->
+                  <td class="py-3 px-3.5 align-top space-y-1.5 min-w-[200px]">
+                    <% if (ticket.events && ticket.events.length > 0) { %>
+                      <% ticket.events.forEach(ev => { %>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                          <div class="font-bold text-slate-800 truncate" title="<%= ev.eventName %>"><%= ev.eventName %></div>
+                          <div class="flex items-center justify-between text-[10px] mt-0.5">
+                            <span class="font-mono font-bold <%= ev.tokenNumber ? 'text-blue-700' : 'text-slate-400' %>">
+                              <%= ev.tokenNumber ? 'TOKEN: ' + ev.tokenNumber : 'No Token Yet' %>
+                            </span>
+                            <span class="font-semibold <%= ev.entryStatus === 'PRESENT' ? 'text-emerald-600' : 'text-slate-400' %>">
+                              <%= ev.entryStatus === 'PRESENT' ? '✓ Checked In' : 'Pending' %>
+                            </span>
+                          </div>
+                        </div>
+                      <% }) %>
+                    <% } else { %>
+                      <span class="text-slate-400 italic text-[11px]">No events linked</span>
+                    <% } %>
+                  </td>
+
+                  <!-- Desk Attendance -->
+                  <td class="py-3 px-3.5 align-top whitespace-nowrap">
+                    <% if (ticket.isPresent) { %>
+                      <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                        <i class="fa-solid fa-circle-check"></i> PRESENT
+                      </span>
+                    <% } else { %>
+                      <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-semibold text-[11px]">
+                        <i class="fa-solid fa-clock"></i> NOT PRESENT
+                      </span>
+                    <% } %>
+                  </td>
+
+                  <!-- Staff Accountability Tracking -->
+                  <td class="py-3 px-3.5 align-top">
+                    <% if (ticket.assignedStaffEmails && ticket.assignedStaffEmails.length > 0) { %>
+                      <% ticket.assignedStaffEmails.forEach(email => { %>
+                        <div class="text-[11px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 inline-block mb-1">
+                          <%= email %>
+                        </div>
+                      <% }) %>
+                      <div class="text-[10px] font-semibold <%= ticket.isContacted ? 'text-emerald-600' : 'text-amber-600' %>">
+                        <%= ticket.isContacted ? '✓ Contacted' : '⏳ Follow-Up Pending' %>
+                      </div>
+                    <% } else { %>
+                      <span class="text-slate-400 italic text-[11px]">Unassigned</span>
+                    <% } %>
+                  </td>
+
+                  <!-- Action Buttons -->
+                  <td class="py-3 px-3.5 align-top text-right whitespace-nowrap space-x-1">
+                    <button 
+                      type="button" 
+                      onclick='openEditModal(<%- JSON.stringify(ticket) %>)' 
+                      class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded-lg border border-blue-200 font-bold text-xs tap-active transition"
+                      title="Edit Ticket Details"
+                    >
+                      <i class="fa-solid fa-pen-to-square"></i> Edit
+                    </button>
+
+                    <button 
+                      type="button" 
+                      onclick="openDeleteModal('<%= ticket._id %>', '<%= ticket.ticketId %>', '<%= ticket.fullName %>')" 
+                      class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1.5 rounded-lg border border-rose-200 font-bold text-xs tap-active transition"
+                      title="Delete Ticket"
+                    >
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </td>
+
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= EDIT TICKET MODAL ================= -->
+  <div id="editModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden modal-animate">
+      
+      <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+          <h3 class="font-bold text-sm">Edit Ticket <span id="modalTicketId" class="font-mono text-amber-300"></span></h3>
+        </div>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <form action="/corrections/update" method="POST" class="p-5 space-y-3.5 text-xs">
+        <input type="hidden" id="editRegId" name="registrationId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="editFullName" name="fullName" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Mobile Number</label>
+            <input type="text" id="editMobile" name="mobile" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">School / College</label>
+            <input type="text" id="editSchool" name="school" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Class / Stream</label>
+            <input type="text" id="editClass" name="classCourse" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Category</label>
+            <select id="editCategory" name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="JUNIOR">JUNIOR</option>
+              <option value="SENIOR">SENIOR</option>
+              <option value="OPEN">OPEN</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Slot / Team Code</label>
+            <input type="text" id="editSlot" name="teamSlot" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Payment Status</label>
+            <select id="editStatus" name="status" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="PAID">PAID</option>
+              <option value="PENDING">PENDING</option>
+              <option value="COMPLIMENTARY">COMPLIMENTARY</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Amount Paid (₹)</label>
+          <input type="number" id="editAmount" name="amount" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl tap-active transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl tap-active transition shadow-md">
+            Save Changes
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ================= DELETE CONFIRMATION MODAL ================= -->
+  <div id="deleteModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 p-5 text-center modal-animate space-y-3">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="font-extrabold text-slate-900 text-sm">Delete Ticket Record?</h3>
+      <p class="text-xs text-slate-500">
+        Are you sure you want to permanently delete ticket <strong id="deleteTicketDisplay" class="text-slate-800"></strong> for <span id="deleteNameDisplay" class="font-bold"></span>? All stage trackings will be removed.
+      </p>
+
+      <form action="/corrections/delete" method="POST" class="pt-2">
+        <input type="hidden" id="deleteRegId" name="registrationId">
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeDeleteModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs tap-active transition">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs tap-active transition shadow-sm">
+            Yes, Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openEditModal(ticket) {
+      document.getElementById('editRegId').value = ticket._id;
+      document.getElementById('modalTicketId').textContent = '#' + ticket.ticketId;
+      document.getElementById('editFullName').value = ticket.fullName || '';
+      document.getElementById('editMobile').value = ticket.mobile || '';
+      document.getElementById('editSchool').value = ticket.school || '';
+      document.getElementById('editClass').value = ticket.classCourse || '';
+      document.getElementById('editCategory').value = (ticket.category || 'JUNIOR').toUpperCase();
+      document.getElementById('editSlot').value = ticket.teamSlot || '';
+      document.getElementById('editStatus').value = ticket.status || 'PAID';
+      document.getElementById('editAmount').value = ticket.amount !== undefined ? ticket.amount : 50;
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function openDeleteModal(id, ticketId, name) {
+      document.getElementById('deleteRegId').value = id;
+      document.getElementById('deleteTicketDisplay').textContent = '#' + ticketId;
+      document.getElementById('deleteNameDisplay').textContent = name;
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

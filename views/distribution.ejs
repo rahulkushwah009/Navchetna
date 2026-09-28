@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Distribution | Navchetna 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-slate-950 font-black shadow-md">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Gurukul Dream Foundation</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white">Navchetna 2026 <span class="text-slate-400 font-normal">| Distribution</span></h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/dashboard" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200">Dashboard</a>
+        <a href="/logout" class="text-xs bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-power-off"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 space-y-6">
+
+    <!-- Flash Messages -->
+    <% if (error) { %>
+      <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+    <% if (success) { %>
+      <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        <span><%= success %></span>
+      </div>
+    <% } %>
+
+    <!-- KPI Cards -->
+    <% 
+      const totalContacts = trackings.length;
+      const assignedCount = trackings.filter(t => t.assignedStaff && t.assignedStaff.staffId).length;
+      const unassignedCount = totalContacts - assignedCount;
+      const pct = totalContacts > 0 ? Math.round((assignedCount / totalContacts) * 100) : 0;
+    %>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-slate-400">Total Contacts</div>
+        <div class="text-2xl font-black text-slate-900 mt-1"><%= totalContacts %></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-emerald-600">Assigned</div>
+        <div class="text-2xl font-black text-emerald-700 mt-1"><%= assignedCount %> <span class="text-xs font-semibold">(<%= pct %>%)</span></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-amber-600">Unassigned Pool</div>
+        <div class="text-2xl font-black text-amber-600 mt-1"><%= unassignedCount %></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-blue-600">Active Staff</div>
+        <div class="text-2xl font-black text-blue-700 mt-1"><%= staffList.length %></div>
+      </div>
+    </div>
+
+    <!-- Distribution Actions Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      
+      <!-- Option 1: Auto Distribute Evenly -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2.5 mb-2">
+            <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-scale-balanced"></i>
+            </span>
+            <h2 class="text-sm font-extrabold text-slate-900">Auto-Distribute Evenly</h2>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Divides pending participants equally across active staff while respecting capacity limits.</p>
+
+          <form action="/distribution/apply" method="POST" class="space-y-3 text-xs">
+            <input type="hidden" name="mode" value="AUTO">
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Select Event</label>
+              <select name="eventId" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+                <option value="ALL">All Events</option>
+                <% events.forEach(ev => { %>
+                  <option value="<%= ev.eventId %>"><%= ev.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Category</label>
+                <select name="categoryFilter" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+                  <option value="ALL">All Categories</option>
+                  <option value="JUNIOR">Junior Only</option>
+                  <option value="SENIOR">Senior Only</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Max Cap / Staff</label>
+                <input type="number" name="maxLimit" value="40" min="1" max="40" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full mt-2 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-play"></i> Auto Distribute
+            </button>
+          </form>
+        </div>
+
+        <!-- Quick Reset Event -->
+        <form action="/distribution/reset" method="POST" class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between" onsubmit="return confirm('Reset all pending contacts for this selection?');">
+          <input type="hidden" name="scope" value="EVENT">
+          <input type="hidden" name="eventId" value="ALL">
+          <span class="text-[11px] text-slate-400">Need to start fresh?</span>
+          <button type="submit" class="text-[11px] text-rose-600 font-bold hover:underline">
+            <i class="fa-solid fa-rotate-left"></i> Reset All Pending
+          </button>
+        </form>
+      </div>
+
+      <!-- Option 2: Direct Single Staff Assignment -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2.5 mb-2">
+            <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-user-plus"></i>
+            </span>
+            <h2 class="text-sm font-extrabold text-slate-900">Direct Assign to Member</h2>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Hand-pick a staff member and assign a custom batch of unassigned contacts directly.</p>
+
+          <form action="/distribution/apply" method="POST" class="space-y-3 text-xs">
+            <input type="hidden" name="mode" value="DIRECT">
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Staff Member</label>
+              <select name="staffId" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+                <option value="">-- Choose Staff --</option>
+                <% staffList.forEach(s => { 
+                  const load = staffWorkloadMap[String(s._id)] ? staffWorkloadMap[String(s._id)].count : 0;
+                %>
+                  <option value="<%= s._id %>"><%= s.email %> (<%= s.secretCode %>) — [<%= load %>/40]</option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Event Pool</label>
+                <select name="eventId" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+  <option value="ALL">All Events</option>
+  <% events.forEach(ev => { %>
+    <option value="<%= ev.eventId %>"><%= ev.name %> (<%= ev.eventId %>)</option>
+  <% }) %>
+</select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Number to Assign</label>
+                <input type="number" name="countToAssign" placeholder="All up to limit" min="1" max="40" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full mt-2 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-arrow-right"></i> Assign Contacts
+            </button>
+          </form>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+          Will only assign contacts that currently have no assigned staff.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live Staff Workload Table -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <h3 class="text-sm font-extrabold text-slate-900 mb-1">Staff Workload &amp; Progress</h3>
+      <p class="text-xs text-slate-500 mb-4">Current call progress and capacity per team member.</p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+              <th class="py-2.5 px-3">Staff</th>
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">Allocated Load</th>
+              <th class="py-2.5 px-3">Progress</th>
+              <th class="py-2.5 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% staffList.forEach(s => { 
+              const stat = staffWorkloadMap[String(s._id)] || { count: 0, contacted: 0, remainingCapacity: 40 };
+              const progressPct = stat.count > 0 ? Math.round((stat.contacted / stat.count) * 100) : 0;
+            %>
+              <tr class="hover:bg-slate-50/70">
+                <td class="py-3 px-3">
+                  <div class="font-bold text-slate-800"><%= s.email %></div>
+                  <div class="text-[10px] text-slate-400 font-mono"><%= s.secretCode %></div>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold <%= s.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' %>">
+                    <%= s.role %>
+                  </span>
+                </td>
+                <td class="py-3 px-3">
+                  <div class="font-bold <%= stat.count >= 40 ? 'text-rose-600' : 'text-slate-800' %>"><%= stat.count %> / 40</div>
+                  <div class="text-[10px] text-slate-400"><%= stat.remainingCapacity %> slots free</div>
+                </td>
+                <td class="py-3 px-3 min-w-[120px]">
+                  <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                    <span><%= stat.contacted %> contacted</span>
+                    <span class="font-bold"><%= progressPct %>%</span>
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: <%= progressPct %>%"></div>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-right">
+                  <% if (stat.count > 0) { %>
+                    <form action="/distribution/reset" method="POST" class="inline-block" onsubmit="return confirm('Clear pending assignments for <%= s.email %>?');">
+                      <input type="hidden" name="scope" value="STAFF">
+                      <input type="hidden" name="staffId" value="<%= s._id %>">
+                      <button type="submit" class="text-[11px] text-rose-600 hover:text-rose-700 font-bold bg-rose-50 px-2 py-1 rounded border border-rose-200">
+                        Reset Load
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-slate-300 italic text-[11px]">None</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>

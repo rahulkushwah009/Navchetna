@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Access Management | Navchetna 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 text-white py-3.5 px-4 sm:px-8">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center text-slate-900 font-extrabold">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Navchetna 2026</div>
+          <h1 class="text-base font-extrabold">Staff &amp; Coordinator Portal</h1>
+        </div>
+      </div>
+      <a href="/" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 font-semibold transition">
+        ← Back
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
+
+    <!-- Flash Alerts -->
+    <% if (error) { %>
+      <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <% if (success) { %>
+      <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        <span><%= success %></span>
+      </div>
+    <% } %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Column 1: Onboard Staff Form -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sticky top-6">
+          <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-user-plus text-blue-600"></i> Create Staff Member
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5 mb-4">Assign Admin or Coordinator role.</p>
+
+          <form action="/staff" method="POST" class="space-y-3.5 text-xs">
+            
+            <!-- Role Selection -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Staff Role</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-blue-500 bg-blue-50/50" id="roleLabelAdmin">
+                  <input type="radio" name="role" value="ADMIN" checked onchange="toggleRoleScope('ADMIN')">
+                  <span class="font-bold text-slate-800">Super Admin</span>
+                </label>
+                <label class="border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-slate-200" id="roleLabelCoord">
+                  <input type="radio" name="role" value="COORDINATOR" onchange="toggleRoleScope('COORDINATOR')">
+                  <span class="font-bold text-slate-800">Coordinator</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Staff Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                required 
+                placeholder="staff@example.com"
+                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+
+            <!-- Secret Code with Client Auto-Fill Utility -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-bold text-slate-700">Secret Login Code</label>
+                <button type="button" onclick="quickGenCode()" class="text-[10px] text-blue-600 hover:underline font-semibold">
+                  Generate Code
+                </button>
+              </div>
+              <input 
+                type="text" 
+                name="secretCode" 
+                id="codeField" 
+                required 
+                placeholder="e.g. ADM7821 or DANCE001"
+                class="w-full uppercase font-mono tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <span class="text-[10px] text-slate-400 mt-1 block">Staff logs into dashboard using this code only.</span>
+            </div>
+
+            <!-- Assigned Event (Shown only for COORDINATOR) -->
+            <div id="eventSelectBox" class="hidden">
+              <label class="block font-bold text-slate-700 mb-1">Assigned Event</label>
+              <select name="assignedEventId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold">
+                <% Object.keys(eventMap).forEach(key => { %>
+                  <option value="<%= key %>"><%= eventMap[key] %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <button 
+              type="submit" 
+              class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2 mt-4"
+            >
+              <i class="fa-solid fa-plus"></i> Add Staff Account
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Column 2: Live Server-Rendered Staff Table -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900">Current Staff Records</h3>
+              <p class="text-xs text-slate-400"><%= staffList.length %> total active accounts registered</p>
+            </div>
+            
+            <!-- Server-Side Filter Form -->
+            <form action="/staff" method="GET" class="flex items-center gap-1.5">
+              <select name="role" onchange="this.form.submit()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium">
+                <option value="" <%= !selectedRole ? 'selected' : '' %>>All Roles</option>
+                <option value="ADMIN" <%= selectedRole === 'ADMIN' ? 'selected' : '' %>>Admins Only</option>
+                <option value="COORDINATOR" <%= selectedRole === 'COORDINATOR' ? 'selected' : '' %>>Coordinators Only</option>
+              </select>
+            </form>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-100">
+                <tr>
+                  <th class="px-4 py-3">Role</th>
+                  <th class="px-4 py-3">Email</th>
+                  <th class="px-4 py-3">Secret Code</th>
+                  <th class="px-4 py-3">Event Permission</th>
+                  <th class="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <% if (staffList.length === 0) { %>
+                  <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-slate-400">
+                      <i class="fa-solid fa-users-slash text-2xl mb-2 block"></i>
+                      No staff members registered in the database.
+                    </td>
+                  </tr>
+                <% } else { %>
+                  <% staffList.forEach(staff => { %>
+                    <tr class="hover:bg-slate-50 transition">
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold <%= staff.role === 'ADMIN' ? 'bg-blue-100 text-blue-800' : 'bg-indigo-100 text-indigo-800' %>">
+                          <%= staff.role %>
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 font-semibold text-slate-800"><%= staff.email %></td>
+                      <td class="px-4 py-3">
+                        <span class="font-mono font-bold bg-slate-100 px-2 py-0.5 rounded text-slate-800">
+                          <%= staff.secretCode %>
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 font-medium">
+                        <% if (staff.role === 'ADMIN') { %>
+                          <span class="text-emerald-700 font-semibold">Full Admin Access</span>
+                        <% } else { %>
+                          <span><%= eventMap[staff.assignedEventId] || staff.assignedEventId || 'No Event Assigned' %></span>
+                        <% } %>
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <form action="/staff/delete/<%= staff._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete access for <%= staff.email %>?');" class="inline">
+                          <button type="submit" class="text-rose-500 hover:text-rose-700 text-xs font-semibold p-1.5 rounded hover:bg-rose-50" title="Delete Staff">
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function toggleRoleScope(role) {
+      const box = document.getElementById("eventSelectBox");
+      const labelAdmin = document.getElementById("roleLabelAdmin");
+      const labelCoord = document.getElementById("roleLabelCoord");
+
+      if (role === "COORDINATOR") {
+        box.classList.remove("hidden");
+        labelCoord.className = "border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-indigo-500 bg-indigo-50/50";
+        labelAdmin.className = "border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-slate-200";
+      } else {
+        box.classList.add("hidden");
+        labelAdmin.className = "border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-blue-500 bg-blue-50/50";
+        labelCoord.className = "border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition border-slate-200";
+      }
+    }
+
+    function quickGenCode() {
+      const role = document.querySelector('input[name="role"]:checked').value;
+      const prefix = role === "ADMIN" ? "ADM" : "CRD";
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById("codeField").value = prefix + rand;
+    }
+  </script>
+</body>
+</html>

@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -140,7 +139,6 @@ const eventNameMap = {
 // Helper: Calculate Original Event Value
 // ======================================
 function calculateRegistrationOriginalAmount(reg, masterEvents) {
-  // If explicitly edited and saved via admin, prefer saved waivedAmount
   if (reg.waivedAmount !== undefined && reg.waivedAmount !== null && Number(reg.waivedAmount) > 0) {
     return Number(reg.waivedAmount);
   }
@@ -154,7 +152,6 @@ function calculateRegistrationOriginalAmount(reg, masterEvents) {
     ? reg.events
     : [];
 
-  // Fallback for single-event legacy records without an array
   if (eventsToEvaluate.length === 0 && reg.eventName) {
     const matched = masterEvents.find(
       (m) =>
@@ -173,7 +170,6 @@ function calculateRegistrationOriginalAmount(reg, masterEvents) {
     const rawId = (item.id || "").toLowerCase();
     const rawName = (item.name || "").toLowerCase();
 
-    // Match exact ID, exact Name, or fallback legacy esports patterns
     let master = masterEvents.find(
       (m) => m.id.toLowerCase() === rawId || m.name.toLowerCase() === rawName
     );
@@ -242,7 +238,7 @@ const registrationSchema = new mongoose.Schema(
     eventName: { type: String, required: true },
     events: [selectedEventSchema],
     amount: { type: Number, required: true, min: 0 },
-    waivedAmount: { type: Number, default: 0, min: 0 }, // Admin editable waived value
+    waivedAmount: { type: Number, default: 0, min: 0 },
     secretCode: { type: String, default: "", trim: true },
     status: {
       type: String,
@@ -298,125 +294,6 @@ function generateTicketId() {
 }
 
 // ======================================
-// Query Builder with Range & E-Sports Support
-// ======================================
-function buildRegistrationQuery(query) {
-  const conditions = [];
-
-  // 1. Keyword search
-  if (query.search && query.search.trim()) {
-    const s = query.search.trim();
-    conditions.push({
-      $or: [
-        { ticketId: { $regex: s,$options: "i" } },
-        { fullName: { $regex: s,$options: "i" } },
-        { mobile: { $regex: s,$options: "i" } },
-        { school: { $regex: s,$options: "i" } },
-        { reference: { $regex: s,$options: "i" } },
-        { teamSlot: { $regex: s,$options: "i" } },
-        { "events.teamName": { $regex: s,$options: "i" } },
-      ],
-    });
-  }
-
-  // 2. Event ID Filter (matches modern & legacy)
-  if (query.eventId && query.eventId.trim()) {
-    const eId = query.eventId.trim();
-    conditions.push({
-      $or: [
-        { eventId: eId },
-        { "events.id": eId },
-        { "events._id": eId },
-      ],
-    });
-  }
-
-  // 3. Dedicated Esports Game Filter
-  if (query.esportsGame && query.esportsGame.trim()) {
-    const gameId = query.esportsGame.trim();
-    if (gameId === "esports") {
-      conditions.push({
-        "events.id": { $in: ["esports", "esports Free Fire", "esports PUBG"] },
-      });
-    } else {
-      conditions.push({
-        "events.id": gameId,
-      });
-    }
-  }
-
-  // 4. Esports Participation Mode
-  if (query.esportsMode && query.esportsMode.trim()) {
-    conditions.push({
-      "events.participantType": query.esportsMode.trim(),
-    });
-  }
-
-  // 5. Secret Code Filter
-  if (query.secretCode && query.secretCode.trim()) {
-    conditions.push({
-      secretCode: { $regex: query.secretCode.trim(),$options: "i" },
-    });
-  }
-
-  // 6. Reference Name Filter
-  if (query.reference && query.reference.trim()) {
-    conditions.push({
-      reference: { $regex: query.reference.trim(),$options: "i" },
-    });
-  }
-
-  // 7. Slot Range (Numeric and Regex fallback)
-  const fromNum = query.slotFrom && !isNaN(Number(query.slotFrom)) ? Number(query.slotFrom) : null;
-  const toNum = query.slotTo && !isNaN(Number(query.slotTo)) ? Number(query.slotTo) : null;
-
-  if (fromNum !== null || toNum !== null) {
-    const exprConditions = [
-      { $ne: ["$teamSlot", ""] },
-      { $ne: ["$teamSlot", null] },
-    ];
-    if (fromNum !== null) {
-      exprConditions.push({ $gte: [{ $toInt: "$teamSlot" }, fromNum] });
-    }
-    if (toNum !== null) {
-      exprConditions.push({ $lte: [{ $toInt: "$teamSlot" }, toNum] });
-    }
-    conditions.push({ $expr: {$and: exprConditions } });
-  } else if (query.teamSlot && query.teamSlot.trim() !== "") {
-    conditions.push({
-      teamSlot: { $regex: query.teamSlot.trim(),$options: "i" },
-    });
-  }
-
-  // 8. Payment Status
-  if (query.status && query.status.trim()) {
-    conditions.push({ status: query.status.trim() });
-  }
-
-  // 9. Category Filter
-  if (query.category && query.category.trim()) {
-    conditions.push({
-      category: { $regex: `^${query.category.trim()}$`, $options: "i" },
-    });
-  }
-
-  // 10. Date Range (createdAt)
-  if (query.startDate || query.endDate) {
-    const dateCond = {};
-    if (query.startDate) {
-      dateCond.$gte = new Date(`${query.startDate}T00:00:00.000Z`);
-    }
-    if (query.endDate) {
-      const end = new Date(`${query.endDate}T23:59:59.999Z`);
-      dateCond.$lte = end;
-    }
-    conditions.push({ createdAt: dateCond });
-  }
-
-  return conditions.length > 0 ? { $and: conditions } : {};
-}
-
-// ======================================
 // App Middleware
 // ======================================
 app.use(cors());
@@ -426,7 +303,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(methodOverride("_method"));
-
 
 app.get("/", (req, res) => res.render("homePage"));
 app.get("/register", (req, res) => res.render("register"));
@@ -609,7 +485,6 @@ app.post("/api/record-complimentary", async (req, res) => {
       status: "COMPLIMENTARY",
     });
 
-    // Automatically compute the initial waived event fee
     reg.waivedAmount = calculateRegistrationOriginalAmount(reg, EVENTS);
 
     await reg.save();
@@ -625,9 +500,8 @@ app.get('/dance', async (req, res) => {
   });
 });
 
-
 // ======================================
-// Night Event (Bhajan / DJ) Registration Schema
+// Night Event Registration Schema & Endpoints
 // ======================================
 const nightEventRegistrationSchema = new mongoose.Schema(
   {
@@ -663,9 +537,6 @@ const NightEventRegistration =
   mongoose.models.NightEventRegistration ||
   mongoose.model("NightEventRegistration", nightEventRegistrationSchema);
 
-// ======================================
-// Bhajan Clubbing / DJ Night Endpoints
-// ======================================
 app.get("/NightEventRegistration", (req, res) => {
   res.render("djform");
 });
@@ -825,12 +696,9 @@ app.post("/api/dj/record-complimentary", async (req, res) => {
   }
 });
 
-
-
-
-
-
-// New Update 
+// ======================================
+// Events Metadata & Config
+// ======================================
 const EVENT_MAP = {
   ev_1: "E-Sports Championship",
   ev_2: "E-Sports Free Fire",
@@ -860,33 +728,6 @@ const EVENTS_CONFIG = [
   { eventId: "ev_11", eventCode: "ESSAY", name: "Kalamkar : Essay Competition", prefix: "KL" },
   { eventId: "ev_12", eventCode: "DHARMA", name: "Dharmagatha : Ramayan - Mahabharat Gyan", prefix: "DG" },
 ];
-
-const EVENT_PREFIXES = {
-  ev_1: "ESP",
-  ESPORTS: "ESP",
-  ev_2: "FF",
-  FREEFIRE: "FF",
-  ev_3: "BG",
-  PUBG: "BG",
-  ev_4: "DR",
-  DRAWING: "DR",
-  ev_5: "Q",
-  QUIZ: "Q",
-  ev_6: "TM",
-  HACKATHON: "TM",
-  ev_7: "OM",
-  OPENMIC: "OM",
-  ev_8: "D",
-  DANCE: "D",
-  ev_9: "FS",
-  FASHION: "FS",
-  ev_10: "PH",
-  PHOTO: "PH",
-  ev_11: "KL",
-  ESSAY: "KL",
-  ev_12: "DG",
-  DHARMA: "DG",
-};
 
 // ----------------------------------------------------
 // Authentication Middlewares
@@ -948,7 +789,6 @@ async function ensureEventTrackingPopulated() {
 // ----------------------------------------------------
 // Staff Onboarding & Authentication Routes
 // ----------------------------------------------------
-
 app.get("/login", (req, res) => {
   if (req.session && req.session.staff) {
     return res.redirect(req.session.staff.role === "ADMIN" ? "/dashboard" : "/coordinator");
@@ -1072,7 +912,9 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Contact Distribution Engine
+// Contact Distribution Engine (Fixed & Filter Enabled)
+// ----------------------------------------------------
+
 // GET: Distribution Dashboard
 app.get("/distribution", requireAdmin, async (req, res) => {
   try {
@@ -1085,7 +927,7 @@ app.get("/distribution", requireAdmin, async (req, res) => {
       EventTracking.find({}, "eventId eventName category assignedStaff followupStatus isAssigned").lean(),
     ]);
 
-    // Build the dynamic events list directly from existing tracking documents
+    // Build unique events map from existing tracking docs
     const eventMap = new Map();
     trackings.forEach((t) => {
       if (t.eventId && !eventMap.has(t.eventId)) {
@@ -1097,7 +939,7 @@ app.get("/distribution", requireAdmin, async (req, res) => {
     });
     const dynamicEvents = Array.from(eventMap.values());
 
-    // Workload mapping
+    // Compute workload per active staff member
     const staffWorkloadMap = {};
     for (const s of staffList) {
       const assigned = trackings.filter(
@@ -1114,7 +956,7 @@ app.get("/distribution", requireAdmin, async (req, res) => {
 
     res.render("distribution", {
       staff: req.session.staff,
-      events: dynamicEvents, // Passes real database event IDs
+      events: dynamicEvents,
       staffList,
       trackings,
       staffWorkloadMap,
@@ -1132,38 +974,47 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
     const { mode, eventId, categoryFilter, maxLimit, staffId, countToAssign } = req.body;
     const limit = Math.min(Math.max(parseInt(maxLimit, 10) || 40, 1), 40);
 
-    // Flexible unassigned criteria
-    const baseQuery = {
-      $or: [
-        { isAssigned: false },
-        { "assignedStaff.staffId": null },
-        { "assignedStaff.staffId": { $exists: false } },
-        { "assignedStaff.targetStatus": "UNASSIGNED" },
-      ],
-    };
+    // Unassigned criteria: record has not been assigned to any staff
+    const queryConditions = [
+      {
+        $or: [
+          { isAssigned: false },
+          { isAssigned: { $exists: false } },
+          { "assignedStaff.staffId": null },
+          { "assignedStaff.staffId": { $exists: false } },
+          { "assignedStaff.targetStatus": "UNASSIGNED" },
+        ],
+      },
+    ];
 
-    // Match eventId or eventName flexibly
+    // Filter by Event (if not "ALL")
     if (eventId && eventId !== "ALL" && eventId.trim() !== "") {
-      const trimmedEvent = eventId.trim();
-      baseQuery.$and = [
-        {
-          $or: [
-            { eventId: new RegExp(`^${trimmedEvent}$`, "i") },
-            { eventName: new RegExp(`^${trimmedEvent}$`, "i") },
-          ],
-        },
-      ];
+      const trimmedEvent = eventId.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      queryConditions.push({
+        $or: [
+          { eventId: new RegExp(`^${trimmedEvent}$`, "i") },
+          { eventName: new RegExp(`^${trimmedEvent}$`, "i") },
+        ],
+      });
     }
 
+    // Filter by Junior / Senior Category
     if (categoryFilter && categoryFilter !== "ALL" && categoryFilter.trim() !== "") {
-      baseQuery.category = new RegExp(`^${categoryFilter.trim()}$`, "i");
+      const escapedCategory = categoryFilter.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      queryConditions.push({
+        category: new RegExp(`^${escapedCategory}$`, "i"),
+      });
     }
+
+    const baseQuery = { $and: queryConditions };
 
     const availableMatches = await EventTracking.countDocuments(baseQuery);
     if (availableMatches === 0) {
       return res.redirect(
         "/distribution?error=" +
-          encodeURIComponent(`No unassigned contacts found for selection "${eventId}".`)
+          encodeURIComponent(
+            `No unassigned contacts found matching Event: "${eventId || 'ALL'}" and Category: "${categoryFilter || 'ALL'}".`
+          )
       );
     }
 
@@ -1212,7 +1063,10 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
 
       return res.redirect(
-        "/distribution?success=" + encodeURIComponent(`Assigned ${ids.length} contacts directly to ${member.email}.`)
+        "/distribution?success=" +
+          encodeURIComponent(
+            `Assigned ${ids.length} contacts (${categoryFilter || 'All Categories'}) directly to ${member.email}.`
+          )
       );
     }
 
@@ -1289,8 +1143,51 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
     return res.redirect("/distribution?error=" + encodeURIComponent(err.message));
   }
 });
+
+// POST: Reset Distribution Load
+app.post("/distribution/reset", requireAdmin, async (req, res) => {
+  try {
+    const { scope, eventId, staffId } = req.body;
+
+    const resetFields = {
+      $set: {
+        isAssigned: false,
+        assignedStaff: {
+          staffId: null,
+          email: "",
+          secretCode: "",
+          targetStatus: "UNASSIGNED",
+          assignedBy: "",
+          assignedAt: null,
+        },
+      },
+    };
+
+    if (scope === "STAFF" && staffId) {
+      await EventTracking.updateMany(
+        { "assignedStaff.staffId": staffId, followupStatus: "PENDING" },
+        resetFields
+      );
+      return res.redirect("/distribution?success=" + encodeURIComponent("Cleared pending assignments for the selected staff member."));
+    }
+
+    if (scope === "EVENT") {
+      const filter = { followupStatus: "PENDING" };
+      if (eventId && eventId !== "ALL") {
+        filter.$or = [{ eventId: eventId }, { eventName: eventId }];
+      }
+      await EventTracking.updateMany(filter, resetFields);
+      return res.redirect("/distribution?success=" + encodeURIComponent("Reset pending contact assignments successfully."));
+    }
+
+    return res.redirect("/distribution?error=" + encodeURIComponent("Invalid reset request parameters."));
+  } catch (err) {
+    return res.redirect("/distribution?error=" + encodeURIComponent(err.message));
+  }
+});
+
 // ----------------------------------------------------
-// Master Desk / Corrections Engine (Fixed & Enhanced)
+// Master Desk / Corrections Engine
 // ----------------------------------------------------
 app.get("/corrections", requireAdmin, async (req, res) => {
   try {
@@ -1321,7 +1218,6 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       Staff.find({ isActive: true }).sort({ email: 1 }).lean(),
     ]);
 
-    // Group trackings by registrationId
     const trackingByRegId = {};
     allTrackings.forEach((t) => {
       const regId = String(t.registrationId);
@@ -1329,15 +1225,11 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       trackingByRegId[regId].push(t);
     });
 
-    // Merge registration rows with tracking and staff details
     let masterData = allRegistrations.map((reg) => {
       const regId = String(reg._id);
       const events = trackingByRegId[regId] || [];
 
-      // Check if participant is marked present in at least one event
       const isPresent = events.some((ev) => ev.entryStatus === "PRESENT");
-      
-      // Determine overall follow-up status
       const assignedStaffEmails = Array.from(
         new Set(events.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
       );
@@ -1357,7 +1249,6 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       };
     });
 
-    // Apply tracking-level secondary filters
     if (eventId && eventId !== "ALL") {
       masterData = masterData.filter((r) => r.events.some((ev) => ev.eventId === eventId));
     }
@@ -1425,7 +1316,6 @@ app.post("/corrections/update", requireAdmin, async (req, res) => {
 
     await reg.save();
 
-    // Propagate changes to EventTracking records
     await EventTracking.updateMany(
       { registrationId: reg._id },
       {
@@ -1456,7 +1346,6 @@ app.post("/corrections/delete", requireAdmin, async (req, res) => {
       return res.redirect("/corrections?error=" + encodeURIComponent("Registration not found or already deleted."));
     }
 
-    // Clean up all related event trackings
     await EventTracking.deleteMany({ registrationId });
 
     return res.redirect(
@@ -1468,7 +1357,7 @@ app.post("/corrections/delete", requireAdmin, async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Event Day Desk Routes (Manual Token Entry Enabled)
+// Event Day Desk Routes
 // ----------------------------------------------------
 app.get("/desk", requireAuth, async (req, res) => {
   res.render("desk", {
@@ -1607,13 +1496,9 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
   }
 });
 
-// Now come to staff panales
-
-
 // ----------------------------------------------------
 // Event Coordinator Dashboard Routes
 // ----------------------------------------------------
-// GET /coordinator - Dashboard render with complete filters & metrics
 app.get("/coordinator", requireAuth, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -1621,7 +1506,6 @@ app.get("/coordinator", requireAuth, async (req, res) => {
     const staffMember = req.session.staff;
     const { category, stageStatus, entryStatus, followupStatus, search } = req.query;
 
-    // Filter trackings assigned to this coordinator or their assigned event
     let trackingFilter = {};
     if (staffMember.role !== "ADMIN") {
       trackingFilter.$or = [
@@ -1647,7 +1531,6 @@ app.get("/coordinator", requireAuth, async (req, res) => {
 
     let trackings = await EventTracking.find(trackingFilter).lean();
 
-    // Fetch related registration records to display complete participant demographic details
     const regIds = trackings.map((t) => t.registrationId).filter(Boolean);
     const registrations = await Registration.find({ _id: { $in: regIds } }).lean();
     const regMap = {};
@@ -1655,7 +1538,6 @@ app.get("/coordinator", requireAuth, async (req, res) => {
       regMap[String(r._id)] = r;
     });
 
-    // Merge participant data with tracking record
     let participantCards = trackings.map((t) => {
       const reg = regMap[String(t.registrationId)] || {};
       return {
@@ -1681,7 +1563,6 @@ app.get("/coordinator", requireAuth, async (req, res) => {
       };
     });
 
-    // Handle free-text search (Name, Mobile, Ticket, Token, Slot)
     if (search && search.trim() !== "") {
       const query = search.trim().toLowerCase();
       participantCards = participantCards.filter((p) => {
@@ -1695,19 +1576,16 @@ app.get("/coordinator", requireAuth, async (req, res) => {
       });
     }
 
-    // Stage metrics
     const totalAssigned = participantCards.length;
     const presentAtDesk = participantCards.filter((p) => p.entryStatus === "PRESENT").length;
     const backstageCount = participantCards.filter((p) => p.stageStatus === "WAITING_BACKSTAGE").length;
     const onStageCount = participantCards.filter((p) => p.stageStatus === "ON_STAGE").length;
     const completedCount = participantCards.filter((p) => p.stageStatus === "PERFORMANCE_DONE").length;
 
-    // Follow-up & remark metrics
     const willComeCount = participantCards.filter((p) => p.followupStatus === "WILL_COME").length;
     const willNotComeCount = participantCards.filter((p) => p.followupStatus === "WILL_NOT_COME").length;
     const notPickedCount = participantCards.filter((p) => p.followupStatus === "CALL_NOT_PICKED").length;
 
-    // Resolve assigned event title
     const eventName = staffMember.assignedEventId
       ? (typeof EVENT_MAP !== "undefined" && EVENT_MAP[staffMember.assignedEventId]) || staffMember.assignedEventId
       : "All Assigned Events";
@@ -1741,7 +1619,7 @@ app.get("/coordinator", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/coordinator/update-followup - Handles Call/WhatsApp updates and Remarks
+// POST /api/coordinator/update-followup
 app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
   try {
     const { trackingId, followupStatus, actionType, coordinatorNotes } = req.body;
@@ -1794,7 +1672,6 @@ app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
       incFields.totalWhatsApp = 1;
     }
 
-    // returnDocument: 'after' fixes the Mongoose deprecation warning
     const tracking = await EventTracking.findByIdAndUpdate(
       trackingId,
       {
@@ -1808,7 +1685,6 @@ app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
       return res.status(404).json({ success: false, message: "Tracking record not found." });
     }
 
-    // Activity Log handling
     if (typeof ActivityLog !== "undefined" && ActivityLog) {
       try {
         const allowedTypes = ActivityLog.schema?.path("activityType")?.enumValues || [];
@@ -1846,7 +1722,7 @@ app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/coordinator/update-stage - Stage queue flow
+// POST /api/coordinator/update-stage
 app.post("/api/coordinator/update-stage", requireAuth, async (req, res) => {
   try {
     const { trackingId, stageStatus, remarks } = req.body;
@@ -1909,16 +1785,12 @@ app.post("/api/coordinator/update-stage", requireAuth, async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
-app.get('/rules',requireAuth , async (req, res) => {
+
+app.get('/rules', requireAuth, async (req, res) => {
   res.render('rules', {
     pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
   });
 });
-
-
-
-
-
 
 // ======================================
 // 404 Handler & Server Startup

@@ -27,13 +27,14 @@ app.use(
     cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day session
   })
 );
+
 // ======================================
 // Master Events Data
 // ======================================
 const Staff = require("./models/Staff");
-// const Registration = require("./models/Registration");
 const EventTracking = require("./models/EventTracking");
 const ActivityLog = require("./models/ActivityLog");
+
 const EVENTS = [
   // Legacy alias preserved so historical registrations calculate accurately
   {
@@ -494,9 +495,9 @@ app.post("/api/record-complimentary", async (req, res) => {
   }
 });
 
-app.get('/dance', async (req, res) => {
-  res.render('dance', {
-    pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
+app.get("/dance", async (req, res) => {
+  res.render("dance", {
+    pageTitle: "Navchetna Yuva Mahotsav - Event Rules & Schedule",
   });
 });
 
@@ -914,8 +915,6 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
 // ----------------------------------------------------
 // Contact Distribution Engine (Fixed & Filter Enabled)
 // ----------------------------------------------------
-
-// GET: Distribution Dashboard
 app.get("/distribution", requireAdmin, async (req, res) => {
   try {
     if (typeof ensureEventTrackingPopulated === "function") {
@@ -968,13 +967,11 @@ app.get("/distribution", requireAdmin, async (req, res) => {
   }
 });
 
-// POST: Apply Distribution
 app.post("/distribution/apply", requireAdmin, async (req, res) => {
   try {
     const { mode, eventId, categoryFilter, maxLimit, staffId, countToAssign } = req.body;
     const limit = Math.min(Math.max(parseInt(maxLimit, 10) || 40, 1), 40);
 
-    // Unassigned criteria: record has not been assigned to any staff
     const queryConditions = [
       {
         $or: [
@@ -987,7 +984,6 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       },
     ];
 
-    // Filter by Event (if not "ALL")
     if (eventId && eventId !== "ALL" && eventId.trim() !== "") {
       const trimmedEvent = eventId.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       queryConditions.push({
@@ -998,7 +994,6 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       });
     }
 
-    // Filter by Junior / Senior Category
     if (categoryFilter && categoryFilter !== "ALL" && categoryFilter.trim() !== "") {
       const escapedCategory = categoryFilter.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       queryConditions.push({
@@ -1018,9 +1013,7 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
     }
 
-    // -----------------------------------------------------------
     // MODE 1: DIRECT ALLOCATION
-    // -----------------------------------------------------------
     if (mode === "DIRECT") {
       if (!staffId || !mongoose.Types.ObjectId.isValid(staffId.trim())) {
         return res.redirect("/distribution?error=" + encodeURIComponent("Please select a valid staff member."));
@@ -1070,9 +1063,7 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
     }
 
-    // -----------------------------------------------------------
     // MODE 2: AUTO EVEN DISTRIBUTION
-    // -----------------------------------------------------------
     const staffFilter = { isActive: true };
     if (eventId && eventId !== "ALL" && eventId.trim() !== "") {
       staffFilter.$or = [
@@ -1144,7 +1135,6 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
   }
 });
 
-// POST: Reset Distribution Load
 app.post("/distribution/reset", requireAdmin, async (req, res) => {
   try {
     const { scope, eventId, staffId } = req.body;
@@ -1209,7 +1199,7 @@ app.get("/corrections", requireAdmin, async (req, res) => {
     }
 
     if (category && category !== "ALL") {
-      regFilter.category = category.toUpperCase();
+      regFilter.category = new RegExp(`^${category.trim()}$`, "i");
     }
 
     const [allRegistrations, allTrackings, staffList] = await Promise.all([
@@ -1218,6 +1208,7 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       Staff.find({ isActive: true }).sort({ email: 1 }).lean(),
     ]);
 
+    // Group trackings by registrationId
     const trackingByRegId = {};
     allTrackings.forEach((t) => {
       const regId = String(t.registrationId);
@@ -1230,14 +1221,22 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       const events = trackingByRegId[regId] || [];
 
       const isPresent = events.some((ev) => ev.entryStatus === "PRESENT");
+
       const assignedStaffEmails = Array.from(
         new Set(events.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
       );
+
       const assignedStaffIds = Array.from(
-        new Set(events.filter((e) => e.assignedStaff?.staffId).map((e) => String(e.assignedStaff.staffId)))
+        new Set(
+          events
+            .filter((e) => e.assignedStaff?.staffId)
+            .map((e) => String(e.assignedStaff.staffId))
+        )
       );
 
-      const isContacted = events.some((e) => e.followupStatus && e.followupStatus !== "PENDING");
+      const isContacted = events.some(
+        (e) => e.followupStatus && e.followupStatus !== "PENDING"
+      );
 
       return {
         ...reg,
@@ -1249,9 +1248,28 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       };
     });
 
+    // 1. Filter: Event (Checks both code like ev_1 and name)
     if (eventId && eventId !== "ALL") {
-      masterData = masterData.filter((r) => r.events.some((ev) => ev.eventId === eventId));
+      const targetEv = EVENTS_CONFIG.find((e) => e.eventId === eventId);
+      masterData = masterData.filter((r) =>
+        r.events.some((ev) => {
+          const evId = (ev.eventId || "").toLowerCase();
+          const evName = (ev.eventName || "").toLowerCase();
+          const targetId = eventId.toLowerCase();
+          const targetCode = targetEv ? targetEv.eventCode.toLowerCase() : "";
+          const targetName = targetEv ? targetEv.name.toLowerCase() : "";
+
+          return (
+            evId === targetId ||
+            (targetCode && evId === targetCode) ||
+            evName.includes(targetId) ||
+            (targetName && evName.includes(targetName))
+          );
+        })
+      );
     }
+
+    // 2. Filter: Desk Entry Status
     if (entryStatus && entryStatus !== "ALL") {
       if (entryStatus === "PRESENT") {
         masterData = masterData.filter((r) => r.isPresent);
@@ -1259,15 +1277,27 @@ app.get("/corrections", requireAdmin, async (req, res) => {
         masterData = masterData.filter((r) => !r.isPresent);
       }
     }
-    if (followupStatus && followupStatus !== "ALL") {
-      if (followupStatus === "CONTACTED") {
-        masterData = masterData.filter((r) => r.isContacted);
-      } else if (followupStatus === "PENDING") {
-        masterData = masterData.filter((r) => !r.isContacted);
+
+    // 3. Filter: Staff Member Assigned Dropdown
+    if (staffId && staffId !== "ALL") {
+      if (staffId === "UNASSIGNED") {
+        masterData = masterData.filter((r) => r.assignedStaffIds.length === 0);
+      } else {
+        masterData = masterData.filter((r) =>
+          r.assignedStaffIds.includes(String(staffId))
+        );
       }
     }
-    if (staffId && staffId !== "ALL") {
-      masterData = masterData.filter((r) => r.assignedStaffIds.includes(String(staffId)));
+
+    // 4. Filter: Follow-up Call Status Dropdown
+    if (followupStatus && followupStatus !== "ALL") {
+      if (followupStatus === "CONTACTED_ANY") {
+        masterData = masterData.filter((r) => r.isContacted);
+      } else {
+        masterData = masterData.filter((r) =>
+          r.events.some((e) => (e.followupStatus || "PENDING") === followupStatus)
+        );
+      }
     }
 
     res.render("corrections", {
@@ -1786,9 +1816,9 @@ app.post("/api/coordinator/update-stage", requireAuth, async (req, res) => {
   }
 });
 
-app.get('/rules', requireAuth, async (req, res) => {
-  res.render('rules', {
-    pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
+app.get("/rules", requireAuth, async (req, res) => {
+  res.render("rules", {
+    pageTitle: "Navchetna Yuva Mahotsav - Event Rules & Schedule",
   });
 });
 

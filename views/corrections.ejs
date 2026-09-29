@@ -107,7 +107,7 @@
       </div>
     <% } %>
 
-    <!-- Header & Live Filter Panel -->
+    <!-- Header & Filter Panel -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
@@ -116,7 +116,7 @@
           </div>
           <div>
             <h2 class="text-base font-extrabold text-slate-900">Master Ticket Control Desk</h2>
-            <p class="text-xs text-slate-500">Track real-time desk attendance, assigned staff follow-ups, and manage ticket data.</p>
+            <p class="text-xs text-slate-500">Search registrations, filter by specific events, view assigned staff, and see caller responses.</p>
           </div>
         </div>
 
@@ -129,7 +129,7 @@
 
       <!-- Filter Form -->
       <form action="/corrections" method="GET" class="space-y-3 pt-3 border-t border-slate-100 text-xs">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
           
           <!-- Free Text Search -->
           <div class="relative sm:col-span-2">
@@ -143,12 +143,12 @@
             >
           </div>
 
-          <!-- Event Filter -->
+          <!-- Event Filter (Uses canonical key matching) -->
           <div>
             <select name="eventId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">All Competitions</option>
+              <option value="ALL">All Competitions / Events</option>
               <% events.forEach(ev => { %>
-                <option value="<%= ev.eventId %>" <%= filters.eventId === ev.eventId ? 'selected' : '' %>>
+                <option value="<%= ev.key %>" <%= (filters.eventId === ev.key || filters.eventId === ev.eventId) ? 'selected' : '' %>>
                   <%= ev.name %>
                 </option>
               <% }) %>
@@ -173,11 +173,11 @@
             </select>
           </div>
 
-          <!-- Staff Filter (Dropdown) -->
+          <!-- Staff Filter -->
           <div>
             <select name="staffId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">All Staff</option>
-              <option value="UNASSIGNED" <%= filters.staffId === 'UNASSIGNED' ? 'selected' : '' %>>⚠️ Unassigned Contacts</option>
+              <option value="ALL">All Staff Members</option>
+              <option value="UNASSIGNED" <%= filters.staffId === 'UNASSIGNED' ? 'selected' : '' %>>⚠️ Unassigned</option>
               <% staffList.forEach(s => { %>
                 <option value="<%= s._id %>" <%= filters.staffId === String(s._id) ? 'selected' : '' %>>
                   <%= s.email.split('@')[0] %> (<%= s.email %>)
@@ -186,7 +186,10 @@
             </select>
           </div>
 
-          <!-- Follow-up Call Response Status Dropdown -->
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+          <!-- Follow-up Call Status Filter -->
           <div>
             <select name="followupStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="ALL" <%= filters.followupStatus === 'ALL' ? 'selected' : '' %>>All Call Responses</option>
@@ -195,22 +198,21 @@
               <option value="CALL_NOT_PICKED" <%= filters.followupStatus === 'CALL_NOT_PICKED' ? 'selected' : '' %>>🟡 Call Not Picked</option>
               <option value="CALL_BACK" <%= filters.followupStatus === 'CALL_BACK' ? 'selected' : '' %>>🔵 Call Back Requested</option>
               <option value="WRONG_NUMBER" <%= filters.followupStatus === 'WRONG_NUMBER' ? 'selected' : '' %>>✖️ Wrong Number</option>
-              <option value="CONTACTED_ANY" <%= filters.followupStatus === 'CONTACTED_ANY' ? 'selected' : '' %>>✓ Any Contacted</option>
+              <option value="CONTACTED_ANY" <%= filters.followupStatus === 'CONTACTED_ANY' ? 'selected' : '' %>>✓ Any Response Logged</option>
               <option value="PENDING" <%= filters.followupStatus === 'PENDING' ? 'selected' : '' %>>⏳ Follow-Up Pending</option>
             </select>
           </div>
 
+          <div class="sm:col-span-2 flex items-center justify-end gap-2">
+            <a href="/corrections" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs tap-active transition" title="Clear Filters">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2 rounded-xl text-xs tap-active transition shadow-sm">
+              <i class="fa-solid fa-filter"></i> Apply Filters
+            </button>
+          </div>
         </div>
 
-        <!-- Apply / Reset Actions -->
-        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-          <a href="/corrections" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs tap-active transition" title="Clear Filters">
-            <i class="fa-solid fa-rotate-left"></i> Reset
-          </a>
-          <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-xl text-xs tap-active transition shadow-sm">
-            <i class="fa-solid fa-filter"></i> Apply Filters
-          </button>
-        </div>
       </form>
     </div>
 
@@ -224,7 +226,7 @@
               <th class="py-3 px-3.5">Participant Details</th>
               <th class="py-3 px-3.5">Events &amp; Manual Tokens</th>
               <th class="py-3 px-3.5">Desk Entry</th>
-              <th class="py-3 px-3.5">Staff &amp; Call Responses</th>
+              <th class="py-3 px-3.5">Staff &amp; Call Follow-up</th>
               <th class="py-3 px-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -236,7 +238,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </div>
                   <p class="font-bold text-slate-600">No participants found</p>
-                  <p class="text-[11px] mt-0.5">Try adjusting your filters or resetting the search query above.</p>
+                  <p class="text-[11px] mt-0.5">Try selecting "All Competitions / Events" or clear your search input.</p>
                 </td>
               </tr>
             <% } else { %>
@@ -285,7 +287,9 @@
                         </div>
                       <% }) %>
                     <% } else { %>
-                      <span class="text-slate-400 italic text-[11px]">No events linked</span>
+                      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                        <span class="font-bold text-slate-800"><%= ticket.eventName || 'General Registration' %></span>
+                      </div>
                     <% } %>
                   </td>
 
@@ -302,10 +306,8 @@
                     <% } %>
                   </td>
 
-                  <!-- Staff & Call Response Section -->
-                  <td class="py-3 px-3.5 align-top min-w-[200px]">
-                    
-                    <!-- Assigned Staff -->
+                  <!-- Staff & Call Follow-up Badges -->
+                  <td class="py-3 px-3.5 align-top min-w-[220px]">
                     <div class="mb-1.5">
                       <% if (ticket.assignedStaffEmails && ticket.assignedStaffEmails.length > 0) { %>
                         <% ticket.assignedStaffEmails.forEach(email => { %>
@@ -318,7 +320,6 @@
                       <% } %>
                     </div>
 
-                    <!-- Call Responses / Follow-up Status Badges -->
                     <div class="space-y-1">
                       <% if (ticket.events && ticket.events.length > 0) { %>
                         <% ticket.events.forEach(ev => { %>
@@ -365,7 +366,6 @@
                         <span class="text-slate-400 text-[10px]">No follow-up logged</span>
                       <% } %>
                     </div>
-
                   </td>
 
                   <!-- Action Buttons -->

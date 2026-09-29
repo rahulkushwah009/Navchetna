@@ -71,9 +71,9 @@
     </div>
 
     <!-- ================= NAVBAR ================= -->
-   <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
+    <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
       <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
-        <a href="/dashboard" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+        <a href="/dashboard" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
           <i class="fa-solid fa-chart-pie"></i> Admin Overview
         </a>
         <a href="/desk" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
@@ -82,12 +82,9 @@
         <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
           <i class="fa-solid fa-network-wired"></i> Contact Distribution
         </a>
-        <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-  <i class="fa-solid fa-clipboard-check"></i> Master Desk
-  <% if (typeof kpis !== 'undefined' && kpis && kpis.pendingCorrections) { %>
-    <span class="bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold"><%= kpis.pendingCorrections %></span>
-  <% } %>
-</a>
+        <a href="/corrections" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check"></i> Master Desk
+        </a>
       </div>
     </nav>
   </header>
@@ -132,7 +129,7 @@
 
       <!-- Filter Form -->
       <form action="/corrections" method="GET" class="space-y-3 pt-3 border-t border-slate-100 text-xs">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
           
           <!-- Free Text Search -->
           <div class="relative sm:col-span-2">
@@ -141,7 +138,7 @@
               type="text" 
               name="search" 
               value="<%= filters.search %>"
-              placeholder="Search Ticket (7266), Name, Phone, Slot..." 
+              placeholder="Search Ticket, Name, Phone, Slot..." 
               class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
           </div>
@@ -149,7 +146,7 @@
           <!-- Event Filter -->
           <div>
             <select name="eventId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">All Competitions / Events</option>
+              <option value="ALL">All Competitions</option>
               <% events.forEach(ev => { %>
                 <option value="<%= ev.eventId %>" <%= filters.eventId === ev.eventId ? 'selected' : '' %>>
                   <%= ev.name %>
@@ -161,7 +158,7 @@
           <!-- Category Filter -->
           <div>
             <select name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL" <%= filters.category === 'ALL' ? 'selected' : '' %>>All Categories (Junior & Senior)</option>
+              <option value="ALL" <%= filters.category === 'ALL' ? 'selected' : '' %>>All Categories</option>
               <option value="JUNIOR" <%= filters.category === 'JUNIOR' ? 'selected' : '' %>>Junior</option>
               <option value="SENIOR" <%= filters.category === 'SENIOR' ? 'selected' : '' %>>Senior</option>
             </select>
@@ -176,37 +173,43 @@
             </select>
           </div>
 
-          <!-- Staff Filter -->
+          <!-- Staff Filter (Dropdown) -->
           <div>
             <select name="staffId" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">All Staff Members</option>
+              <option value="ALL">All Staff</option>
+              <option value="UNASSIGNED" <%= filters.staffId === 'UNASSIGNED' ? 'selected' : '' %>>⚠️ Unassigned Contacts</option>
               <% staffList.forEach(s => { %>
                 <option value="<%= s._id %>" <%= filters.staffId === String(s._id) ? 'selected' : '' %>>
-                  Assigned: <%= s.email %>
+                  <%= s.email.split('@')[0] %> (<%= s.email %>)
                 </option>
               <% }) %>
             </select>
           </div>
 
-          <!-- Follow-up Status -->
+          <!-- Follow-up Call Response Status Dropdown -->
           <div>
             <select name="followupStatus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL" <%= filters.followupStatus === 'ALL' ? 'selected' : '' %>>All Follow-Up States</option>
-              <option value="CONTACTED" <%= filters.followupStatus === 'CONTACTED' ? 'selected' : '' %>>Contacted / Done</option>
-              <option value="PENDING" <%= filters.followupStatus === 'PENDING' ? 'selected' : '' %>>Pending Follow-Up</option>
+              <option value="ALL" <%= filters.followupStatus === 'ALL' ? 'selected' : '' %>>All Call Responses</option>
+              <option value="WILL_COME" <%= filters.followupStatus === 'WILL_COME' ? 'selected' : '' %>>🟢 Will Come</option>
+              <option value="WILL_NOT_COME" <%= filters.followupStatus === 'WILL_NOT_COME' ? 'selected' : '' %>>🔴 Will Not Come</option>
+              <option value="CALL_NOT_PICKED" <%= filters.followupStatus === 'CALL_NOT_PICKED' ? 'selected' : '' %>>🟡 Call Not Picked</option>
+              <option value="CALL_BACK" <%= filters.followupStatus === 'CALL_BACK' ? 'selected' : '' %>>🔵 Call Back Requested</option>
+              <option value="WRONG_NUMBER" <%= filters.followupStatus === 'WRONG_NUMBER' ? 'selected' : '' %>>✖️ Wrong Number</option>
+              <option value="CONTACTED_ANY" <%= filters.followupStatus === 'CONTACTED_ANY' ? 'selected' : '' %>>✓ Any Contacted</option>
+              <option value="PENDING" <%= filters.followupStatus === 'PENDING' ? 'selected' : '' %>>⏳ Follow-Up Pending</option>
             </select>
           </div>
 
-          <!-- Apply Filter Buttons -->
-          <div class="flex items-center gap-2">
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs tap-active transition shadow-sm">
-              <i class="fa-solid fa-filter"></i> Apply
-            </button>
-            <a href="/corrections" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs tap-active transition" title="Clear Filters">
-              <i class="fa-solid fa-rotate-left"></i>
-            </a>
-          </div>
+        </div>
 
+        <!-- Apply / Reset Actions -->
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <a href="/corrections" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs tap-active transition" title="Clear Filters">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </a>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-xl text-xs tap-active transition shadow-sm">
+            <i class="fa-solid fa-filter"></i> Apply Filters
+          </button>
         </div>
       </form>
     </div>
@@ -221,7 +224,7 @@
               <th class="py-3 px-3.5">Participant Details</th>
               <th class="py-3 px-3.5">Events &amp; Manual Tokens</th>
               <th class="py-3 px-3.5">Desk Entry</th>
-              <th class="py-3 px-3.5">Staff Assigned</th>
+              <th class="py-3 px-3.5">Staff &amp; Call Responses</th>
               <th class="py-3 px-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -233,7 +236,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </div>
                   <p class="font-bold text-slate-600">No participants found</p>
-                  <p class="text-[11px] mt-0.5">Try adjusting your search query or reset the filter settings above.</p>
+                  <p class="text-[11px] mt-0.5">Try adjusting your filters or resetting the search query above.</p>
                 </td>
               </tr>
             <% } else { %>
@@ -248,7 +251,7 @@
                     <div class="text-[10px] text-slate-500 font-mono mt-0.5">
                       Slot: <strong class="text-slate-800"><%= ticket.teamSlot || 'N/A' %></strong>
                     </div>
-                    <span class="inline-block mt-1 px-2 py-0.2 rounded-full text-[10px] font-bold <%= ticket.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' %>">
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold <%= ticket.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' %>">
                       ₹<%= ticket.amount || 0 %> <%= ticket.status %>
                     </span>
                   </td>
@@ -260,7 +263,7 @@
                     <div class="text-slate-400 text-[10px] truncate max-w-[180px] mt-0.5" title="<%= ticket.school %>">
                       <%= ticket.school %> (<%= ticket.classCourse %>)
                     </div>
-                    <span class="inline-block mt-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                    <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
                       <%= ticket.category %>
                     </span>
                   </td>
@@ -299,20 +302,70 @@
                     <% } %>
                   </td>
 
-                  <!-- Staff Accountability Tracking -->
-                  <td class="py-3 px-3.5 align-top">
-                    <% if (ticket.assignedStaffEmails && ticket.assignedStaffEmails.length > 0) { %>
-                      <% ticket.assignedStaffEmails.forEach(email => { %>
-                        <div class="text-[11px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 inline-block mb-1">
-                          <%= email %>
-                        </div>
-                      <% }) %>
-                      <div class="text-[10px] font-semibold <%= ticket.isContacted ? 'text-emerald-600' : 'text-amber-600' %>">
-                        <%= ticket.isContacted ? '✓ Contacted' : '⏳ Follow-Up Pending' %>
-                      </div>
-                    <% } else { %>
-                      <span class="text-slate-400 italic text-[11px]">Unassigned</span>
-                    <% } %>
+                  <!-- Staff & Call Response Section -->
+                  <td class="py-3 px-3.5 align-top min-w-[200px]">
+                    
+                    <!-- Assigned Staff -->
+                    <div class="mb-1.5">
+                      <% if (ticket.assignedStaffEmails && ticket.assignedStaffEmails.length > 0) { %>
+                        <% ticket.assignedStaffEmails.forEach(email => { %>
+                          <span class="text-[10px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 inline-block mr-1">
+                            <i class="fa-solid fa-user-check text-[9px]"></i> <%= email.split('@')[0] %>
+                          </span>
+                        <% }) %>
+                      <% } else { %>
+                        <span class="text-slate-400 italic text-[11px]">Unassigned</span>
+                      <% } %>
+                    </div>
+
+                    <!-- Call Responses / Follow-up Status Badges -->
+                    <div class="space-y-1">
+                      <% if (ticket.events && ticket.events.length > 0) { %>
+                        <% ticket.events.forEach(ev => { %>
+                          <% const status = ev.followupStatus || 'PENDING'; %>
+                          <div class="flex items-center gap-1.5 text-[10px]">
+                            <% if (status === 'WILL_COME') { %>
+                              <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold">
+                                🟢 Will Come
+                              </span>
+                            <% } else if (status === 'WILL_NOT_COME') { %>
+                              <span class="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded font-bold">
+                                🔴 Will Not Come
+                              </span>
+                            <% } else if (status === 'CALL_NOT_PICKED') { %>
+                              <span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded font-bold">
+                                🟡 Call Not Picked
+                              </span>
+                            <% } else if (status === 'CALL_BACK') { %>
+                              <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-bold">
+                                🔵 Call Back
+                              </span>
+                            <% } else if (status === 'WRONG_NUMBER') { %>
+                              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-300 rounded font-bold">
+                                ✖️ Wrong Number
+                              </span>
+                            <% } else { %>
+                              <span class="px-2 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded font-medium">
+                                ⏳ Follow-up Pending
+                              </span>
+                            <% } %>
+
+                            <% if (ev.totalCalls > 0) { %>
+                              <span class="text-slate-400 font-mono text-[9px]">(Calls: <%= ev.totalCalls %>)</span>
+                            <% } %>
+                          </div>
+
+                          <% if (ev.coordinatorNotes) { %>
+                            <div class="text-[9px] text-slate-500 italic bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 mt-0.5">
+                              Note: "<%= ev.coordinatorNotes %>"
+                            </div>
+                          <% } %>
+                        <% }) %>
+                      <% } else { %>
+                        <span class="text-slate-400 text-[10px]">No follow-up logged</span>
+                      <% } %>
+                    </div>
+
                   </td>
 
                   <!-- Action Buttons -->

@@ -24,7 +24,7 @@ app.use(
     secret: "navchetna_staff_secret_key_2026",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day session
+    cookie: { maxAge: 24 * 60 * 60 * 1000 },
   })
 );
 
@@ -36,7 +36,6 @@ const EventTracking = require("./models/EventTracking");
 const ActivityLog = require("./models/ActivityLog");
 
 const EVENTS = [
-  // Legacy alias preserved so historical registrations calculate accurately
   {
     id: "esports",
     name: "E-Sports Championship",
@@ -121,24 +120,107 @@ const EVENTS = [
   },
 ];
 
-const eventNameMap = {
-  "esports Free Fire": "E-Sports Free Fire Championship",
-  "esports PUBG": "E-Sports PUBG Championship",
-  esports: "E-Sports Championship",
-  rangotsav: "Rangotsav (Drawing)",
-  bharatbodh: "Bharat Bodh (Quiz)",
-  techmanthan: "Tech Manthan Hackathon",
-  yuvavani: "Yuva-Vani (Open Mic)",
-  loknritya: "Loknritya (Dance)",
-  rangebharat: "Rang-e-Bharat (Fashion)",
-  beyondframe: "Beyond the Frame (Photo/Reel)",
-  kalamkar: "Kalamkar (Essay)",
-  dharmagatha: "Dharmagatha (Quiz)",
-};
+// Unified events definition with all lookup keys, slug aliases & keywords
+const EVENTS_CONFIG = [
+  { 
+    key: "esports", 
+    eventId: "ev_1", 
+    eventCode: "ESPORTS", 
+    name: "E-Sports Championship", 
+    prefix: "ESP",
+    aliases: ["esports", "e-sports", "esport"] 
+  },
+  { 
+    key: "esports Free Fire", 
+    eventId: "ev_2", 
+    eventCode: "FREEFIRE", 
+    name: "E-Sports Free Fire Championship", 
+    prefix: "FF",
+    aliases: ["freefire", "free fire", "ff"] 
+  },
+  { 
+    key: "esports PUBG", 
+    eventId: "ev_3", 
+    eventCode: "PUBG", 
+    name: "E-Sports PUBG Championship", 
+    prefix: "BG",
+    aliases: ["pubg", "bgmi"] 
+  },
+  { 
+    key: "rangotsav", 
+    eventId: "ev_4", 
+    eventCode: "DRAWING", 
+    name: "Rangotsav : Drawing Competition", 
+    prefix: "DR",
+    aliases: ["rangotsav", "drawing", "painting"] 
+  },
+  { 
+    key: "bharatbodh", 
+    eventId: "ev_5", 
+    eventCode: "QUIZ", 
+    name: "Bharat Bodh : Quiz Competition", 
+    prefix: "Q",
+    aliases: ["bharatbodh", "bharat bodh", "quiz"] 
+  },
+  { 
+    key: "techmanthan", 
+    eventId: "ev_6", 
+    eventCode: "HACKATHON", 
+    name: "Tech Manthan Hackathon", 
+    prefix: "TM",
+    aliases: ["techmanthan", "tech manthan", "hackathon"] 
+  },
+  { 
+    key: "yuvavani", 
+    eventId: "ev_7", 
+    eventCode: "OPENMIC", 
+    name: "Yuva-Vani : Open Mic", 
+    prefix: "OM",
+    aliases: ["yuvavani", "yuva-vani", "open mic", "openmic"] 
+  },
+  { 
+    key: "loknritya", 
+    eventId: "ev_8", 
+    eventCode: "DANCE", 
+    name: "Loknritya : Dance Competition", 
+    prefix: "D",
+    aliases: ["loknritya", "loknritiya", "dance"] 
+  },
+  { 
+    key: "rangebharat", 
+    eventId: "ev_9", 
+    eventCode: "FASHION", 
+    name: "Rang-e-Bharat : Cultural Fashion Show", 
+    prefix: "FS",
+    aliases: ["rangebharat", "rang-e-bharat", "fashion", "cultural fashion"] 
+  },
+  { 
+    key: "beyondframe", 
+    eventId: "ev_10", 
+    eventCode: "PHOTO", 
+    name: "Beyond the Frame : Photography & Reel", 
+    prefix: "PH",
+    aliases: ["beyondframe", "beyond the frame", "photography", "reel"] 
+  },
+  { 
+    key: "kalamkar", 
+    eventId: "ev_11", 
+    eventCode: "ESSAY", 
+    name: "Kalamkar : Essay Competition", 
+    prefix: "KL",
+    aliases: ["kalamkar", "essay"] 
+  },
+  { 
+    key: "dharmagatha", 
+    eventId: "ev_12", 
+    eventCode: "DHARMA", 
+    name: "Dharmagatha : Ramayan - Mahabharat Gyan", 
+    prefix: "DG",
+    aliases: ["dharmagatha", "ramayan", "mahabharat"] 
+  },
+];
 
-// ======================================
 // Helper: Calculate Original Event Value
-// ======================================
 function calculateRegistrationOriginalAmount(reg, masterEvents) {
   if (reg.waivedAmount !== undefined && reg.waivedAmount !== null && Number(reg.waivedAmount) > 0) {
     return Number(reg.waivedAmount);
@@ -281,9 +363,7 @@ async function connectDB() {
 }
 connectDB();
 
-// ======================================
 // Razorpay Client
-// ======================================
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_key",
   key_secret: process.env.RAZORPAY_KEY_SECRET || "rzp_test_secret",
@@ -294,9 +374,7 @@ function generateTicketId() {
   return `NYSM26-${randomNum}`;
 }
 
-// ======================================
 // App Middleware
-// ======================================
 app.use(cors());
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -501,9 +579,7 @@ app.get("/dance", async (req, res) => {
   });
 });
 
-// ======================================
 // Night Event Registration Schema & Endpoints
-// ======================================
 const nightEventRegistrationSchema = new mongoose.Schema(
   {
     ticketId: { type: String, required: true, unique: true, index: true },
@@ -697,42 +773,7 @@ app.post("/api/dj/record-complimentary", async (req, res) => {
   }
 });
 
-// ======================================
-// Events Metadata & Config
-// ======================================
-const EVENT_MAP = {
-  ev_1: "E-Sports Championship",
-  ev_2: "E-Sports Free Fire",
-  ev_3: "E-Sports PUBG",
-  ev_4: "Rangotsav Drawing",
-  ev_5: "Bharat Bodh Quiz",
-  ev_6: "Tech Manthan Hackathon",
-  ev_7: "Yuva-Vani Open Mic",
-  ev_8: "Loknritiya Dance",
-  ev_9: "Cultural Fashion Show",
-  ev_10: "Beyond the Frame Photography",
-  ev_11: "Kalamkar Essay",
-  ev_12: "Dharmagatha",
-};
-
-const EVENTS_CONFIG = [
-  { eventId: "ev_1", eventCode: "ESPORTS", name: "E-Sports Championship", prefix: "ESP" },
-  { eventId: "ev_2", eventCode: "FREEFIRE", name: "E-Sports Free Fire Championship", prefix: "FF" },
-  { eventId: "ev_3", eventCode: "PUBG", name: "E-Sports PUBG Championship", prefix: "BG" },
-  { eventId: "ev_4", eventCode: "DRAWING", name: "Rangotsav : Drawing Competition", prefix: "DR" },
-  { eventId: "ev_5", eventCode: "QUIZ", name: "Bharat Bodh : Quiz Competition", prefix: "Q" },
-  { eventId: "ev_6", eventCode: "HACKATHON", name: "Tech Manthan Hackathon", prefix: "TM" },
-  { eventId: "ev_7", eventCode: "OPENMIC", name: "Yuva-Vani : Open Mic", prefix: "OM" },
-  { eventId: "ev_8", eventCode: "DANCE", name: "Loknritiya : Dance Competition", prefix: "D" },
-  { eventId: "ev_9", eventCode: "FASHION", name: "Rang-e-Bharat : Cultural Fashion Show", prefix: "FS" },
-  { eventId: "ev_10", eventCode: "PHOTO", name: "Beyond the Frame : Photography & Reel", prefix: "PH" },
-  { eventId: "ev_11", eventCode: "ESSAY", name: "Kalamkar : Essay Competition", prefix: "KL" },
-  { eventId: "ev_12", eventCode: "DHARMA", name: "Dharmagatha : Ramayan - Mahabharat Gyan", prefix: "DG" },
-];
-
-// ----------------------------------------------------
 // Authentication Middlewares
-// ----------------------------------------------------
 function requireAuth(req, res, next) {
   if (!req.session || !req.session.staff) {
     return res.redirect("/login?error=" + encodeURIComponent("Please log in first."));
@@ -747,9 +788,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ----------------------------------------------------
-// Helper: Populate EventTracking from Registrations
-// ----------------------------------------------------
+// Populate EventTracking from Registrations
 async function ensureEventTrackingPopulated() {
   const registrations = await Registration.find({
     status: { $in: ["PAID", "COMPLIMENTARY", "PENDING"] },
@@ -787,9 +826,7 @@ async function ensureEventTrackingPopulated() {
   }
 }
 
-// ----------------------------------------------------
 // Staff Onboarding & Authentication Routes
-// ----------------------------------------------------
 app.get("/login", (req, res) => {
   if (req.session && req.session.staff) {
     return res.redirect(req.session.staff.role === "ADMIN" ? "/dashboard" : "/coordinator");
@@ -844,9 +881,7 @@ app.get("/logout", (req, res) => {
   });
 });
 
-// ----------------------------------------------------
 // Admin Dashboard
-// ----------------------------------------------------
 app.get("/dashboard", requireAdmin, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -874,7 +909,17 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
     const paidCount = registrations.filter((r) => (r.amount || 0) > 0 && r.status === "PAID").length;
 
     const eventStats = EVENTS_CONFIG.map((ev) => {
-      const evTrackings = trackings.filter((t) => t.eventId === ev.eventId || t.eventId === ev.eventCode);
+      const evTrackings = trackings.filter((t) => {
+        const id = (t.eventId || "").toLowerCase();
+        const nm = (t.eventName || "").toLowerCase();
+        return (
+          id === ev.key.toLowerCase() ||
+          id === ev.eventId.toLowerCase() ||
+          id === ev.eventCode.toLowerCase() ||
+          ev.aliases.some((a) => id.includes(a) || nm.includes(a))
+        );
+      });
+
       return {
         ...ev,
         total: evTrackings.length,
@@ -912,9 +957,7 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// Contact Distribution Engine (Fixed & Filter Enabled)
-// ----------------------------------------------------
+// Distribution Routes
 app.get("/distribution", requireAdmin, async (req, res) => {
   try {
     if (typeof ensureEventTrackingPopulated === "function") {
@@ -926,7 +969,6 @@ app.get("/distribution", requireAdmin, async (req, res) => {
       EventTracking.find({}, "eventId eventName category assignedStaff followupStatus isAssigned").lean(),
     ]);
 
-    // Build unique events map from existing tracking docs
     const eventMap = new Map();
     trackings.forEach((t) => {
       if (t.eventId && !eventMap.has(t.eventId)) {
@@ -938,7 +980,6 @@ app.get("/distribution", requireAdmin, async (req, res) => {
     });
     const dynamicEvents = Array.from(eventMap.values());
 
-    // Compute workload per active staff member
     const staffWorkloadMap = {};
     for (const s of staffList) {
       const assigned = trackings.filter(
@@ -1013,7 +1054,6 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
     }
 
-    // MODE 1: DIRECT ALLOCATION
     if (mode === "DIRECT") {
       if (!staffId || !mongoose.Types.ObjectId.isValid(staffId.trim())) {
         return res.redirect("/distribution?error=" + encodeURIComponent("Please select a valid staff member."));
@@ -1063,7 +1103,6 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
     }
 
-    // MODE 2: AUTO EVEN DISTRIBUTION
     const staffFilter = { isActive: true };
     if (eventId && eventId !== "ALL" && eventId.trim() !== "") {
       staffFilter.$or = [
@@ -1176,9 +1215,9 @@ app.post("/distribution/reset", requireAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
+// ====================================================
 // Master Desk / Corrections Engine
-// ----------------------------------------------------
+// ====================================================
 app.get("/corrections", requireAdmin, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -1218,29 +1257,56 @@ app.get("/corrections", requireAdmin, async (req, res) => {
 
     let masterData = allRegistrations.map((reg) => {
       const regId = String(reg._id);
-      const events = trackingByRegId[regId] || [];
+      
+      // Merge registered events with EventTracking records
+      const trackings = trackingByRegId[regId] || [];
+      
+      let unifiedEvents = [];
+      if (trackings.length > 0) {
+        unifiedEvents = trackings;
+      } else if (Array.isArray(reg.events) && reg.events.length > 0) {
+        unifiedEvents = reg.events.map((e) => ({
+          eventId: e.id,
+          eventName: e.name,
+          tokenNumber: "",
+          entryStatus: "PENDING",
+          followupStatus: "PENDING",
+          totalCalls: 0,
+          coordinatorNotes: "",
+        }));
+      } else if (reg.eventName) {
+        unifiedEvents = [{
+          eventId: reg.eventName,
+          eventName: reg.eventName,
+          tokenNumber: "",
+          entryStatus: "PENDING",
+          followupStatus: "PENDING",
+          totalCalls: 0,
+          coordinatorNotes: "",
+        }];
+      }
 
-      const isPresent = events.some((ev) => ev.entryStatus === "PRESENT");
+      const isPresent = unifiedEvents.some((ev) => ev.entryStatus === "PRESENT");
 
       const assignedStaffEmails = Array.from(
-        new Set(events.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
+        new Set(unifiedEvents.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
       );
 
       const assignedStaffIds = Array.from(
         new Set(
-          events
+          unifiedEvents
             .filter((e) => e.assignedStaff?.staffId)
             .map((e) => String(e.assignedStaff.staffId))
         )
       );
 
-      const isContacted = events.some(
+      const isContacted = unifiedEvents.some(
         (e) => e.followupStatus && e.followupStatus !== "PENDING"
       );
 
       return {
         ...reg,
-        events,
+        events: unifiedEvents,
         isPresent,
         isContacted,
         assignedStaffEmails,
@@ -1248,28 +1314,42 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       };
     });
 
-    // 1. Filter: Event (Checks both code like ev_1 and name)
+    // 1. FILTER: Multi-key Event Filter (Fixes Open Mic, Hackathon, Dance, Drawing, etc.)
     if (eventId && eventId !== "ALL") {
-      const targetEv = EVENTS_CONFIG.find((e) => e.eventId === eventId);
-      masterData = masterData.filter((r) =>
-        r.events.some((ev) => {
-          const evId = (ev.eventId || "").toLowerCase();
-          const evName = (ev.eventName || "").toLowerCase();
-          const targetId = eventId.toLowerCase();
-          const targetCode = targetEv ? targetEv.eventCode.toLowerCase() : "";
-          const targetName = targetEv ? targetEv.name.toLowerCase() : "";
-
-          return (
-            evId === targetId ||
-            (targetCode && evId === targetCode) ||
-            evName.includes(targetId) ||
-            (targetName && evName.includes(targetName))
-          );
-        })
+      const matchedConfig = EVENTS_CONFIG.find(
+        (c) =>
+          c.key.toLowerCase() === eventId.toLowerCase() ||
+          c.eventId.toLowerCase() === eventId.toLowerCase() ||
+          c.eventCode.toLowerCase() === eventId.toLowerCase()
       );
+
+      const queryTokens = matchedConfig
+        ? [
+            matchedConfig.key.toLowerCase(),
+            matchedConfig.eventId.toLowerCase(),
+            matchedConfig.eventCode.toLowerCase(),
+            matchedConfig.name.toLowerCase(),
+            ...matchedConfig.aliases.map((a) => a.toLowerCase()),
+          ]
+        : [eventId.toLowerCase()];
+
+      masterData = masterData.filter((r) => {
+        // Match against both embedded events array and fallback registration.eventName
+        const inRegName = r.eventName
+          ? queryTokens.some((tok) => r.eventName.toLowerCase().includes(tok))
+          : false;
+
+        const inEventsList = r.events.some((ev) => {
+          const evId = (ev.eventId || "").toLowerCase();
+          const evNm = (ev.eventName || "").toLowerCase();
+          return queryTokens.some((tok) => evId.includes(tok) || evNm.includes(tok));
+        });
+
+        return inRegName || inEventsList;
+      });
     }
 
-    // 2. Filter: Desk Entry Status
+    // 2. FILTER: Attendance / Desk Entry
     if (entryStatus && entryStatus !== "ALL") {
       if (entryStatus === "PRESENT") {
         masterData = masterData.filter((r) => r.isPresent);
@@ -1278,7 +1358,7 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       }
     }
 
-    // 3. Filter: Staff Member Assigned Dropdown
+    // 3. FILTER: Assigned Staff Member
     if (staffId && staffId !== "ALL") {
       if (staffId === "UNASSIGNED") {
         masterData = masterData.filter((r) => r.assignedStaffIds.length === 0);
@@ -1289,7 +1369,7 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       }
     }
 
-    // 4. Filter: Follow-up Call Status Dropdown
+    // 4. FILTER: Call Follow-up Response
     if (followupStatus && followupStatus !== "ALL") {
       if (followupStatus === "CONTACTED_ANY") {
         masterData = masterData.filter((r) => r.isContacted);
@@ -1386,9 +1466,7 @@ app.post("/corrections/delete", requireAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
 // Event Day Desk Routes
-// ----------------------------------------------------
 app.get("/desk", requireAuth, async (req, res) => {
   res.render("desk", {
     staff: req.session.staff,
@@ -1526,9 +1604,7 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// Event Coordinator Dashboard Routes
-// ----------------------------------------------------
+// Coordinator Dashboard Routes
 app.get("/coordinator", requireAuth, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -1616,9 +1692,7 @@ app.get("/coordinator", requireAuth, async (req, res) => {
     const willNotComeCount = participantCards.filter((p) => p.followupStatus === "WILL_NOT_COME").length;
     const notPickedCount = participantCards.filter((p) => p.followupStatus === "CALL_NOT_PICKED").length;
 
-    const eventName = staffMember.assignedEventId
-      ? (typeof EVENT_MAP !== "undefined" && EVENT_MAP[staffMember.assignedEventId]) || staffMember.assignedEventId
-      : "All Assigned Events";
+    const eventName = staffMember.assignedEventId || "All Assigned Events";
 
     res.render("coordinator", {
       staff: staffMember,
@@ -1822,9 +1896,7 @@ app.get("/rules", requireAuth, async (req, res) => {
   });
 });
 
-// ======================================
 // 404 Handler & Server Startup
-// ======================================
 app.use((req, res) => res.status(404).render("404"));
 
 app.listen(PORT, () => {

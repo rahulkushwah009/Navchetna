@@ -428,6 +428,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use(methodOverride("_method"));
 
 
+app.get("/", (req, res) => res.render("homePage"));
+app.get("/register", (req, res) => res.render("register"));
+app.get("/success", (req, res) => res.render("success"));
 
 // ======================================
 // Public API Endpoints

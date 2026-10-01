@@ -113,7 +113,7 @@
 <body class="p-3 sm:p-6 md:p-10 flex items-center justify-center">
 
   <div class="w-full max-w-xl mx-auto my-auto">
-    <!-- Top Brand Header[cite: 1] -->
+    <!-- Top Brand Header -->
     <div class="text-center mb-5">
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-orange-200 text-xs font-semibold backdrop-blur-md mb-2.5 border border-white/10 shadow-sm">
         <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
@@ -143,11 +143,11 @@
       </button>
     </div>
 
-    <!-- Main Card[cite: 1] -->
+    <!-- Main Card -->
     <div class="bg-cardBg rounded-3xl p-6 sm:p-9 shadow-custom-card border border-[#F2E8D9]">
       <form id="danceRegistrationForm" novalidate>
         
-        <!-- STEP 1: Main Event & Ticket Mandatory Info[cite: 1] -->
+        <!-- STEP 1: Main Event & Ticket Mandatory Info -->
         <div class="border-b border-[#EFE7D8] pb-6 mb-7">
           <div class="flex items-center justify-between mb-4">
             <div>
@@ -157,7 +157,7 @@
             <span class="text-xs font-medium text-red-500 bg-red-50 px-2 py-1 rounded-md border border-red-200/50">* Mandatory</span>
           </div>
 
-          <!-- Ticket / Slip ID[cite: 1] -->
+          <!-- Ticket / Slip ID -->
           <div class="mb-4">
             <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="mainTicketId">
               Ticket ID / Registration Number / Slip ID <span class="text-pink-600">*</span>
@@ -166,9 +166,9 @@
               <input 
                 type="text" 
                 id="mainTicketId" 
-                name="mainTicketId"
+                name="mainTicketId" 
                 placeholder="e.g. SLIP-2026-9842 or NYSM-891" 
-                class="warm-input w-full px-4 py-3 rounded-xl text-sm font-medium focus:ring-0 uppercase tracking-wider"
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm font-medium focus:ring-0 uppercase tracking-wider" 
                 required
               >
               <div class="absolute right-3.5 top-3.5 text-gray-400">
@@ -191,7 +191,7 @@
             >
           </div>
 
-          <!-- Category Selection[cite: 1] -->
+          <!-- Category Selection -->
           <div>
             <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5">
               Category <span class="text-pink-600">*</span>
@@ -216,7 +216,7 @@
           </div>
         </div>
 
-        <!-- STEP 2: Participant / Group Leader Details[cite: 1] -->
+        <!-- STEP 2: Participant / Group Leader Details -->
         <div class="border-b border-[#EFE7D8] pb-6 mb-7">
           <div class="mb-4">
             <div class="flex items-center gap-2">
@@ -226,7 +226,7 @@
             <p id="step2Subtitle" class="text-xs sm:text-sm text-[#736A7A] mt-0.5">Tell us about the dancer.</p>
           </div>
 
-          <!-- Full Name[cite: 1] -->
+          <!-- Full Name -->
           <div class="mb-4">
             <label id="fullNameLabel" class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="participantFullName">
               Full Name <span class="text-pink-600">*</span>
@@ -236,12 +236,12 @@
               id="participantFullName" 
               name="participantFullName" 
               placeholder="Enter full name" 
-              class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+              class="warm-input w-full px-4 py-3 rounded-xl text-sm" 
               required
             >
           </div>
 
-          <!-- Mobile Number & Age Row[cite: 1] -->
+          <!-- Mobile Number & Age Row -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
             <div>
               <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5" for="participantMobile">
@@ -251,10 +251,10 @@
                 type="tel" 
                 id="participantMobile" 
                 name="participantMobile" 
-                maxlength="10"
-                pattern="[0-9]{10}"
+                maxlength="10" 
+                pattern="[0-9]{10}" 
                 placeholder="10-digit mobile" 
-                class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm" 
                 required
               >
             </div>
@@ -269,13 +269,13 @@
                 min="10" 
                 max="30" 
                 placeholder="e.g. 19" 
-                class="warm-input w-full px-4 py-3 rounded-xl text-sm"
+                class="warm-input w-full px-4 py-3 rounded-xl text-sm" 
                 required
               >
             </div>
           </div>
 
-          <!-- Gender Selection[cite: 1] -->
+          <!-- Gender Selection -->
           <div>
             <label class="block text-xs sm:text-[13px] font-bold text-[#3B2D4A] mb-1.5">
               Gender <span class="text-pink-600">*</span>
@@ -316,7 +316,7 @@
                 <label class="text-sm font-bold text-[#3B2D4A] block">
                   Total Participants in Group <span class="text-pink-600">*</span>
                 </label>
-                <span class="text-xs text-gray-500">Including leader (Allowed: 3 to 25 members)</span>
+                <span class="text-xs text-gray-500">Including leader (Allowed: 2 to 25 members)</span>
               </div>
               <div class="flex items-center gap-2">
                 <button 
@@ -329,7 +329,7 @@
                   type="number" 
                   id="participantCountInput" 
                   value="5" 
-                  min="3" 
+                  min="2" 
                   max="25" 
                   class="w-20 h-10 text-center warm-input rounded-xl font-bold text-base"
                 >
@@ -357,7 +357,7 @@
             </span>
           </div>
 
-          <!-- Option A: File Upload[cite: 1] -->
+          <!-- Option A: File Upload -->
           <div id="dropZone" class="border-2 border-dashed border-[#D5C9B7] hover:border-orange-400 bg-white/70 rounded-2xl p-5 text-center transition cursor-pointer relative">
             <input 
               type="file" 
@@ -374,7 +374,7 @@
             </div>
           </div>
 
-          <!-- Audio Status Display[cite: 1] -->
+          <!-- Audio Status Display -->
           <div id="audioStatusCard" class="hidden mt-3 p-3.5 rounded-xl bg-orange-50/70 border border-orange-200">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2 overflow-hidden">
@@ -412,7 +412,7 @@
               <input 
                 type="url" 
                 id="youtubeUrlInput" 
-                name="youtubeUrl"
+                name="youtubeUrl" 
                 placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." 
                 class="warm-input w-full pl-10 pr-4 py-3 rounded-xl text-xs sm:text-sm"
               >
@@ -427,11 +427,11 @@
           </div>
         </div>
 
-        <!-- Submit Button[cite: 1] -->
+        <!-- Submit Button -->
         <div>
           <button 
             type="submit" 
-            id="submitBtn"
+            id="submitBtn" 
             class="btn-gradient-submit w-full py-3.5 px-6 rounded-2xl text-white font-bold text-base sm:text-lg tracking-wide shadow-btn-gradient flex items-center justify-center gap-2">
             <span>Complete Registration</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -441,7 +441,7 @@
     </div>
   </div>
 
-  <!-- Confirmation Slip Modal[cite: 1] -->
+  <!-- Confirmation Slip Modal -->
   <div id="successModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-cardBg max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-[#F2E8D9] max-h-[92vh] overflow-y-auto">
       <div class="text-center pb-4 border-b border-[#EFE7D8]">
@@ -452,7 +452,7 @@
         <p class="text-xs text-gray-500 mt-1">Navchetna Yuva Shakti Mahotsav 2026 • Gurukul Dream Foundation</p>
       </div>
 
-      <!-- Printable Slip Area[cite: 1] -->
+      <!-- Printable Slip Area -->
       <div id="printSlipArea" class="my-5 p-5 bg-[#FFF8EE] rounded-2xl border border-[#E8DEC0]">
         <div class="flex justify-between items-start border-b border-[#DFD3BE] pb-3 mb-3">
           <div>
@@ -490,7 +490,7 @@
         </div>
       </div>
 
-      <!-- Action Buttons[cite: 1] -->
+      <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row gap-2.5">
         <button 
           type="button" 
@@ -519,7 +519,7 @@
     </div>
   </div>
 
-  <!-- Toast Notification[cite: 1] -->
+  <!-- Toast Notification -->
   <div id="toastNotification" class="fixed bottom-5 right-5 bg-[#2D2338] text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs sm:text-sm z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
     <span id="toastIcon">⚠️</span>
     <span id="toastMsg">Notification message</span>
@@ -603,6 +603,7 @@
       const out = await res.json();
       if (!out.ok) throw new Error(out.error || 'Script error');
     }
+
     // Toast helper
     function showToast(message, icon = '⚠️') {
       const toast = document.getElementById('toastNotification');
@@ -669,16 +670,16 @@
     setupToggleGroup('categoryGroup', 'selectedCategory', (val) => state.category = val);
     setupToggleGroup('genderGroup', 'selectedGender', (val) => state.gender = val);
 
-    // Group size counter
+    // Group size counter (Updated minimum limit to 2)
     function updateMemberCount(newVal) {
-      let val = Math.max(3, Math.min(25, newVal));
+      let val = Math.max(2, Math.min(25, newVal));
       state.participantCount = val;
       participantCountInput.value = val;
     }
 
     btnDecreaseMembers.addEventListener('click', () => updateMemberCount(state.participantCount - 1));
     btnIncreaseMembers.addEventListener('click', () => updateMemberCount(state.participantCount + 1));
-    participantCountInput.addEventListener('change', (e) => updateMemberCount(parseInt(e.target.value, 10) || 3));
+    participantCountInput.addEventListener('change', (e) => updateMemberCount(parseInt(e.target.value, 10) || 2));
 
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);

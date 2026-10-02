@@ -1741,18 +1741,24 @@ app.get("/logout", (req, res) => {
 
 // ----------------------------------------------------
 // Admin Dashboard
+// ----------------------------------------------------// ----------------------------------------------------
+// Updated Admin Dashboard with Event Filter & Present Participant Tracker
 // ----------------------------------------------------
 app.get("/dashboard", requireAdmin, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
 
+    const selectedEventId = (req.query.eventId || "ALL").trim();
+
+    // Fetch baseline collections
     const [registrations, trackings, callLogsCount, waLogsCount] = await Promise.all([
-      Registration.find({}),
-      EventTracking.find({}),
+      Registration.find({}).lean(),
+      EventTracking.find({}).lean(),
       ActivityLog ? ActivityLog.countDocuments({ activityType: "CALL" }) : Promise.resolve(0),
       ActivityLog ? ActivityLog.countDocuments({ activityType: "WHATSAPP" }) : Promise.resolve(0),
     ]);
 
+    // Global KPIs
     const totalReg = registrations.length;
     const presentCount = trackings.filter((t) => t.entryStatus === "PRESENT").length;
     const tokensIssued = trackings.filter((t) => t.tokenNumber && t.tokenNumber.trim() !== "").length;
@@ -1768,8 +1774,27 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
     const seniorCount = registrations.filter((r) => (r.category || "").toUpperCase() === "SENIOR").length;
     const paidCount = registrations.filter((r) => (r.amount || 0) > 0 && r.status === "PAID").length;
 
+    // Helper function to check if a tracking record belongs to a configured event
+    const matchesEvent = (t, conf) => {
+      const portalConfig = EVENT_STAGE_PORTAL.find((p) => p.eventId === conf.eventId || p.eventCode === conf.eventCode);
+      const aliases = portalConfig?.aliases?.map((a) => a.toLowerCase()) || [];
+      aliases.push(conf.eventId.toLowerCase(), conf.eventCode.toLowerCase(), (conf.prefix || "").toLowerCase());
+
+      const tEventId = (t.eventId || "").toLowerCase();
+      const tEventName = (t.eventName || "").toLowerCase();
+      const confName = (conf.name || "").toLowerCase();
+
+      return (
+        aliases.includes(tEventId) ||
+        tEventId === confName ||
+        aliases.some((a) => a.length > 2 && tEventName.includes(a)) ||
+        tEventName.includes(conf.eventCode.toLowerCase())
+      );
+    };
+
+    // Summary table for all 12 events
     const eventStats = EVENTS_CONFIG.map((ev) => {
-      const evTrackings = trackings.filter((t) => t.eventId === ev.eventId || t.eventId === ev.eventCode);
+      const evTrackings = trackings.filter((t) => matchesEvent(t, ev));
       return {
         ...ev,
         total: evTrackings.length,
@@ -1781,8 +1806,65 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
       };
     });
 
+    // Filter present trackings
+    let presentTrackings = trackings.filter((t) => t.entryStatus === "PRESENT");
+
+    if (selectedEventId !== "ALL" && selectedEventId !== "") {
+      const targetConfig = EVENTS_CONFIG.find(
+        (c) => c.eventId === selectedEventId || c.eventCode === selectedEventId
+      );
+
+      if (targetConfig) {
+        presentTrackings = presentTrackings.filter((t) => matchesEvent(t, targetConfig));
+      } else {
+        presentTrackings = presentTrackings.filter(
+          (t) => (t.eventId || "").toLowerCase() === selectedEventId.toLowerCase()
+        );
+      }
+    }
+
+    presentTrackings.sort(
+      (a, b) => new Date(a.entryMarkedAt || a.createdAt) - new Date(b.entryMarkedAt || b.createdAt)
+    );
+
+    // Map participant details & corrections
+    const regIds = presentTrackings.map((t) => t.registrationId).filter(Boolean);
+    const [matchedRegs, corrections] = await Promise.all([
+      Registration.find({ _id: { $in: regIds } }).lean(),
+      ParticipantCorrection.find({ registrationId: { $in: regIds } }).lean(),
+    ]);
+
+    const regMap = new Map(matchedRegs.map((r) => [String(r._id), r]));
+    const correctionMap = new Map(corrections.map((c) => [String(c.registrationId), c.correctedName]));
+
+    const presentParticipants = presentTrackings.map((t, idx) => {
+      const reg = regMap.get(String(t.registrationId)) || {};
+      const activeName = correctionMap.get(String(t.registrationId)) || reg.fullName || "N/A";
+
+      return {
+        trackingId: t._id,
+        ticketId: t.ticketId || reg.ticketId || "N/A",
+        tokenNumber: t.tokenNumber || `TK-${idx + 1}`,
+        fullName: activeName,
+        originalName: reg.fullName || "",
+        mobile: reg.mobile || "N/A",
+        school: reg.school || "-",
+        category: t.category || reg.category || "OPEN",
+        eventId: t.eventId,
+        eventName: t.eventName || "Event",
+        teamName: t.teamName || reg.teamSlot || "-",
+        stageStatus: t.stageStatus || "WAITING_BACKSTAGE",
+        isPerformed: t.stageStatus === "PERFORMANCE_DONE",
+        entryMarkedAt: t.entryMarkedAt || t.createdAt,
+        entryMarkedBy: t.entryMarkedBy || "Desk",
+      };
+    });
+
     res.render("Admindashboard", {
       staff: req.session.staff,
+      selectedEventId,
+      eventsList: EVENTS_CONFIG,
+      presentParticipants,
       kpis: {
         totalReg,
         presentCount,
@@ -1803,10 +1885,132 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
       eventStats,
     });
   } catch (err) {
+    console.error("Dashboard route error:", err);
     res.status(500).send("Dashboard Error: " + err.message);
   }
 });
 
+// --- Admin: Export Present Participants for Event to Excel (CSV) ---
+app.get("/admin/dashboard/export/present", requireAdmin, async (req, res) => {
+  try {
+    const selectedEventId = (req.query.eventId || "ALL").trim();
+
+    // Fetch all present tracking records
+    let presentTrackings = await EventTracking.find({ entryStatus: "PRESENT" })
+      .sort({ entryMarkedAt: 1, createdAt: 1 })
+      .lean();
+
+    if (selectedEventId !== "ALL" && selectedEventId !== "") {
+      const conf = EVENTS_CONFIG.find(
+        (c) => c.eventId === selectedEventId || c.eventCode === selectedEventId
+      );
+
+      if (conf) {
+        const portalConfig = EVENT_STAGE_PORTAL.find(
+          (p) => p.eventId === conf.eventId || p.eventCode === conf.eventCode
+        );
+        const aliases = portalConfig?.aliases?.map((a) => a.toLowerCase()) || [];
+        aliases.push(conf.eventId.toLowerCase(), conf.eventCode.toLowerCase(), (conf.prefix || "").toLowerCase());
+
+        const confName = (conf.name || "").toLowerCase();
+
+        presentTrackings = presentTrackings.filter((t) => {
+          const tEventId = (t.eventId || "").toLowerCase();
+          const tEventName = (t.eventName || "").toLowerCase();
+          return (
+            aliases.includes(tEventId) ||
+            tEventId === confName ||
+            aliases.some((a) => a.length > 2 && tEventName.includes(a)) ||
+            tEventName.includes(conf.eventCode.toLowerCase())
+          );
+        });
+      } else {
+        presentTrackings = presentTrackings.filter(
+          (t) => (t.eventId || "").toLowerCase() === selectedEventId.toLowerCase()
+        );
+      }
+    }
+
+    const regIds = presentTrackings.map((t) => t.registrationId).filter(Boolean);
+    const [regs, corrections] = await Promise.all([
+      Registration.find({ _id: { $in: regIds } }).lean(),
+      ParticipantCorrection.find({ registrationId: { $in: regIds } }).lean(),
+    ]);
+
+    const regMap = new Map(regs.map((r) => [String(r._id), r]));
+    const correctionMap = new Map(corrections.map((c) => [String(c.registrationId), c.correctedName]));
+
+    const escapeCsv = (str) => {
+      if (str === null || str === undefined) return '""';
+      const clean = String(str).replace(/\r\n|\r|\n/g, " ").replace(/"/g, '""').trim();
+      return `"${clean}"`;
+    };
+
+    const headers = [
+      "S.No",
+      "Token Number",
+      "Ticket ID",
+      "Full Name",
+      "Original Name",
+      "Mobile",
+      "School / College",
+      "Event Name",
+      "Category",
+      "Team / Slot",
+      "Stage Status",
+      "Performed?",
+      "Check-in Time",
+      "Marked By",
+    ];
+
+    const rows = presentTrackings.map((t, idx) => {
+      const reg = regMap.get(String(t.registrationId)) || {};
+      const activeName = correctionMap.get(String(t.registrationId)) || reg.fullName || "";
+      const isPerformed = t.stageStatus === "PERFORMANCE_DONE" ? "YES" : "NO";
+
+      return [
+        idx + 1,
+        escapeCsv(t.tokenNumber || "-"),
+        escapeCsv(t.ticketId || reg.ticketId || "-"),
+        escapeCsv(activeName),
+        escapeCsv(reg.fullName || "-"),
+        escapeCsv(reg.mobile || "-"),
+        escapeCsv(reg.school || "-"),
+        escapeCsv(t.eventName || "-"),
+        escapeCsv(t.category || reg.category || "-"),
+        escapeCsv(t.teamName || reg.teamSlot || "-"),
+        escapeCsv(t.stageStatus || "WAITING_BACKSTAGE"),
+        escapeCsv(isPerformed),
+        escapeCsv(
+          t.entryMarkedAt
+            ? new Date(t.entryMarkedAt).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "-"
+        ),
+        escapeCsv(t.entryMarkedBy || "Desk"),
+      ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const eventFileSuffix = selectedEventId !== "ALL" ? `_${selectedEventId}` : "_All_Events";
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Present_Participants${eventFileSuffix}_${Date.now()}.csv`
+    );
+
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("Present export error:", error);
+    res.status(500).send("Export Error: " + error.message);
+  }
+});
 // ----------------------------------------------------
 // Contact Distribution Engine
 // ----------------------------------------------------

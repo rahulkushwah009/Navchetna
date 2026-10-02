@@ -21,7 +21,7 @@ dns.setServers([
 
 app.use(
   session({
-    secret: "navchetna_staff_secret_key_2026",
+    secret: process.env.SESSION_SECRET || "navchetna_staff_secret_key_2026",
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 },
@@ -120,107 +120,24 @@ const EVENTS = [
   },
 ];
 
-// Unified events definition with all lookup keys, slug aliases & keywords
-const EVENTS_CONFIG = [
-  { 
-    key: "esports", 
-    eventId: "ev_1", 
-    eventCode: "ESPORTS", 
-    name: "E-Sports Championship", 
-    prefix: "ESP",
-    aliases: ["esports", "e-sports", "esport"] 
-  },
-  { 
-    key: "esports Free Fire", 
-    eventId: "ev_2", 
-    eventCode: "FREEFIRE", 
-    name: "E-Sports Free Fire Championship", 
-    prefix: "FF",
-    aliases: ["freefire", "free fire", "ff"] 
-  },
-  { 
-    key: "esports PUBG", 
-    eventId: "ev_3", 
-    eventCode: "PUBG", 
-    name: "E-Sports PUBG Championship", 
-    prefix: "BG",
-    aliases: ["pubg", "bgmi"] 
-  },
-  { 
-    key: "rangotsav", 
-    eventId: "ev_4", 
-    eventCode: "DRAWING", 
-    name: "Rangotsav : Drawing Competition", 
-    prefix: "DR",
-    aliases: ["rangotsav", "drawing", "painting"] 
-  },
-  { 
-    key: "bharatbodh", 
-    eventId: "ev_5", 
-    eventCode: "QUIZ", 
-    name: "Bharat Bodh : Quiz Competition", 
-    prefix: "Q",
-    aliases: ["bharatbodh", "bharat bodh", "quiz"] 
-  },
-  { 
-    key: "techmanthan", 
-    eventId: "ev_6", 
-    eventCode: "HACKATHON", 
-    name: "Tech Manthan Hackathon", 
-    prefix: "TM",
-    aliases: ["techmanthan", "tech manthan", "hackathon"] 
-  },
-  { 
-    key: "yuvavani", 
-    eventId: "ev_7", 
-    eventCode: "OPENMIC", 
-    name: "Yuva-Vani : Open Mic", 
-    prefix: "OM",
-    aliases: ["yuvavani", "yuva-vani", "open mic", "openmic"] 
-  },
-  { 
-    key: "loknritya", 
-    eventId: "ev_8", 
-    eventCode: "DANCE", 
-    name: "Loknritya : Dance Competition", 
-    prefix: "D",
-    aliases: ["loknritya", "loknritiya", "dance"] 
-  },
-  { 
-    key: "rangebharat", 
-    eventId: "ev_9", 
-    eventCode: "FASHION", 
-    name: "Rang-e-Bharat : Cultural Fashion Show", 
-    prefix: "FS",
-    aliases: ["rangebharat", "rang-e-bharat", "fashion", "cultural fashion"] 
-  },
-  { 
-    key: "beyondframe", 
-    eventId: "ev_10", 
-    eventCode: "PHOTO", 
-    name: "Beyond the Frame : Photography & Reel", 
-    prefix: "PH",
-    aliases: ["beyondframe", "beyond the frame", "photography", "reel"] 
-  },
-  { 
-    key: "kalamkar", 
-    eventId: "ev_11", 
-    eventCode: "ESSAY", 
-    name: "Kalamkar : Essay Competition", 
-    prefix: "KL",
-    aliases: ["kalamkar", "essay"] 
-  },
-  { 
-    key: "dharmagatha", 
-    eventId: "ev_12", 
-    eventCode: "DHARMA", 
-    name: "Dharmagatha : Ramayan - Mahabharat Gyan", 
-    prefix: "DG",
-    aliases: ["dharmagatha", "ramayan", "mahabharat"] 
-  },
-];
+const eventNameMap = {
+  "esports Free Fire": "E-Sports Free Fire Championship",
+  "esports PUBG": "E-Sports PUBG Championship",
+  esports: "E-Sports Championship",
+  rangotsav: "Rangotsav (Drawing)",
+  bharatbodh: "Bharat Bodh (Quiz)",
+  techmanthan: "Tech Manthan Hackathon",
+  yuvavani: "Yuva-Vani (Open Mic)",
+  loknritya: "Loknritya (Dance)",
+  rangebharat: "Rang-e-Bharat (Fashion)",
+  beyondframe: "Beyond the Frame (Photo/Reel)",
+  kalamkar: "Kalamkar (Essay)",
+  dharmagatha: "Dharmagatha (Quiz)",
+};
 
+// ======================================
 // Helper: Calculate Original Event Value
+// ======================================
 function calculateRegistrationOriginalAmount(reg, masterEvents) {
   if (reg.waivedAmount !== undefined && reg.waivedAmount !== null && Number(reg.waivedAmount) > 0) {
     return Number(reg.waivedAmount);
@@ -293,6 +210,27 @@ function calculateRegistrationOriginalAmount(reg, masterEvents) {
 // ======================================
 // Mongoose Schemas & Models
 // ======================================
+const counterSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 },
+});
+const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSchema);
+
+// New Dedicated Schema for Name Corrections (No changes to existing schemas)
+const participantCorrectionSchema = new mongoose.Schema(
+  {
+    registrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Registration", required: true, unique: true, index: true },
+    ticketId: { type: String, required: true, index: true },
+    originalName: { type: String, default: "", trim: true },
+    correctedName: { type: String, required: true, trim: true },
+    correctedBy: { type: String, default: "Desk Operator" },
+  },
+  { timestamps: true }
+);
+const ParticipantCorrection =
+  mongoose.models.ParticipantCorrection ||
+  mongoose.model("ParticipantCorrection", participantCorrectionSchema);
+
 const selectedEventSchema = new mongoose.Schema(
   {
     id: { type: String, required: true },
@@ -363,7 +301,9 @@ async function connectDB() {
 }
 connectDB();
 
+// ======================================
 // Razorpay Client
+// ======================================
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_key",
   key_secret: process.env.RAZORPAY_KEY_SECRET || "rzp_test_secret",
@@ -374,7 +314,232 @@ function generateTicketId() {
   return `NYSM26-${randomNum}`;
 }
 
+// ======================================
+// Event Configurations & Sequential Prefix
+// ======================================
+const EVENT_MAP = {
+  ev_1: "E-Sports Championship",
+  ev_2: "E-Sports Free Fire",
+  ev_3: "E-Sports PUBG",
+  ev_4: "Rangotsav Drawing",
+  ev_5: "Bharat Bodh Quiz",
+  ev_6: "Tech Manthan Hackathon",
+  ev_7: "Yuva-Vani Open Mic",
+  ev_8: "Loknritiya Dance",
+  ev_9: "Cultural Fashion Show",
+  ev_10: "Beyond the Frame Photography",
+  ev_11: "Kalamkar Essay",
+  ev_12: "Dharmagatha",
+};
+
+const EVENTS_CONFIG = [
+  { eventId: "ev_1", eventCode: "ESPORTS", name: "E-Sports Championship", prefix: "ESP" },
+  { eventId: "ev_2", eventCode: "FREEFIRE", name: "E-Sports Free Fire Championship", prefix: "FF" },
+  { eventId: "ev_3", eventCode: "PUBG", name: "E-Sports PUBG Championship", prefix: "BG" },
+  { eventId: "ev_4", eventCode: "DRAWING", name: "Rangotsav : Drawing Competition", prefix: "DR" },
+  { eventId: "ev_5", eventCode: "QUIZ", name: "Bharat Bodh : Quiz Competition", prefix: "Q" },
+  { eventId: "ev_6", eventCode: "HACKATHON", name: "Tech Manthan Hackathon", prefix: "TM" },
+  { eventId: "ev_7", eventCode: "OPENMIC", name: "Yuva-Vani : Open Mic", prefix: "OM" },
+  { eventId: "ev_8", eventCode: "DANCE", name: "Loknritiya : Dance Competition", prefix: "D" },
+  { eventId: "ev_9", eventCode: "FASHION", name: "Rang-e-Bharat : Cultural Fashion Show", prefix: "FS" },
+  { eventId: "ev_10", eventCode: "PHOTO", name: "Beyond the Frame : Photography & Reel", prefix: "PH" },
+  { eventId: "ev_11", eventCode: "ESSAY", name: "Kalamkar : Essay Competition", prefix: "KL" },
+  { eventId: "ev_12", eventCode: "DHARMA", name: "Dharmagatha : Ramayan - Mahabharat Gyan", prefix: "DG" },
+];
+
+const EVENT_PREFIXES = {
+  ev_1: "ESP",
+  ESPORTS: "ESP",
+  esports: "ESP",
+  ev_2: "FF",
+  FREEFIRE: "FF",
+  "esports Free Fire": "FF",
+  freefire: "FF",
+  ev_3: "BG",
+  PUBG: "BG",
+  "esports PUBG": "BG",
+  pubg: "BG",
+  ev_4: "DR",
+  DRAWING: "DR",
+  rangotsav: "DR",
+  drawing: "DR",
+  ev_5: "Q",
+  QUIZ: "Q",
+  bharatbodh: "Q",
+  quiz: "Q",
+  ev_6: "TM",
+  HACKATHON: "TM",
+  techmanthan: "TM",
+  hackathon: "TM",
+  ev_7: "OM",
+  OPENMIC: "OM",
+  yuvavani: "OM",
+  openmic: "OM",
+  ev_8: "D",
+  DANCE: "D",
+  loknritya: "D",
+  dance: "D",
+  ev_9: "FS",
+  FASHION: "FS",
+  rangebharat: "FS",
+  fashion: "FS",
+  ev_10: "PH",
+  PHOTO: "PH",
+  beyondframe: "PH",
+  photo: "PH",
+  ev_11: "KL",
+  ESSAY: "KL",
+  kalamkar: "KL",
+  essay: "KL",
+  ev_12: "DG",
+  DHARMA: "DG",
+  dharmagatha: "DG",
+  dharma: "DG",
+};
+
+// Automatic Atomic Token Generator per event: 1 to 2000
+async function getNextEventToken(rawEventId, eventName) {
+  let matchedKey = (rawEventId || "").trim();
+  let prefix = EVENT_PREFIXES[matchedKey];
+
+  if (!prefix && eventName) {
+    const lowerName = eventName.toLowerCase();
+    for (const [key, val] of Object.entries(EVENT_PREFIXES)) {
+      if (lowerName.includes(key.toLowerCase())) {
+        prefix = val;
+        matchedKey = key;
+        break;
+      }
+    }
+  }
+
+  if (!prefix) {
+    prefix = "TK";
+    matchedKey = "GENERIC";
+  }
+
+  const counterKey = `token_${prefix.toUpperCase()}`;
+  const counterDoc = await Counter.findByIdAndUpdate(
+    counterKey,
+    { $inc: { seq: 1 } },
+    { returnDocument: "after", upsert: true }
+  );
+
+  return `${prefix}-${counterDoc.seq}`;
+}
+
+// ======================================
+// Query Builder with Range & E-Sports Support
+// ======================================
+function buildRegistrationQuery(query) {
+  const conditions = [];
+
+  if (query.search && query.search.trim()) {
+    const s = query.search.trim();
+    conditions.push({
+      $or: [
+        { ticketId: { $regex: s, $options: "i" } },
+        { fullName: { $regex: s, $options: "i" } },
+        { mobile: { $regex: s, $options: "i" } },
+        { school: { $regex: s, $options: "i" } },
+        { reference: { $regex: s, $options: "i" } },
+        { teamSlot: { $regex: s, $options: "i" } },
+        { "events.teamName": { $regex: s, $options: "i" } },
+      ],
+    });
+  }
+
+  if (query.eventId && query.eventId.trim()) {
+    const eId = query.eventId.trim();
+    conditions.push({
+      $or: [
+        { eventId: eId },
+        { "events.id": eId },
+        { "events._id": eId },
+      ],
+    });
+  }
+
+  if (query.esportsGame && query.esportsGame.trim()) {
+    const gameId = query.esportsGame.trim();
+    if (gameId === "esports") {
+      conditions.push({
+        "events.id": { $in: ["esports", "esports Free Fire", "esports PUBG"] },
+      });
+    } else {
+      conditions.push({
+        "events.id": gameId,
+      });
+    }
+  }
+
+  if (query.esportsMode && query.esportsMode.trim()) {
+    conditions.push({
+      "events.participantType": query.esportsMode.trim(),
+    });
+  }
+
+  if (query.secretCode && query.secretCode.trim()) {
+    conditions.push({
+      secretCode: { $regex: query.secretCode.trim(), $options: "i" },
+    });
+  }
+
+  if (query.reference && query.reference.trim()) {
+    conditions.push({
+      reference: { $regex: query.reference.trim(), $options: "i" },
+    });
+  }
+
+  const fromNum = query.slotFrom && !isNaN(Number(query.slotFrom)) ? Number(query.slotFrom) : null;
+  const toNum = query.slotTo && !isNaN(Number(query.slotTo)) ? Number(query.slotTo) : null;
+
+  if (fromNum !== null || toNum !== null) {
+    const exprConditions = [
+      { $ne: ["$teamSlot", ""] },
+      { $ne: ["$teamSlot", null] },
+    ];
+    if (fromNum !== null) {
+      exprConditions.push({ $gte: [{ $toInt: "$teamSlot" }, fromNum] });
+    }
+    if (toNum !== null) {
+      exprConditions.push({ $lte: [{ $toInt: "$teamSlot" }, toNum] });
+    }
+    conditions.push({ $expr: { $and: exprConditions } });
+  } else if (query.teamSlot && query.teamSlot.trim() !== "") {
+    conditions.push({
+      teamSlot: { $regex: query.teamSlot.trim(), $options: "i" },
+    });
+  }
+
+  if (query.status && query.status.trim()) {
+    conditions.push({ status: query.status.trim() });
+  }
+
+  if (query.category && query.category.trim()) {
+    conditions.push({
+      category: { $regex: `^${query.category.trim()}$`, $options: "i" },
+    });
+  }
+
+  if (query.startDate || query.endDate) {
+    const dateCond = {};
+    if (query.startDate) {
+      dateCond.$gte = new Date(`${query.startDate}T00:00:00.000Z`);
+    }
+    if (query.endDate) {
+      const end = new Date(`${query.endDate}T23:59:59.999Z`);
+      dateCond.$lte = end;
+    }
+    conditions.push({ createdAt: dateCond });
+  }
+
+  return conditions.length > 0 ? { $and: conditions } : {};
+}
+
+// ======================================
 // App Middleware
+// ======================================
 app.use(cors());
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -383,9 +548,533 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(methodOverride("_method"));
 
+// ======================================
+// Authentication Middlewares
+// ======================================
+function requireAuth(req, res, next) {
+  if (!req.session || !req.session.staff) {
+    return res.redirect("/login?error=" + encodeURIComponent("Please log in first."));
+  }
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session || !req.session.staff || req.session.staff.role !== "ADMIN") {
+    return res.redirect("/login?error=" + encodeURIComponent("Admin login required."));
+  }
+  next();
+}
+
+// Helper: Ensure EventTracking Sync
+async function ensureEventTrackingPopulated() {
+  const registrations = await Registration.find({
+    status: { $in: ["PAID", "COMPLIMENTARY", "PENDING"] },
+  }).lean();
+
+  const operations = [];
+
+  for (const reg of registrations) {
+    if (Array.isArray(reg.events) && reg.events.length > 0) {
+      for (const ev of reg.events) {
+        operations.push({
+          updateOne: {
+            filter: { registrationId: reg._id, eventId: ev.id },
+            update: {
+              $setOnInsert: {
+                ticketId: reg.ticketId,
+                eventName: ev.name,
+                category: reg.category ? reg.category.toUpperCase() : "OPEN",
+                participantType: ev.participantType || "Solo",
+                teamName: ev.teamName || reg.teamSlot || "",
+                followupStatus: "PENDING",
+                entryStatus: "PENDING",
+                stageStatus: "NOT_PRESENT",
+              },
+            },
+            upsert: true,
+          },
+        });
+      }
+    }
+  }
+
+  if (operations.length > 0) {
+    await EventTracking.bulkWrite(operations, { ordered: false });
+  }
+}
+
+// ======================================
+// Page & Admin Routes
+// ======================================
 app.get("/", (req, res) => res.render("homePage"));
 app.get("/register", (req, res) => res.render("register"));
 app.get("/success", (req, res) => res.render("success"));
+
+// --- Admin: Secret Code Management ---
+app.get("/AdminCode", async (req, res) => {
+  try {
+    const codes = await SecretCode.find().sort({ createdAt: -1 });
+    res.render("admin-secret-code", { codes, message: null });
+  } catch (error) {
+    res.render("admin-secret-code", {
+      codes: [],
+      message: { type: "error", text: "Failed to load secret codes." },
+    });
+  }
+});
+
+app.post("/admin/secret-codes", async (req, res) => {
+  try {
+    const { code, label } = req.body;
+    if (!code || !code.trim()) {
+      return res.render("admin-secret-code", {
+        codes: await SecretCode.find().sort({ createdAt: -1 }),
+        message: { type: "error", text: "Secret code is required." },
+      });
+    }
+
+    const cleanCode = code.trim().toUpperCase();
+    const existing = await SecretCode.findOne({ code: cleanCode });
+    if (existing) {
+      return res.render("admin-secret-code", {
+        codes: await SecretCode.find().sort({ createdAt: -1 }),
+        message: { type: "error", text: "This secret code already exists." },
+      });
+    }
+
+    await new SecretCode({
+      code: cleanCode,
+      label: label && label.trim() ? label.trim() : "General Member",
+      isActive: true,
+    }).save();
+
+    res.redirect("/AdminCode");
+  } catch (error) {
+    res.redirect("/AdminCode");
+  }
+});
+
+// --- Admin: Dashboard Aggregate View ---
+app.get("/admin/dashboard", async (req, res) => {
+  try {
+    await ensureEventTrackingPopulated();
+
+    const [registrations, trackings, callLogsCount, waLogsCount] = await Promise.all([
+      Registration.find({}),
+      EventTracking.find({}),
+      ActivityLog ? ActivityLog.countDocuments({ activityType: "CALL" }) : Promise.resolve(0),
+      ActivityLog ? ActivityLog.countDocuments({ activityType: "WHATSAPP" }) : Promise.resolve(0),
+    ]);
+
+    const totalReg = registrations.length;
+    const presentCount = trackings.filter((t) => t.entryStatus === "PRESENT").length;
+    const tokensIssued = trackings.filter((t) => t.tokenNumber && t.tokenNumber.trim() !== "").length;
+    const performancesDone = trackings.filter((t) => t.stageStatus === "PERFORMANCE_DONE").length;
+    const presentPct = trackings.length > 0 ? Math.round((presentCount / trackings.length) * 100) : 0;
+
+    const assignedCount = trackings.filter((t) => t.assignedStaff && t.assignedStaff.staffId).length;
+    const contactedCount = trackings.filter((t) => t.followupStatus !== "PENDING").length;
+    const pendingFollowups = trackings.filter((t) => t.followupStatus === "PENDING").length;
+    const followupCoveragePct = assignedCount > 0 ? Math.round((contactedCount / assignedCount) * 100) : 0;
+
+    const juniorCount = registrations.filter((r) => (r.category || "").toUpperCase() === "JUNIOR").length;
+    const seniorCount = registrations.filter((r) => (r.category || "").toUpperCase() === "SENIOR").length;
+    const paidCount = registrations.filter((r) => (r.amount || 0) > 0 && r.status === "PAID").length;
+
+    const eventStats = EVENTS_CONFIG.map((ev) => {
+      const evTrackings = trackings.filter((t) => t.eventId === ev.eventId || t.eventId === ev.eventCode);
+      return {
+        ...ev,
+        total: evTrackings.length,
+        junior: evTrackings.filter((t) => (t.category || "").toUpperCase() === "JUNIOR").length,
+        senior: evTrackings.filter((t) => (t.category || "").toUpperCase() === "SENIOR").length,
+        tokens: evTrackings.filter((t) => t.tokenNumber && t.tokenNumber.trim() !== "").length,
+        present: evTrackings.filter((t) => t.entryStatus === "PRESENT").length,
+        done: evTrackings.filter((t) => t.stageStatus === "PERFORMANCE_DONE").length,
+      };
+    });
+
+    res.render("Admindashboard", {
+      staff: req.session.staff,
+      kpis: {
+        totalReg,
+        presentCount,
+        presentPct,
+        tokensIssued,
+        performancesDone,
+        callsMade: callLogsCount,
+        whatsappSent: waLogsCount,
+        followupCoveragePct,
+        assignedCount,
+        contactedCount,
+        pendingFollowups,
+        juniorCount,
+        seniorCount,
+        paidCount,
+        pendingCorrections: 0,
+      },
+      eventStats,
+    });
+  } catch (err) {
+    res.status(500).send("Dashboard Error: " + err.message);
+  }
+});
+
+// --- Admin: Delete Registration Record ---
+app.delete("/admin/registrations/:id", async (req, res) => {
+  try {
+    await Registration.findByIdAndDelete(req.params.id);
+    await ParticipantCorrection.deleteMany({ registrationId: req.params.id });
+    res.redirect("/admin/registrations");
+  } catch (error) {
+    console.error("Error deleting registration:", error);
+    res.status(500).send("Error deleting record: " + error.message);
+  }
+});
+
+// --- Admin: Filterable Registrations Detail Table Page ---
+app.get("/admin/registrations", async (req, res) => {
+  try {
+    const mongoQuery = buildRegistrationQuery(req.query);
+    const rawRegistrations = await Registration.find(mongoQuery)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    let totalAmount = 0;
+    let totalCompWaived = 0;
+    let paidCount = 0;
+    let compCount = 0;
+
+    const registrations = rawRegistrations.map((r) => {
+      const originalValue = typeof calculateRegistrationOriginalAmount === "function"
+        ? calculateRegistrationOriginalAmount(r, EVENTS)
+        : Number(r.waivedAmount || r.amount || 0);
+
+      if (r.status === "PAID") {
+        paidCount++;
+        totalAmount += Number(r.amount) || 0;
+      } else if (r.status === "COMPLIMENTARY") {
+        compCount++;
+        totalCompWaived += originalValue;
+      }
+
+      return {
+        ...r,
+        computedCompAmount: originalValue,
+      };
+    });
+
+    res.render("registrations", {
+      registrations,
+      eventsList: EVENTS,
+      filters: {
+        startDate: req.query.startDate || "",
+        endDate: req.query.endDate || "",
+        eventId: req.query.eventId || "",
+        esportsGame: req.query.esportsGame || "",
+        esportsMode: req.query.esportsMode || "",
+        secretCode: req.query.secretCode || "",
+        reference: req.query.reference || "",
+        slotFrom: req.query.slotFrom || "",
+        slotTo: req.query.slotTo || "",
+        teamSlot: req.query.teamSlot || "",
+        status: req.query.status || "",
+        category: req.query.category ? req.query.category.trim() : "",
+        search: req.query.search || "",
+      },
+      summary: {
+        totalCount: registrations.length,
+        totalAmount,
+        totalCompWaived,
+        paidCount,
+        compCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).send("Error loading registrations");
+  }
+});
+
+// --- Admin: Render Edit Form Page ---
+app.get("/admin/registrations/:id/edit", async (req, res) => {
+  try {
+    const registration = await Registration.findById(req.params.id);
+    if (!registration) {
+      return res.status(404).send("Registration record not found.");
+    }
+    res.render("edit-registration", { registration });
+  } catch (error) {
+    console.error("Error fetching registration for edit:", error);
+    res.status(500).send("Server Error: " + error.message);
+  }
+});
+
+// --- Admin: Update Registration Record ---
+app.put("/admin/registrations/:id", async (req, res) => {
+  try {
+    const {
+      fullName,
+      mobile,
+      gender,
+      age,
+      school,
+      classCourse,
+      category,
+      eventName,
+      teamSlot,
+      reference,
+      secretCode,
+      amount,
+      waivedAmount,
+      status,
+    } = req.body;
+
+    await Registration.findByIdAndUpdate(
+      req.params.id,
+      {
+        fullName: fullName ? fullName.trim() : "",
+        mobile: mobile ? mobile.trim() : "",
+        gender,
+        age: Number(age) || 18,
+        school: school ? school.trim() : "",
+        classCourse: classCourse ? classCourse.trim() : "",
+        category,
+        eventName: eventName ? eventName.trim() : "",
+        teamSlot: teamSlot ? teamSlot.trim() : "",
+        reference: reference ? reference.trim() : "",
+        secretCode: secretCode ? secretCode.trim().toUpperCase() : "",
+        amount: Number(amount) || 0,
+        waivedAmount: Number(waivedAmount) || 0,
+        status,
+      },
+      { runValidators: true, returnDocument: "after" }
+    );
+
+    res.redirect("/admin/registrations");
+  } catch (error) {
+    console.error("Error updating registration:", error);
+    res.status(500).send("Error updating record: " + error.message);
+  }
+});
+
+// --- Admin: Export Registrations (CSV) ---
+app.get("/admin/registrations/export/excel", async (req, res) => {
+  try {
+    const mongoQuery = buildRegistrationQuery(req.query);
+    const rawRegistrations = await Registration.find(mongoQuery)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const escapeCsv = (str) => {
+      if (str === null || str === undefined) return '""';
+      const cleanStr = String(str).replace(/\r\n|\r|\n/g, " ").replace(/"/g, '""').trim();
+      return `"${cleanStr}"`;
+    };
+
+    const headers = [
+      "S.No",
+      "Ticket ID",
+      "Transaction ID",
+      "Full Name",
+      "Mobile",
+      "Gender",
+      "Age",
+      "School / Institution",
+      "Class / Course",
+      "Category",
+      "Selected Events",
+      "Team Slot",
+      "Reference",
+      "Secret Code",
+      "Status",
+      "Paid Amount (INR)",
+      "Waived Value (INR)",
+      "Registration Date",
+    ];
+
+    const rows = rawRegistrations.map((r, idx) => {
+      const originalValue = calculateRegistrationOriginalAmount(r, EVENTS);
+
+      let eventDetails = "-";
+      if (r.events && r.events.length > 0) {
+        eventDetails = r.events
+          .map((e) => {
+            const name = eventNameMap[e.id] || e.name || "Event";
+            const team = e.teamName ? ` (Team: ${e.teamName.trim()})` : "";
+            const type = e.participantType === "Group" ? `Grp: ${e.groupCount}` : (e.participantType || "Solo");
+            return `${name} [${type}]${team}`;
+          })
+          .join(" | ");
+      } else if (r.eventName) {
+        eventDetails = r.eventName;
+      }
+
+      return [
+        idx + 1,
+        escapeCsv(r.ticketId),
+        escapeCsv(r.razorpayPaymentId || "-"),
+        escapeCsv(r.fullName),
+        escapeCsv(r.mobile),
+        escapeCsv(r.gender),
+        r.age || "-",
+        escapeCsv(r.school),
+        escapeCsv(r.classCourse),
+        escapeCsv(r.category),
+        escapeCsv(eventDetails),
+        escapeCsv(r.teamSlot || "-"),
+        escapeCsv(r.reference || "-"),
+        escapeCsv(r.secretCode || "-"),
+        escapeCsv(r.status || "PENDING"),
+        r.status === "COMPLIMENTARY" ? 0 : Number(r.amount || 0),
+        r.status === "COMPLIMENTARY" ? originalValue : (Number(r.waivedAmount) || 0),
+        escapeCsv(
+          new Date(r.createdAt).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        ),
+      ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Event_Registrations_${Date.now()}.csv`
+    );
+
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("Export Error:", error);
+    res.status(500).send("Error exporting file: " + error.message);
+  }
+});
+
+// --- Admin: Members Master Table & Filter Breakdown ---
+app.get("/admin/total", async (req, res) => {
+  try {
+    const { secretCode } = req.query;
+    const queryCode = secretCode ? String(secretCode).trim().toUpperCase() : "";
+
+    const allSecretCodes = await SecretCode.find().sort({ createdAt: -1 }).lean();
+    const allCompRegistrations = await Registration.find({ status: "COMPLIMENTARY" }).lean();
+
+    const compRegsWithAmount = allCompRegistrations.map((reg) => {
+      const waivedVal = calculateRegistrationOriginalAmount(reg, EVENTS);
+      return {
+        ...reg,
+        waivedVal,
+      };
+    });
+
+    const secretCodesMasterSummary = allSecretCodes.map((codeItem) => {
+      const matchedRegs = compRegsWithAmount.filter(
+        (r) => (r.secretCode || "").trim().toUpperCase() === codeItem.code.toUpperCase()
+      );
+
+      const totalRegistrations = matchedRegs.length;
+      const totalWaivedAmount = matchedRegs.reduce((sum, r) => sum + r.waivedVal, 0);
+
+      return {
+        code: codeItem.code,
+        label: codeItem.label || "General Member",
+        isActive: codeItem.isActive,
+        totalRegistrations,
+        totalWaivedAmount,
+      };
+    });
+
+    let matchedCode = null;
+    let registrations = [];
+    let totalWaivedAmount = 0;
+
+    if (queryCode) {
+      matchedCode = allSecretCodes.find((c) => c.code.toUpperCase() === queryCode) || null;
+
+      registrations = compRegsWithAmount.filter(
+        (r) => (r.secretCode || "").trim().toUpperCase() === queryCode
+      );
+
+      registrations.forEach((reg) => {
+        totalWaivedAmount += reg.waivedVal;
+      });
+    }
+
+    res.render("total", {
+      searchCode: queryCode,
+      matchedCode,
+      allSecretCodes,
+      secretCodesMasterSummary,
+      registrations,
+      totalWaivedAmount,
+      totalRegistrations: registrations.length,
+    });
+  } catch (error) {
+    console.error("Error calculating member totals:", error);
+    res.status(500).send("Error calculating member totals: " + error.message);
+  }
+});
+
+// --- Admin: Export Master Summary Table to Excel (CSV) ---
+app.get("/admin/total/export/excel", async (req, res) => {
+  try {
+    const allSecretCodes = await SecretCode.find().sort({ createdAt: -1 }).lean();
+    const allCompRegistrations = await Registration.find({ status: "COMPLIMENTARY" }).lean();
+
+    const compRegsWithAmount = allCompRegistrations.map((reg) => ({
+      ...reg,
+      waivedVal: calculateRegistrationOriginalAmount(reg, EVENTS),
+    }));
+
+    const escapeCsv = (str) => {
+      if (str === null || str === undefined) return '""';
+      const cleanStr = String(str).replace(/\r\n|\r|\n/g, " ").replace(/"/g, '""').trim();
+      return `"${cleanStr}"`;
+    };
+
+    const headers = [
+      "S.No",
+      "Member Name",
+      "Status",
+      "Total Registrations",
+      "Total Waived Amount (INR)",
+    ];
+
+    const rows = allSecretCodes.map((item, idx) => {
+      const matched = compRegsWithAmount.filter(
+        (r) => (r.secretCode || "").trim().toUpperCase() === item.code.toUpperCase()
+      );
+      const totalRegs = matched.length;
+      const totalWaived = matched.reduce((sum, r) => sum + r.waivedVal, 0);
+
+      return [
+        idx + 1,
+        escapeCsv(item.label || "General Member"),
+        item.isActive ? "ACTIVE" : "INACTIVE",
+        totalRegs,
+        totalWaived,
+      ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Members_Registration_Summary_${Date.now()}.csv`
+    );
+
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("Export Error:", error);
+    res.status(500).send("Error exporting file: " + error.message);
+  }
+});
 
 // ======================================
 // Public API Endpoints
@@ -573,13 +1262,9 @@ app.post("/api/record-complimentary", async (req, res) => {
   }
 });
 
-app.get("/dance", async (req, res) => {
-  res.render("dance", {
-    pageTitle: "Navchetna Yuva Mahotsav - Event Rules & Schedule",
-  });
-});
-
-// Night Event Registration Schema & Endpoints
+// ======================================
+// Night Event Registration Endpoints
+// ======================================
 const nightEventRegistrationSchema = new mongoose.Schema(
   {
     ticketId: { type: String, required: true, unique: true, index: true },
@@ -737,7 +1422,7 @@ app.post("/api/dj/record-complimentary", async (req, res) => {
 
     const reg = new NightEventRegistration({
       ticketId,
-      event: selectedEvent,
+      event,
       eventLabel,
       name: String(name || "").trim(),
       mobile: String(mobile || "").trim(),
@@ -773,60 +1458,236 @@ app.post("/api/dj/record-complimentary", async (req, res) => {
   }
 });
 
-// Authentication Middlewares
-function requireAuth(req, res, next) {
-  if (!req.session || !req.session.staff) {
-    return res.redirect("/login?error=" + encodeURIComponent("Please log in first."));
+function buildNightQuery(query) {
+  const filter = {};
+
+  if (query.search && query.search.trim()) {
+    const s = query.search.trim();
+    filter.$or = [
+      { ticketId: { $regex: s, $options: "i" } },
+      { name: { $regex: s, $options: "i" } },
+      { mobile: { $regex: s, $options: "i" } },
+      { email: { $regex: s, $options: "i" } },
+      { college: { $regex: s, $options: "i" } },
+      { "member2.name": { $regex: s, $options: "i" } },
+      { "member2.mobile": { $regex: s, $options: "i" } },
+    ];
   }
-  next();
+
+  if (query.event && query.event.trim()) {
+    filter.event = query.event.trim();
+  }
+
+  if (query.status && query.status.trim()) {
+    filter.status = query.status.trim();
+  }
+
+  if (query.secretCode && query.secretCode.trim()) {
+    filter.secretCode = { $regex: query.secretCode.trim(), $options: "i" };
+  }
+
+  if (query.startDate || query.endDate) {
+    filter.createdAt = {};
+    if (query.startDate) filter.createdAt.$gte = new Date(`${query.startDate}T00:00:00.000Z`);
+    if (query.endDate) filter.createdAt.$lte = new Date(`${query.endDate}T23:59:59.999Z`);
+  }
+
+  return filter;
 }
 
-function requireAdmin(req, res, next) {
-  if (!req.session || !req.session.staff || req.session.staff.role !== "ADMIN") {
-    return res.redirect("/login?error=" + encodeURIComponent("Admin login required."));
-  }
-  next();
-}
+app.get("/admin/night-registrations", async (req, res) => {
+  try {
+    const filter = buildNightQuery(req.query);
+    const registrations = await NightEventRegistration.find(filter)
+      .sort({ createdAt: -1 })
+      .lean();
 
-// Populate EventTracking from Registrations
-async function ensureEventTrackingPopulated() {
-  const registrations = await Registration.find({
-    status: { $in: ["PAID", "COMPLIMENTARY", "PENDING"] },
-  }).lean();
+    let totalRevenue = 0;
+    let paidCount = 0;
+    let compCount = 0;
+    let djCount = 0;
+    let bhajanCount = 0;
 
-  const operations = [];
-
-  for (const reg of registrations) {
-    if (Array.isArray(reg.events) && reg.events.length > 0) {
-      for (const ev of reg.events) {
-        operations.push({
-          updateOne: {
-            filter: { registrationId: reg._id, eventId: ev.id },
-            update: {
-              $setOnInsert: {
-                ticketId: reg.ticketId,
-                eventName: ev.name,
-                category: reg.category ? reg.category.toUpperCase() : "OPEN",
-                participantType: ev.participantType || "Solo",
-                teamName: ev.teamName || reg.teamSlot || "",
-                followupStatus: "PENDING",
-                entryStatus: "PENDING",
-                stageStatus: "NOT_PRESENT",
-              },
-            },
-            upsert: true,
-          },
-        });
+    registrations.forEach((r) => {
+      if (r.status === "PAID") {
+        paidCount++;
+        totalRevenue += Number(r.amount || 0);
+      } else if (r.status === "COMPLIMENTARY") {
+        compCount++;
       }
+
+      if (r.event === "dj") djCount++;
+      if (r.event === "bhajan") bhajanCount++;
+    });
+
+    res.render("admin-night-registrations", {
+      registrations,
+      filters: {
+        search: req.query.search || "",
+        event: req.query.event || "",
+        status: req.query.status || "",
+        secretCode: req.query.secretCode || "",
+        startDate: req.query.startDate || "",
+        endDate: req.query.endDate || "",
+      },
+      summary: {
+        totalCount: registrations.length,
+        totalRevenue,
+        paidCount,
+        compCount,
+        djCount,
+        bhajanCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching night event registrations:", error);
+    res.status(500).send("Error loading night event registrations: " + error.message);
+  }
+});
+
+app.get("/admin/night-registrations/:id/edit", async (req, res) => {
+  try {
+    const registration = await NightEventRegistration.findById(req.params.id);
+    if (!registration) {
+      return res.status(404).send("Registration record not found.");
     }
+    res.render("edit-night-registration", { registration });
+  } catch (error) {
+    console.error("Error fetching registration for edit:", error);
+    res.status(500).send("Server Error: " + error.message);
   }
+});
 
-  if (operations.length > 0) {
-    await EventTracking.bulkWrite(operations, { ordered: false });
+app.put("/admin/night-registrations/:id", async (req, res) => {
+  try {
+    const {
+      name,
+      mobile,
+      email,
+      college,
+      course,
+      collegeIdNumber,
+      event,
+      hasMember2,
+      name2,
+      mobile2,
+      amount,
+      secretCode,
+      status,
+    } = req.body;
+
+    const isMember2 = hasMember2 === "true" || hasMember2 === "on" || hasMember2 === true;
+    const selectedEvent = event === "dj" ? "dj" : "bhajan";
+    const eventLabel = selectedEvent === "dj" ? "DJ Night" : "Bhajan Clubbing";
+
+    await NightEventRegistration.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: name ? name.trim() : "",
+        mobile: mobile ? mobile.trim() : "",
+        email: email ? email.trim().toLowerCase() : "",
+        college: college ? college.trim() : "",
+        course: course ? course.trim() : "",
+        collegeIdNumber: selectedEvent === "dj" && collegeIdNumber ? collegeIdNumber.trim() : "",
+        event: selectedEvent,
+        eventLabel,
+        hasMember2: isMember2,
+        member2: {
+          name: isMember2 && name2 ? name2.trim() : "",
+          mobile: isMember2 && mobile2 ? mobile2.trim() : "",
+        },
+        amount: Number(amount) || 0,
+        secretCode: secretCode ? secretCode.trim().toUpperCase() : "",
+        status,
+      },
+      { runValidators: true, returnDocument: "after" }
+    );
+
+    res.redirect("/admin/night-registrations");
+  } catch (error) {
+    console.error("Error updating night registration:", error);
+    res.status(500).send("Error updating record: " + error.message);
   }
-}
+});
 
+app.delete("/admin/night-registrations/:id", async (req, res) => {
+  try {
+    await NightEventRegistration.findByIdAndDelete(req.params.id);
+    res.redirect("/admin/night-registrations");
+  } catch (error) {
+    console.error("Error deleting night registration:", error);
+    res.status(500).send("Error deleting record: " + error.message);
+  }
+});
+
+// ----------------------------------------------------
 // Staff Onboarding & Authentication Routes
+// ----------------------------------------------------
+app.get("/staff", requireAdmin, async (req, res) => {
+  try {
+    const { role } = req.query;
+    const filter = {};
+    if (role && ["ADMIN", "COORDINATOR"].includes(role.toUpperCase())) {
+      filter.role = role.toUpperCase();
+    }
+
+    const staffList = await Staff.find(filter).sort({ createdAt: -1 });
+
+    res.render("staff", {
+      staffList,
+      eventMap: EVENT_MAP,
+      selectedRole: role || "",
+      error: req.query.error || null,
+      success: req.query.success || null,
+    });
+  } catch (err) {
+    res.status(500).send("Error fetching staff records: " + err.message);
+  }
+});
+
+app.post("/staff", requireAdmin, async (req, res) => {
+  try {
+    const { email, secretCode, role, assignedEventId } = req.body;
+
+    if (!email || !secretCode || !role) {
+      return res.redirect("/staff?error=" + encodeURIComponent("All required fields must be filled."));
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = secretCode.trim().toUpperCase();
+    const normalizedRole = role.toUpperCase();
+
+    const existing = await Staff.findOne({
+      $or: [{ email: cleanEmail }, { secretCode: cleanCode }],
+    });
+
+    if (existing) {
+      const field = existing.email === cleanEmail ? "Email" : "Secret Code";
+      return res.redirect("/staff?error=" + encodeURIComponent(`${field} is already in use. Must be unique.`));
+    }
+
+    await Staff.create({
+      email: cleanEmail,
+      secretCode: cleanCode,
+      role: normalizedRole,
+      assignedEventId: normalizedRole === "COORDINATOR" ? assignedEventId : null,
+    });
+
+    res.redirect("/staff?success=" + encodeURIComponent(`${normalizedRole} account created successfully!`));
+  } catch (err) {
+    res.redirect("/staff?error=" + encodeURIComponent(err.message));
+  }
+});
+
+app.post("/staff/delete/:id", requireAdmin, async (req, res) => {
+  try {
+    await Staff.findByIdAndDelete(req.params.id);
+    res.redirect("/staff?success=" + encodeURIComponent("Staff access removed successfully."));
+  } catch (err) {
+    res.redirect("/staff?error=" + encodeURIComponent(err.message));
+  }
+});
+
 app.get("/login", (req, res) => {
   if (req.session && req.session.staff) {
     return res.redirect(req.session.staff.role === "ADMIN" ? "/dashboard" : "/coordinator");
@@ -881,7 +1742,9 @@ app.get("/logout", (req, res) => {
   });
 });
 
+// ----------------------------------------------------
 // Admin Dashboard
+// ----------------------------------------------------
 app.get("/dashboard", requireAdmin, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -909,17 +1772,7 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
     const paidCount = registrations.filter((r) => (r.amount || 0) > 0 && r.status === "PAID").length;
 
     const eventStats = EVENTS_CONFIG.map((ev) => {
-      const evTrackings = trackings.filter((t) => {
-        const id = (t.eventId || "").toLowerCase();
-        const nm = (t.eventName || "").toLowerCase();
-        return (
-          id === ev.key.toLowerCase() ||
-          id === ev.eventId.toLowerCase() ||
-          id === ev.eventCode.toLowerCase() ||
-          ev.aliases.some((a) => id.includes(a) || nm.includes(a))
-        );
-      });
-
+      const evTrackings = trackings.filter((t) => t.eventId === ev.eventId || t.eventId === ev.eventCode);
       return {
         ...ev,
         total: evTrackings.length,
@@ -957,12 +1810,12 @@ app.get("/dashboard", requireAdmin, async (req, res) => {
   }
 });
 
-// Distribution Routes
+// ----------------------------------------------------
+// Contact Distribution Engine
+// ----------------------------------------------------
 app.get("/distribution", requireAdmin, async (req, res) => {
   try {
-    if (typeof ensureEventTrackingPopulated === "function") {
-      await ensureEventTrackingPopulated();
-    }
+    await ensureEventTrackingPopulated();
 
     const [staffList, trackings] = await Promise.all([
       Staff.find({ isActive: true }).sort({ email: 1 }).lean(),
@@ -1013,44 +1866,36 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
     const { mode, eventId, categoryFilter, maxLimit, staffId, countToAssign } = req.body;
     const limit = Math.min(Math.max(parseInt(maxLimit, 10) || 40, 1), 40);
 
-    const queryConditions = [
-      {
-        $or: [
-          { isAssigned: false },
-          { isAssigned: { $exists: false } },
-          { "assignedStaff.staffId": null },
-          { "assignedStaff.staffId": { $exists: false } },
-          { "assignedStaff.targetStatus": "UNASSIGNED" },
-        ],
-      },
-    ];
+    const baseQuery = {
+      $or: [
+        { isAssigned: false },
+        { "assignedStaff.staffId": null },
+        { "assignedStaff.staffId": { $exists: false } },
+        { "assignedStaff.targetStatus": "UNASSIGNED" },
+      ],
+    };
 
     if (eventId && eventId !== "ALL" && eventId.trim() !== "") {
-      const trimmedEvent = eventId.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      queryConditions.push({
-        $or: [
-          { eventId: new RegExp(`^${trimmedEvent}$`, "i") },
-          { eventName: new RegExp(`^${trimmedEvent}$`, "i") },
-        ],
-      });
+      const trimmedEvent = eventId.trim();
+      baseQuery.$and = [
+        {
+          $or: [
+            { eventId: new RegExp(`^${trimmedEvent}$`, "i") },
+            { eventName: new RegExp(`^${trimmedEvent}$`, "i") },
+          ],
+        },
+      ];
     }
 
     if (categoryFilter && categoryFilter !== "ALL" && categoryFilter.trim() !== "") {
-      const escapedCategory = categoryFilter.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      queryConditions.push({
-        category: new RegExp(`^${escapedCategory}$`, "i"),
-      });
+      baseQuery.category = new RegExp(`^${categoryFilter.trim()}$`, "i");
     }
-
-    const baseQuery = { $and: queryConditions };
 
     const availableMatches = await EventTracking.countDocuments(baseQuery);
     if (availableMatches === 0) {
       return res.redirect(
         "/distribution?error=" +
-          encodeURIComponent(
-            `No unassigned contacts found matching Event: "${eventId || 'ALL'}" and Category: "${categoryFilter || 'ALL'}".`
-          )
+          encodeURIComponent(`No unassigned contacts found for selection "${eventId}".`)
       );
     }
 
@@ -1096,10 +1941,7 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
       );
 
       return res.redirect(
-        "/distribution?success=" +
-          encodeURIComponent(
-            `Assigned ${ids.length} contacts (${categoryFilter || 'All Categories'}) directly to ${member.email}.`
-          )
+        "/distribution?success=" + encodeURIComponent(`Assigned ${ids.length} contacts directly to ${member.email}.`)
       );
     }
 
@@ -1174,50 +2016,9 @@ app.post("/distribution/apply", requireAdmin, async (req, res) => {
   }
 });
 
-app.post("/distribution/reset", requireAdmin, async (req, res) => {
-  try {
-    const { scope, eventId, staffId } = req.body;
-
-    const resetFields = {
-      $set: {
-        isAssigned: false,
-        assignedStaff: {
-          staffId: null,
-          email: "",
-          secretCode: "",
-          targetStatus: "UNASSIGNED",
-          assignedBy: "",
-          assignedAt: null,
-        },
-      },
-    };
-
-    if (scope === "STAFF" && staffId) {
-      await EventTracking.updateMany(
-        { "assignedStaff.staffId": staffId, followupStatus: "PENDING" },
-        resetFields
-      );
-      return res.redirect("/distribution?success=" + encodeURIComponent("Cleared pending assignments for the selected staff member."));
-    }
-
-    if (scope === "EVENT") {
-      const filter = { followupStatus: "PENDING" };
-      if (eventId && eventId !== "ALL") {
-        filter.$or = [{ eventId: eventId }, { eventName: eventId }];
-      }
-      await EventTracking.updateMany(filter, resetFields);
-      return res.redirect("/distribution?success=" + encodeURIComponent("Reset pending contact assignments successfully."));
-    }
-
-    return res.redirect("/distribution?error=" + encodeURIComponent("Invalid reset request parameters."));
-  } catch (err) {
-    return res.redirect("/distribution?error=" + encodeURIComponent(err.message));
-  }
-});
-
-// ====================================================
+// ----------------------------------------------------
 // Master Desk / Corrections Engine
-// ====================================================
+// ----------------------------------------------------
 app.get("/corrections", requireAdmin, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -1238,7 +2039,7 @@ app.get("/corrections", requireAdmin, async (req, res) => {
     }
 
     if (category && category !== "ALL") {
-      regFilter.category = new RegExp(`^${category.trim()}$`, "i");
+      regFilter.category = category.toUpperCase();
     }
 
     const [allRegistrations, allTrackings, staffList] = await Promise.all([
@@ -1247,7 +2048,6 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       Staff.find({ isActive: true }).sort({ email: 1 }).lean(),
     ]);
 
-    // Group trackings by registrationId
     const trackingByRegId = {};
     allTrackings.forEach((t) => {
       const regId = String(t.registrationId);
@@ -1257,56 +2057,21 @@ app.get("/corrections", requireAdmin, async (req, res) => {
 
     let masterData = allRegistrations.map((reg) => {
       const regId = String(reg._id);
-      
-      // Merge registered events with EventTracking records
-      const trackings = trackingByRegId[regId] || [];
-      
-      let unifiedEvents = [];
-      if (trackings.length > 0) {
-        unifiedEvents = trackings;
-      } else if (Array.isArray(reg.events) && reg.events.length > 0) {
-        unifiedEvents = reg.events.map((e) => ({
-          eventId: e.id,
-          eventName: e.name,
-          tokenNumber: "",
-          entryStatus: "PENDING",
-          followupStatus: "PENDING",
-          totalCalls: 0,
-          coordinatorNotes: "",
-        }));
-      } else if (reg.eventName) {
-        unifiedEvents = [{
-          eventId: reg.eventName,
-          eventName: reg.eventName,
-          tokenNumber: "",
-          entryStatus: "PENDING",
-          followupStatus: "PENDING",
-          totalCalls: 0,
-          coordinatorNotes: "",
-        }];
-      }
+      const events = trackingByRegId[regId] || [];
 
-      const isPresent = unifiedEvents.some((ev) => ev.entryStatus === "PRESENT");
-
+      const isPresent = events.some((ev) => ev.entryStatus === "PRESENT");
       const assignedStaffEmails = Array.from(
-        new Set(unifiedEvents.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
+        new Set(events.filter((e) => e.assignedStaff?.email).map((e) => e.assignedStaff.email))
       );
-
       const assignedStaffIds = Array.from(
-        new Set(
-          unifiedEvents
-            .filter((e) => e.assignedStaff?.staffId)
-            .map((e) => String(e.assignedStaff.staffId))
-        )
+        new Set(events.filter((e) => e.assignedStaff?.staffId).map((e) => String(e.assignedStaff.staffId)))
       );
 
-      const isContacted = unifiedEvents.some(
-        (e) => e.followupStatus && e.followupStatus !== "PENDING"
-      );
+      const isContacted = events.some((e) => e.followupStatus && e.followupStatus !== "PENDING");
 
       return {
         ...reg,
-        events: unifiedEvents,
+        events,
         isPresent,
         isContacted,
         assignedStaffEmails,
@@ -1314,42 +2079,9 @@ app.get("/corrections", requireAdmin, async (req, res) => {
       };
     });
 
-    // 1. FILTER: Multi-key Event Filter (Fixes Open Mic, Hackathon, Dance, Drawing, etc.)
     if (eventId && eventId !== "ALL") {
-      const matchedConfig = EVENTS_CONFIG.find(
-        (c) =>
-          c.key.toLowerCase() === eventId.toLowerCase() ||
-          c.eventId.toLowerCase() === eventId.toLowerCase() ||
-          c.eventCode.toLowerCase() === eventId.toLowerCase()
-      );
-
-      const queryTokens = matchedConfig
-        ? [
-            matchedConfig.key.toLowerCase(),
-            matchedConfig.eventId.toLowerCase(),
-            matchedConfig.eventCode.toLowerCase(),
-            matchedConfig.name.toLowerCase(),
-            ...matchedConfig.aliases.map((a) => a.toLowerCase()),
-          ]
-        : [eventId.toLowerCase()];
-
-      masterData = masterData.filter((r) => {
-        // Match against both embedded events array and fallback registration.eventName
-        const inRegName = r.eventName
-          ? queryTokens.some((tok) => r.eventName.toLowerCase().includes(tok))
-          : false;
-
-        const inEventsList = r.events.some((ev) => {
-          const evId = (ev.eventId || "").toLowerCase();
-          const evNm = (ev.eventName || "").toLowerCase();
-          return queryTokens.some((tok) => evId.includes(tok) || evNm.includes(tok));
-        });
-
-        return inRegName || inEventsList;
-      });
+      masterData = masterData.filter((r) => r.events.some((ev) => ev.eventId === eventId));
     }
-
-    // 2. FILTER: Attendance / Desk Entry
     if (entryStatus && entryStatus !== "ALL") {
       if (entryStatus === "PRESENT") {
         masterData = masterData.filter((r) => r.isPresent);
@@ -1357,27 +2089,15 @@ app.get("/corrections", requireAdmin, async (req, res) => {
         masterData = masterData.filter((r) => !r.isPresent);
       }
     }
-
-    // 3. FILTER: Assigned Staff Member
-    if (staffId && staffId !== "ALL") {
-      if (staffId === "UNASSIGNED") {
-        masterData = masterData.filter((r) => r.assignedStaffIds.length === 0);
-      } else {
-        masterData = masterData.filter((r) =>
-          r.assignedStaffIds.includes(String(staffId))
-        );
+    if (followupStatus && followupStatus !== "ALL") {
+      if (followupStatus === "CONTACTED") {
+        masterData = masterData.filter((r) => r.isContacted);
+      } else if (followupStatus === "PENDING") {
+        masterData = masterData.filter((r) => !r.isContacted);
       }
     }
-
-    // 4. FILTER: Call Follow-up Response
-    if (followupStatus && followupStatus !== "ALL") {
-      if (followupStatus === "CONTACTED_ANY") {
-        masterData = masterData.filter((r) => r.isContacted);
-      } else {
-        masterData = masterData.filter((r) =>
-          r.events.some((e) => (e.followupStatus || "PENDING") === followupStatus)
-        );
-      }
+    if (staffId && staffId !== "ALL") {
+      masterData = masterData.filter((r) => r.assignedStaffIds.includes(String(staffId)));
     }
 
     res.render("corrections", {
@@ -1401,7 +2121,6 @@ app.get("/corrections", requireAdmin, async (req, res) => {
   }
 });
 
-// Update Ticket / Participant Details
 app.post("/corrections/update", requireAdmin, async (req, res) => {
   try {
     const { registrationId, fullName, mobile, school, classCourse, category, teamSlot, status, amount } = req.body;
@@ -1442,7 +2161,6 @@ app.post("/corrections/update", requireAdmin, async (req, res) => {
   }
 });
 
-// Delete Ticket & Associated Tracking
 app.post("/corrections/delete", requireAdmin, async (req, res) => {
   try {
     const { registrationId } = req.body;
@@ -1457,6 +2175,7 @@ app.post("/corrections/delete", requireAdmin, async (req, res) => {
     }
 
     await EventTracking.deleteMany({ registrationId });
+    await ParticipantCorrection.deleteMany({ registrationId });
 
     return res.redirect(
       "/corrections?success=" + encodeURIComponent(`Ticket #${reg.ticketId} and associated records deleted permanently.`)
@@ -1466,7 +2185,9 @@ app.post("/corrections/delete", requireAdmin, async (req, res) => {
   }
 });
 
-// Event Day Desk Routes
+// ======================================
+// Event Day Desk Routes (Auto Sequential Tokens & Mark All)
+// ======================================
 app.get("/desk", requireAuth, async (req, res) => {
   res.render("desk", {
     staff: req.session.staff,
@@ -1474,6 +2195,7 @@ app.get("/desk", requireAuth, async (req, res) => {
   });
 });
 
+// Search participant by Ticket ID, Phone, Slot, or Name (Check ParticipantCorrection as well)
 app.get("/api/desk/search", requireAuth, async (req, res) => {
   try {
     const q = (req.query.q || "").trim();
@@ -1482,9 +2204,18 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
     const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escaped, "i");
 
-    const registration = await Registration.findOne({
-      $or: [{ mobile: regex }, { ticketId: regex }, { teamSlot: regex }, { fullName: regex }],
-    }).lean();
+    const matchedCorrection = await ParticipantCorrection.findOne({ correctedName: regex }).lean();
+
+    let registration = null;
+    if (matchedCorrection) {
+      registration = await Registration.findById(matchedCorrection.registrationId).lean();
+    }
+
+    if (!registration) {
+      registration = await Registration.findOne({
+        $or: [{ mobile: regex }, { ticketId: regex }, { teamSlot: regex }, { fullName: regex }],
+      }).lean();
+    }
 
     if (!registration) return res.json({ success: true, participant: null });
 
@@ -1511,7 +2242,6 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
 
     const trackings = await EventTracking.find({ registrationId: registration._id }).lean();
 
-    // Map both trackingId and id so desk.ejs never gets undefined
     const formattedEvents = trackings.map((t) => ({
       ...t,
       id: t._id,
@@ -1519,11 +2249,17 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
       _id: t._id,
     }));
 
+    // Find if an optional override name exists in ParticipantCorrection
+    const correctionDoc = await ParticipantCorrection.findOne({
+      $or: [{ registrationId: registration._id }, { ticketId: registration.ticketId }],
+    }).lean();
+
     return res.json({
       success: true,
       participant: {
         id: registration._id,
         fullName: registration.fullName,
+        correctedName: correctionDoc ? correctionDoc.correctedName : "",
         mobile: registration.mobile,
         school: registration.school,
         classCourse: registration.classCourse,
@@ -1540,19 +2276,58 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
   }
 });
 
-app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
+// Update or Clear Corrected Name via ParticipantCorrection
+app.post("/api/desk/update-name", requireAuth, async (req, res) => {
   try {
-    // Support all possible key names coming from desk.ejs
-    const trackingId = req.body.trackingId || req.body.id || req.body._id || req.body.eventTrackingId;
-    const rawToken = req.body.manualToken || req.body.token || req.body.tokenNumber || req.body.tokenVal || "";
-    const tokenVal = String(rawToken).trim().toUpperCase();
-    const operatorName = req.session?.staff?.email || "Volunteer Desk #1";
+    const { registrationId, ticketId, correctedName } = req.body;
+    const operatorName = req.session?.staff?.email || "Desk Operator";
 
-    if (!tokenVal) {
-      return res.status(400).json({ success: false, message: "Token number is required to mark entry." });
+    if (!registrationId || !mongoose.Types.ObjectId.isValid(registrationId)) {
+      return res.status(400).json({ success: false, message: "Valid registration ID required." });
     }
 
-    // Flexible lookup: by ObjectId, or fallback to ticketId / registrationId
+    const cleanName = (correctedName || "").trim();
+    const reg = await Registration.findById(registrationId);
+
+    if (!reg) {
+      return res.status(404).json({ success: false, message: "Registration not found." });
+    }
+
+    if (cleanName) {
+      await ParticipantCorrection.findOneAndUpdate(
+        { registrationId: reg._id },
+        {
+          $set: {
+            ticketId: reg.ticketId,
+            registrationId: reg._id,
+            originalName: reg.fullName,
+            correctedName: cleanName,
+            correctedBy: operatorName,
+          },
+        },
+        { returnDocument: "after", upsert: true }
+      );
+    } else {
+      await ParticipantCorrection.deleteOne({ registrationId: reg._id });
+    }
+
+    return res.json({
+      success: true,
+      message: cleanName ? `Name updated to: ${cleanName}` : "Reset to original name.",
+      correctedName: cleanName,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Mark Single Event Present with Automated Sequential Token
+app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
+  try {
+    const trackingId = req.body.trackingId || req.body.id || req.body._id;
+    const optionalCorrectedName = (req.body.correctedName || "").trim();
+    const operatorName = req.session?.staff?.email || "Desk Operator";
+
     let tracking = null;
     if (trackingId && mongoose.Types.ObjectId.isValid(trackingId)) {
       tracking = await EventTracking.findById(trackingId);
@@ -1570,7 +2345,12 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
       return res.status(404).json({ success: false, message: "Tracking record not found." });
     }
 
-    // Update using findByIdAndUpdate to bypass full-schema validation errors
+    // Auto-generate sequential token if not already assigned
+    let tokenVal = tracking.tokenNumber;
+    if (!tokenVal || tokenVal.trim() === "") {
+      tokenVal = await getNextEventToken(tracking.eventId, tracking.eventName);
+    }
+
     const updatedTracking = await EventTracking.findByIdAndUpdate(
       tracking._id,
       {
@@ -1582,16 +2362,35 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
           stageStatus: tracking.stageStatus === "NOT_PRESENT" ? "WAITING_BACKSTAGE" : tracking.stageStatus,
         },
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
-    // Log check-in activity safely
+    // Save correction in ParticipantCorrection if provided
+    if (optionalCorrectedName) {
+      const reg = await Registration.findById(tracking.registrationId);
+      if (reg) {
+        await ParticipantCorrection.findOneAndUpdate(
+          { registrationId: reg._id },
+          {
+            $set: {
+              ticketId: reg.ticketId,
+              registrationId: reg._id,
+              originalName: reg.fullName,
+              correctedName: optionalCorrectedName,
+              correctedBy: operatorName,
+            },
+          },
+          { returnDocument: "after", upsert: true }
+        );
+      }
+    }
+
     if (typeof ActivityLog !== "undefined" && ActivityLog) {
       try {
         const allowedTypes = ActivityLog.schema?.path("activityType")?.enumValues || [];
         const chosenType = allowedTypes.includes("DESK_CHECKIN")
           ? "DESK_CHECKIN"
-          : allowedTypes[0] || "STAGE_STATUS_CHANGE";
+          : (allowedTypes[0] || "STAGE_STATUS_CHANGE");
 
         await ActivityLog.create({
           trackingId: updatedTracking._id,
@@ -1604,7 +2403,7 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
             role: req.session?.staff?.role || "DESK",
           },
           activityType: chosenType,
-          remarks: `Manual Token ${tokenVal} assigned and marked present at desk`,
+          remarks: `Auto Token ${tokenVal} assigned and marked present at desk`,
         });
       } catch (logErr) {
         console.warn("ActivityLog write skipped:", logErr.message);
@@ -1615,6 +2414,7 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
       success: true,
       message: "Check-in successful",
       tokenNumber: updatedTracking.tokenNumber,
+      correctedName: optionalCorrectedName,
       tracking: updatedTracking,
     });
   } catch (err) {
@@ -1623,8 +2423,86 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
   }
 });
 
+// Mark All Events Present in 1-Click
+app.post("/api/desk/mark-all-present", requireAuth, async (req, res) => {
+  try {
+    const { registrationId, correctedName } = req.body;
+    const optionalCorrectedName = (correctedName || "").trim();
+    const operatorName = req.session?.staff?.email || "Desk Operator";
 
-// Coordinator Dashboard Routes
+    if (!registrationId || !mongoose.Types.ObjectId.isValid(registrationId)) {
+      return res.status(400).json({ success: false, message: "Valid registration ID required." });
+    }
+
+    const pendingTrackings = await EventTracking.find({
+      registrationId,
+      entryStatus: { $ne: "PRESENT" },
+    });
+
+    if (!pendingTrackings || pendingTrackings.length === 0) {
+      return res.json({ success: true, message: "All events are already marked present.", tokens: [] });
+    }
+
+    const issuedTokens = [];
+
+    for (const tracking of pendingTrackings) {
+      let tokenVal = tracking.tokenNumber;
+      if (!tokenVal || tokenVal.trim() === "") {
+        tokenVal = await getNextEventToken(tracking.eventId, tracking.eventName);
+      }
+
+      await EventTracking.findByIdAndUpdate(
+        tracking._id,
+        {
+          $set: {
+            tokenNumber: tokenVal,
+            entryStatus: "PRESENT",
+            entryMarkedAt: new Date(),
+            entryMarkedBy: operatorName,
+            stageStatus: tracking.stageStatus === "NOT_PRESENT" ? "WAITING_BACKSTAGE" : tracking.stageStatus,
+          },
+        },
+        { returnDocument: "after" }
+      );
+
+      issuedTokens.push({ eventName: tracking.eventName, token: tokenVal });
+    }
+
+    // Save correction in ParticipantCorrection if provided
+    if (optionalCorrectedName) {
+      const reg = await Registration.findById(registrationId);
+      if (reg) {
+        await ParticipantCorrection.findOneAndUpdate(
+          { registrationId: reg._id },
+          {
+            $set: {
+              ticketId: reg.ticketId,
+              registrationId: reg._id,
+              originalName: reg.fullName,
+              correctedName: optionalCorrectedName,
+              correctedBy: operatorName,
+            },
+          },
+          { returnDocument: "after", upsert: true }
+        );
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: "All events checked in successfully!",
+      tokens: issuedTokens,
+      correctedName: optionalCorrectedName,
+    });
+  } catch (err) {
+    console.error("Mark All Present Error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ----------------------------------------------------
+// Event Coordinator Dashboard Routes
+// ----------------------------------------------------
 app.get("/coordinator", requireAuth, async (req, res) => {
   try {
     await ensureEventTrackingPopulated();
@@ -1658,21 +2536,35 @@ app.get("/coordinator", requireAuth, async (req, res) => {
     let trackings = await EventTracking.find(trackingFilter).lean();
 
     const regIds = trackings.map((t) => t.registrationId).filter(Boolean);
-    const registrations = await Registration.find({ _id: { $in: regIds } }).lean();
+    const [registrations, corrections] = await Promise.all([
+      Registration.find({ _id: { $in: regIds } }).lean(),
+      ParticipantCorrection.find({ registrationId: { $in: regIds } }).lean(),
+    ]);
+
     const regMap = {};
     registrations.forEach((r) => {
       regMap[String(r._id)] = r;
     });
 
+    const correctionMap = {};
+    corrections.forEach((c) => {
+      correctionMap[String(c.registrationId)] = c.correctedName;
+    });
+
     let participantCards = trackings.map((t) => {
       const reg = regMap[String(t.registrationId)] || {};
+      const correctedName = correctionMap[String(t.registrationId)] || "";
+      const displayName = correctedName || reg.fullName || "Participant";
+
       return {
         trackingId: t._id,
         registrationId: t.registrationId,
         eventId: t.eventId,
         eventName: t.eventName,
         ticketId: t.ticketId || reg.ticketId,
-        fullName: reg.fullName || "Participant",
+        fullName: displayName,
+        registeredName: reg.fullName || "",
+        correctedName,
         mobile: reg.mobile || "N/A",
         school: reg.school || "School/College Not Specified",
         classCourse: reg.classCourse || "N/A",
@@ -1694,6 +2586,7 @@ app.get("/coordinator", requireAuth, async (req, res) => {
       participantCards = participantCards.filter((p) => {
         return (
           p.fullName.toLowerCase().includes(query) ||
+          p.registeredName.toLowerCase().includes(query) ||
           p.mobile.includes(query) ||
           (p.ticketId && p.ticketId.toLowerCase().includes(query)) ||
           (p.tokenNumber && p.tokenNumber.toLowerCase().includes(query)) ||
@@ -1712,7 +2605,9 @@ app.get("/coordinator", requireAuth, async (req, res) => {
     const willNotComeCount = participantCards.filter((p) => p.followupStatus === "WILL_NOT_COME").length;
     const notPickedCount = participantCards.filter((p) => p.followupStatus === "CALL_NOT_PICKED").length;
 
-    const eventName = staffMember.assignedEventId || "All Assigned Events";
+    const eventName = staffMember.assignedEventId
+      ? (typeof EVENT_MAP !== "undefined" && EVENT_MAP[staffMember.assignedEventId]) || staffMember.assignedEventId
+      : "All Assigned Events";
 
     res.render("coordinator", {
       staff: staffMember,
@@ -1743,7 +2638,6 @@ app.get("/coordinator", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/coordinator/update-followup
 app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
   try {
     const { trackingId, followupStatus, actionType, coordinatorNotes } = req.body;
@@ -1846,7 +2740,6 @@ app.post("/api/coordinator/update-followup", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/coordinator/update-stage
 app.post("/api/coordinator/update-stage", requireAuth, async (req, res) => {
   try {
     const { trackingId, stageStatus, remarks } = req.body;
@@ -1910,13 +2803,17 @@ app.post("/api/coordinator/update-stage", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/rules", requireAuth, async (req, res) => {
-  res.render("rules", {
-    pageTitle: "Navchetna Yuva Mahotsav - Event Rules & Schedule",
+app.get('/rules', requireAuth, async (req, res) => {
+  res.render('rules', {
+    pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
   });
 });
 
-/// done new 
+app.get('/dance', async (req, res) => {
+  res.render('dance', {
+    pageTitle: 'Navchetna Yuva Mahotsav - Event Rules & Schedule'
+  });
+});
 
 // ======================================
 // Event Stage Access Configuration
@@ -2020,9 +2917,6 @@ const EVENT_STAGE_PORTAL = [
   },
 ];
 
-// ----------------------------------------------------
-// Coordinator Stage Auth Middleware
-// ----------------------------------------------------
 function requireStageAuth(req, res, next) {
   if (!req.session || !req.session.stageEvent) {
     return res.redirect("/stage/login?error=" + encodeURIComponent("Please enter your event access code first."));
@@ -2030,15 +2924,13 @@ function requireStageAuth(req, res, next) {
   next();
 }
 
-// ----------------------------------------------------
-// 1. Stage Login Routes
-// ----------------------------------------------------
 app.get("/stage/login", (req, res) => {
   if (req.session && req.session.stageEvent) {
     return res.redirect("/stage/dashboard");
   }
   res.render("stage-login", { error: req.query.error || null });
 });
+
 app.post("/stage/login", (req, res) => {
   const { secretCode } = req.body;
   if (!secretCode || !secretCode.trim()) {
@@ -2062,24 +2954,19 @@ app.post("/stage/login", (req, res) => {
 
   res.redirect("/stage/dashboard");
 });
+
 app.get("/stage/logout", (req, res) => {
   delete req.session.stageEvent;
   res.redirect("/stage/login");
 });
 
-// ----------------------------------------------------
-// 2. Stage Dashboard: View Present Participants & Tokens
-// ----------------------------------------------------
 app.get("/stage/dashboard", requireStageAuth, async (req, res) => {
   try {
     const activeEvent = req.session.stageEvent;
     const aliases = activeEvent.aliases || [activeEvent.eventId, activeEvent.eventCode];
-
-    // Create a flexible name regex (handles English, Hindi, and partial names)
-    const baseKeyword = activeEvent.eventCode.toLowerCase(); // e.g. "drawing" or "dance"
+    const baseKeyword = activeEvent.eventCode.toLowerCase();
     const nameRegex = new RegExp(baseKeyword, "i");
 
-    // Match by eventId aliases, exact name, or partial keyword match
     const trackings = await EventTracking.find({
       $and: [
         {
@@ -2098,8 +2985,13 @@ app.get("/stage/dashboard", requireStageAuth, async (req, res) => {
       .lean();
 
     const regIds = trackings.map((t) => t.registrationId).filter(Boolean);
-    const registrations = await Registration.find({ _id: { $in: regIds } }).lean();
+    const [registrations, corrections] = await Promise.all([
+      Registration.find({ _id: { $in: regIds } }).lean(),
+      ParticipantCorrection.find({ registrationId: { $in: regIds } }).lean(),
+    ]);
+
     const regMap = new Map(registrations.map((r) => [String(r._id), r]));
+    const correctionMap = new Map(corrections.map((c) => [String(c.registrationId), c.correctedName]));
 
     const participants = trackings.map((t, idx) => {
       const reg = regMap.get(String(t.registrationId)) || {};
@@ -2108,11 +3000,14 @@ app.get("/stage/dashboard", requireStageAuth, async (req, res) => {
           ? t.tokenNumber
           : `${activeEvent.prefix}${idx + 1}`;
 
+      const activeName = correctionMap.get(String(t.registrationId)) || reg.fullName || "Participant";
+
       return {
         trackingId: t._id,
         ticketId: t.ticketId || reg.ticketId || "N/A",
         tokenNumber: displayToken,
-        fullName: reg.fullName || "Participant",
+        fullName: activeName,
+        registeredName: reg.fullName || "",
         mobile: reg.mobile || "N/A",
         school: reg.school || "School / College Not Specified",
         category: t.category || reg.category || "OPEN",
@@ -2146,13 +3041,9 @@ app.get("/stage/dashboard", requireStageAuth, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// 3. Stage Action: Mark On Stage / Performed
-// ----------------------------------------------------
 app.post("/stage/update-status", requireStageAuth, async (req, res) => {
   try {
     const { trackingId, stageStatus } = req.body;
-    const activeEvent = req.session.stageEvent;
 
     if (!trackingId || !mongoose.Types.ObjectId.isValid(trackingId)) {
       return res.redirect("/stage/dashboard?error=" + encodeURIComponent("Invalid tracking ID."));
@@ -2170,7 +3061,11 @@ app.post("/stage/update-status", requireStageAuth, async (req, res) => {
       updateDoc.performanceDoneAt = new Date();
     }
 
-    const updated = await EventTracking.findByIdAndUpdate(trackingId, { $set: updateDoc });
+    const updated = await EventTracking.findByIdAndUpdate(
+      trackingId,
+      { $set: updateDoc },
+      { returnDocument: "after" }
+    );
 
     if (!updated) {
       return res.redirect("/stage/dashboard?error=" + encodeURIComponent("Participant record not found."));
@@ -2186,9 +3081,9 @@ app.post("/stage/update-status", requireStageAuth, async (req, res) => {
   }
 });
 
-
-
+// ======================================
 // 404 Handler & Server Startup
+// ======================================
 app.use((req, res) => res.status(404).render("404"));
 
 app.listen(PORT, () => {

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= event.name %> - Stage Desk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Top Navigation -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 text-xs font-black bg-indigo-500/20 text-indigo-300 rounded-md border border-indigo-500/40 font-mono">
+            TOKEN PREFIX: <%= event.prefix %>
+          </span>
+          <h1 class="text-xl font-bold text-white tracking-tight"><%= event.name %></h1>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Live Backstage & Stage Call Console</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/stage/dashboard" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700">
+          ↻ Refresh List
+        </a>
+        <a href="/stage/logout" class="px-3 py-1.5 text-xs font-semibold bg-red-600/20 text-red-300 hover:bg-red-600/30 rounded-lg transition-colors border border-red-500/30">
+          Switch Event
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Flash Messages -->
+    <% if (success) { %>
+      <div class="mb-4 p-3 bg-emerald-950/70 border border-emerald-500/50 rounded-xl text-emerald-200 text-sm">
+        <%= success %>
+      </div>
+    <% } %>
+    <% if (error) { %>
+      <div class="mb-4 p-3 bg-red-950/70 border border-red-500/50 rounded-xl text-red-200 text-sm">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <!-- KPI Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Present at Desk</span>
+        <p class="text-2xl font-black text-white mt-1"><%= stats.totalPresent %></p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <span class="text-xs text-amber-400 uppercase tracking-wider font-semibold">Waiting Backstage</span>
+        <p class="text-2xl font-black text-amber-300 mt-1"><%= stats.waitingCount %></p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <span class="text-xs text-indigo-400 uppercase tracking-wider font-semibold">Currently On Stage</span>
+        <p class="text-2xl font-black text-indigo-300 mt-1"><%= stats.onStageCount %></p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <span class="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Completed</span>
+        <p class="text-2xl font-black text-emerald-300 mt-1"><%= stats.performedCount %></p>
+      </div>
+    </div>
+
+    <!-- Table of Present Participants -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="font-bold text-white text-base">Stage Queue (Present Only)</h2>
+        <span class="text-xs text-slate-400"><%= participants.length %> participants checked in</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-950/70 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Token</th>
+              <th class="py-3 px-4">Participant / Team</th>
+              <th class="py-3 px-4">Category</th>
+              <th class="py-3 px-4">School / College</th>
+              <th class="py-3 px-4">Stage Status</th>
+              <th class="py-3 px-4 text-center">Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-normal">
+            <% if (participants.length === 0) { %>
+              <tr>
+                <td colspan="6" class="text-center py-12 text-slate-500">
+                  No participants marked PRESENT at the entry desk yet for this event.
+                </td>
+              </tr>
+            <% } %>
+
+            <% participants.forEach(p => { 
+                // Format phone number with 91 prefix
+                let cleanPhone = String(p.mobile || '').replace(/\D/g, '');
+                if (cleanPhone.length === 10) {
+                  cleanPhone = '91' + cleanPhone;
+                }
+
+                // Bilingual stage alert message
+                const alertMessage = `Dear ${p.fullName || 'Participant'},
+
+Your performance at Navchetna Yuva Shakti Mahotsav is coming up next! (Token: ${p.tokenNumber})
+
+Please move to the backstage area right away and report to the team. Make sure you have your props and costumes ready.
+
+All the best!
+
+🚨 ध्यान दें - प्रतिभागी! 🚨
+
+नवचेतना युवा शक्ति महोत्सव में आपकी परफॉरमेंस आने वाली है, आप तुरंत बैकस्टेज इकट्ठा हो जाएं ताकि कार्यक्रम बिना देरी के शुरू हो सके।`;
+
+                const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(alertMessage)}` : '#';
+            %>
+              <tr class="hover:bg-slate-800/40 transition-colors">
+                <!-- Token Badge -->
+                <td class="py-3 px-4 font-mono font-bold text-base text-amber-300 whitespace-nowrap">
+                  <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <%= p.tokenNumber %>
+                  </span>
+                </td>
+
+                <!-- Participant Info -->
+                <td class="py-3 px-4">
+                  <div class="font-semibold text-white"><%= p.fullName %></div>
+                  <div class="text-xs text-slate-400 font-mono">
+                    <%= p.ticketId %> • <%= p.mobile %>
+                    <% if (p.teamName && p.teamName !== "-") { %>
+                      • <span class="text-indigo-400 font-sans"><%= p.teamName %></span>
+                    <% } %>
+                  </div>
+                </td>
+
+                <!-- Category -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="px-2 py-0.5 text-xs rounded font-medium <%= p.category === 'JUNIOR' ? 'bg-sky-500/10 text-sky-300 border border-sky-500/30' : 'bg-purple-500/10 text-purple-300 border border-purple-500/30' %>">
+                    <%= p.category %>
+                  </span>
+                </td>
+
+                <!-- School -->
+                <td class="py-3 px-4 text-slate-300 max-w-xs truncate">
+                  <%= p.school %>
+                </td>
+
+                <!-- Current Stage Status -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <% if (p.stageStatus === 'PERFORMANCE_DONE') { %>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">
+                      ✓ Done
+                    </span>
+                  <% } else if (p.stageStatus === 'ON_STAGE') { %>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-full animate-pulse">
+                      ● On Stage
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">
+                      Waiting Backstage
+                    </span>
+                  <% } %>
+                </td>
+
+                <!-- Actions: WhatsApp Alert + Mark Performed -->
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <div class="inline-flex items-center gap-2">
+                    <!-- WhatsApp Call to Backstage Button -->
+                    <% if (cleanPhone) { %>
+                      <a href="<%= waUrl %>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors shadow">
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.164.577 4.195 1.583 5.952l-1.683 6.148 6.33-1.66c1.699.927 3.639 1.46 5.77 1.46 6.627 0 12-5.373 12-12s-5.373-12-12-12z"/>
+                        </svg>
+                        WhatsApp
+                      </a>
+                    <% } %>
+
+                    <!-- Performed Button -->
+                    <% if (p.stageStatus !== 'PERFORMANCE_DONE') { %>
+                      <form action="/stage/update-status" method="POST" class="inline">
+                        <input type="hidden" name="trackingId" value="<%= p.trackingId %>">
+                        <input type="hidden" name="stageStatus" value="PERFORMANCE_DONE">
+                        <button type="submit" class="px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow">
+                          Performed
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <form action="/stage/update-status" method="POST" class="inline">
+                        <input type="hidden" name="trackingId" value="<%= p.trackingId %>">
+                        <input type="hidden" name="stageStatus" value="WAITING_BACKSTAGE">
+                        <button type="submit" class="px-2 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
+                          Undo
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

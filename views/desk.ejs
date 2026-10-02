@@ -69,7 +69,7 @@
       </div>
     </div>
 
-    <!-- Quick Search Pill in Navigation Bar -->
+    <!-- Top Quick Bar with Search Trigger -->
     <div class="bg-slate-950 px-4 py-2 border-t border-slate-800/80">
       <div class="max-w-7xl mx-auto flex items-center gap-2">
         <div class="relative flex-1">
@@ -77,14 +77,14 @@
           <input 
             type="text" 
             id="topSearchInput" 
-            oninput="syncToMainSearch(this.value)"
-            placeholder="Search: Name, Mobile, Slot (6914), Ticket (7266), Token (D15)..."
+            onkeydown="if(event.key === 'Enter') triggerTopSearch()"
+            placeholder="Search: Type phone, ticket, slot, or name and press Enter..."
             class="w-full bg-slate-900 text-white placeholder-slate-400 pl-9 pr-8 py-2 rounded-xl text-xs md:text-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             autocomplete="off"
           >
         </div>
-        <button onclick="focusMainSearch()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-lg shadow-emerald-900/30 tap-active">
-          <i class="fa-solid fa-bolt"></i> Speed Desk
+        <button onclick="triggerTopSearch()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-lg shadow-emerald-900/30 tap-active transition">
+          <i class="fa-solid fa-magnifying-glass"></i> Search
         </button>
       </div>
     </div>
@@ -92,21 +92,18 @@
     <!-- ================= NAVBAR ================= -->
     <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
       <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
-        <a href="/dashboard" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+        <a href="/dashboard" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
           <i class="fa-solid fa-chart-pie"></i> Admin Overview
         </a>
-        <a href="/desk" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+        <a href="/desk" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
           <i class="fa-solid fa-id-card"></i> Event Day Desk
         </a>
         <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
           <i class="fa-solid fa-network-wired"></i> Contact Distribution
         </a>
         <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-  <i class="fa-solid fa-clipboard-check"></i> Master Desk
-  <% if (typeof kpis !== 'undefined' && kpis && kpis.pendingCorrections) { %>
-    <span class="bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold"><%= kpis.pendingCorrections %></span>
-  <% } %>
-</a>
+          <i class="fa-solid fa-clipboard-check"></i> Master Desk
+        </a>
       </div>
     </nav>
   </header>
@@ -120,10 +117,10 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <div class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800 uppercase tracking-wider">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> High Speed Desk Mode
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Auto-Token Speed Desk
           </div>
           <h2 class="text-xl font-extrabold tracking-tight mt-1 text-white">Event Day Entry Desk</h2>
-          <p class="text-xs text-slate-400">Search participant by mobile, slot number, or ticket code to manually assign tokens and check in.</p>
+          <p class="text-xs text-slate-400">Search by complete mobile number, slot, or ticket code. Correct name option available on the spot.</p>
         </div>
 
         <div class="flex items-center gap-2 self-start sm:self-auto">
@@ -134,26 +131,34 @@
         </div>
       </div>
 
-      <!-- Main High-Velocity Search Input Box -->
-      <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <i class="fa-solid fa-bolt text-amber-400 text-base"></i>
+      <!-- Main Search Box (Triggered on Enter or Button Click) -->
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="fa-solid fa-bolt text-amber-400 text-base"></i>
+          </div>
+          <input 
+            type="text" 
+            id="deskSearchInput" 
+            onkeydown="if(event.key === 'Enter') triggerSearch()"
+            placeholder="Enter Mobile (e.g. 9826...), Slot (6914), Ticket (NYSM26-...), or Name..." 
+            class="w-full bg-slate-800 text-white text-base sm:text-lg font-medium pl-12 pr-10 py-3.5 rounded-xl border-2 border-emerald-500/80 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 transition placeholder-slate-400"
+            autocomplete="off"
+            autofocus
+          >
+          <button 
+            id="clearDeskSearchBtn" 
+            onclick="clearDeskSearch()" 
+            class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white"
+          >
+            <i class="fa-solid fa-circle-xmark text-lg"></i>
+          </button>
         </div>
-        <input 
-          type="text" 
-          id="deskSearchInput" 
-          oninput="handleLiveSearch(this.value)"
-          placeholder="Type Mobile (e.g. 6264512766), Slot (6914), Ticket (7266)..."
-          class="w-full bg-slate-800 text-white text-base sm:text-lg font-medium pl-12 pr-10 py-3.5 rounded-xl border-2 border-emerald-500/80 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 transition placeholder-slate-400"
-          autocomplete="off"
-          autofocus
-        >
         <button 
-          id="clearDeskSearchBtn" 
-          onclick="clearDeskSearch()" 
-          class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white"
+          onclick="triggerSearch()" 
+          class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm sm:text-base font-extrabold flex items-center gap-2 shadow-lg shadow-emerald-900/40 tap-active transition"
         >
-          <i class="fa-solid fa-circle-xmark text-lg"></i>
+          <i class="fa-solid fa-magnifying-glass"></i> Search
         </button>
       </div>
 
@@ -166,7 +171,7 @@
       </div>
       <h3 class="text-sm font-bold text-slate-700">Ready for Next Participant</h3>
       <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-        Start typing phone number or ticket ID above. The card will pop up allowing you to manually type their physical token and verify.
+        Type full participant phone number or ticket ID above and click <strong>Search</strong>.
       </p>
     </div>
 
@@ -177,23 +182,57 @@
       <div class="p-4 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block">VERIFIED PARTICIPANT</span>
-          <h3 id="cardParticipantName" class="text-lg sm:text-xl font-black text-white mt-0.5">Laksh Batham</h3>
+          
+          <div class="flex items-center gap-2 flex-wrap mt-0.5">
+            <h3 id="cardParticipantName" class="text-lg sm:text-xl font-black text-white">Participant</h3>
+            <span id="registeredOriginalBadge" class="hidden text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
+              Reg: <span id="cardOriginalName"></span>
+            </span>
+          </div>
+
           <div class="text-xs text-slate-300 font-mono flex items-center gap-2 mt-1">
-            <span>📱 <span id="cardMobile">6264512766</span></span>
+            <span>📱 <span id="cardMobile"></span></span>
             <span>|</span>
-            <span>Slot: <strong id="cardSlot" class="text-white">6914</strong></span>
+            <span>Slot: <strong id="cardSlot" class="text-white"></strong></span>
             <span>|</span>
-            <span>Ticket: <strong id="cardTicket" class="text-white">NYSM26-547266</strong></span>
+            <span>Ticket: <strong id="cardTicket" class="text-white"></strong></span>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-          <a href="/corrections" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-pen-to-square"></i> Request Correction
+        <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          <button 
+            id="markAllPresentBtn"
+            onclick="markAllEventsPresent()" 
+            class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-md tap-active transition"
+          >
+            <i class="fa-solid fa-bolt"></i> Check-in All Events
+          </button>
+          <a href="/corrections" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-pen-to-square"></i> Full Corrections
           </a>
-          <a href="/participants" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
-            Full Profile
-          </a>
+        </div>
+      </div>
+
+      <!-- Quick Name Correction Bar (Stored in separate ParticipantCorrection schema) -->
+      <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-amber-600"></i>
+          <span class="font-bold text-amber-900">Name Correction (Optional):</span>
+          <span class="text-amber-700 text-[11px]">If participant's registered name is wrong, write the correct name here:</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <input 
+            type="text" 
+            id="correctedNameInput" 
+            placeholder="Type correct name..." 
+            class="bg-white border border-amber-300 text-slate-900 px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 w-48 sm:w-60"
+          >
+          <button 
+            onclick="saveCorrectedNameOnly()"
+            class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg transition shrink-0"
+          >
+            Save Name
+          </button>
         </div>
       </div>
 
@@ -202,25 +241,28 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
           <div>
             <span class="text-[10px] uppercase font-bold text-slate-400 block">School / College</span>
-            <strong id="cardSchool" class="text-slate-800 truncate block">Gorkhi Hr. Sec. School</strong>
+            <strong id="cardSchool" class="text-slate-800 truncate block">School Not Specified</strong>
           </div>
           <div>
             <span class="text-[10px] uppercase font-bold text-slate-400 block">Class / Course</span>
-            <strong id="cardClass" class="text-slate-800 block">12th Standard</strong>
+            <strong id="cardClass" class="text-slate-800 block">Course Not Specified</strong>
           </div>
           <div>
             <span class="text-[10px] uppercase font-bold text-slate-400 block">Payment Status</span>
             <span id="cardPayment" class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold text-[11px] mt-0.5">
-              ₹50 PAID
+              PAID
             </span>
           </div>
         </div>
 
-        <!-- Enrolled Events & Desk Entry Strip -->
+        <!-- Enrolled Events Strip -->
         <div class="space-y-2">
-          <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Event Tokens &amp; Desk Entry</h4>
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Enrolled Events &amp; Auto Token Assignment</h4>
+            <span class="text-[11px] text-slate-500">Auto token format: 1 to 2000 per event</span>
+          </div>
           <div id="enrolledEventsContainer" class="space-y-2">
-            <!-- Dynamically injected event items with manual token input -->
+            <!-- Dynamically injected event items -->
           </div>
         </div>
       </div>
@@ -234,11 +276,13 @@
       </div>
       <div class="text-xs font-bold text-emerald-800 uppercase tracking-widest">Entry Marked Successfully</div>
       <h3 id="successName" class="text-xl font-black text-slate-900 mt-1">Participant</h3>
-      <div class="inline-flex items-center gap-2 mt-2 bg-emerald-100 text-emerald-900 px-4 py-1.5 rounded-full font-mono font-black text-base">
-        TOKEN: <span id="successToken">FF12</span>
+      
+      <div id="successTokensList" class="mt-3 flex flex-wrap items-center justify-center gap-2">
+        <!-- Tokens rendered here -->
       </div>
-      <p class="text-xs text-emerald-700 mt-2">Participant is now confirmed Present. Live status synced with Stage Coordinator.</p>
-      <div class="mt-4">
+      
+      <p class="text-xs text-emerald-700 mt-3">Participant is confirmed Present. Live status synced with Stage Coordinator.</p>
+      <div class="mt-5">
         <button onclick="resetDeskForNext()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm shadow-md tap-active transition">
           Next Entry (Press Enter / Space) →
         </button>
@@ -247,15 +291,15 @@
 
   </main>
 
-  <!-- Client-side Interactive Logic -->
+  <!-- Client-side Logic -->
   <script>
-    let searchDebounce = null;
     let currentParticipant = null;
+    let currentEvents = [];
 
-    function syncToMainSearch(val) {
-      const mainInput = document.getElementById("deskSearchInput");
-      mainInput.value = val;
-      handleLiveSearch(val);
+    function triggerTopSearch() {
+      const topVal = document.getElementById("topSearchInput").value;
+      document.getElementById("deskSearchInput").value = topVal;
+      triggerSearch();
     }
 
     function focusMainSearch() {
@@ -277,15 +321,15 @@
       document.getElementById("deskSuccessState").classList.add("hidden");
       document.getElementById("deskEmptyState").classList.remove("hidden");
       currentParticipant = null;
+      currentEvents = [];
     }
 
     function resetDeskForNext() {
       clearDeskSearch();
     }
 
-    function handleLiveSearch(val) {
-      clearTimeout(searchDebounce);
-      const query = (val || "").trim();
+    async function triggerSearch() {
+      const query = document.getElementById("deskSearchInput").value.trim();
       const clearBtn = document.getElementById("clearDeskSearchBtn");
 
       if (!query) {
@@ -295,35 +339,52 @@
       }
       clearBtn.classList.remove("hidden");
 
-      searchDebounce = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/desk/search?q=${encodeURIComponent(query)}`);
-          const data = await res.json();
+      try {
+        const res = await fetch(`/api/desk/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
 
-          if (!data.success || !data.participant) {
-            resetToEmptyState();
-            return;
-          }
-
-          renderParticipantCard(data.participant, data.events || []);
-        } catch (err) {
-          console.error("Search error:", err);
+        if (!data.success || !data.participant) {
+          alert("No participant found matching: " + query);
+          resetToEmptyState();
+          return;
         }
-      }, 120);
+
+        renderParticipantCard(data.participant, data.events || []);
+      } catch (err) {
+        console.error("Search error:", err);
+        alert("Search request failed.");
+      }
     }
 
     function renderParticipantCard(participant, events) {
       currentParticipant = participant;
+      currentEvents = events;
+
       document.getElementById("deskEmptyState").classList.add("hidden");
       document.getElementById("deskSuccessState").classList.add("hidden");
       document.getElementById("deskActiveCard").classList.remove("hidden");
 
-      document.getElementById("cardParticipantName").textContent = participant.fullName;
+      // Display corrected name if present from ParticipantCorrection
+      const hasCorrection = participant.correctedName && participant.correctedName.trim() !== "";
+      const activeDisplayName = hasCorrection ? participant.correctedName : participant.fullName;
+
+      document.getElementById("cardParticipantName").textContent = activeDisplayName;
+      
+      const origBadge = document.getElementById("registeredOriginalBadge");
+      if (hasCorrection && participant.correctedName !== participant.fullName) {
+        origBadge.classList.remove("hidden");
+        document.getElementById("cardOriginalName").textContent = participant.fullName;
+      } else {
+        origBadge.classList.add("hidden");
+      }
+
+      document.getElementById("correctedNameInput").value = participant.correctedName || "";
+
       document.getElementById("cardMobile").textContent = participant.mobile;
       document.getElementById("cardSlot").textContent = participant.teamSlot;
       document.getElementById("cardTicket").textContent = participant.ticketId;
-      document.getElementById("cardSchool").textContent = participant.school;
-      document.getElementById("cardClass").textContent = participant.classCourse;
+      document.getElementById("cardSchool").textContent = participant.school || "School Not Specified";
+      document.getElementById("cardClass").textContent = participant.classCourse || "N/A";
       document.getElementById("cardPayment").textContent = `₹${participant.amount} ${participant.status}`;
 
       const eventsContainer = document.getElementById("enrolledEventsContainer");
@@ -334,9 +395,9 @@
         return;
       }
 
-      events.forEach((ev, idx) => {
+      events.forEach((ev) => {
         const isPresent = ev.entryStatus === "PRESENT";
-        const tokenDisplay = ev.tokenNumber && ev.tokenNumber.trim() !== "" ? ev.tokenNumber : "";
+        const tokenDisplay = ev.tokenNumber && ev.tokenNumber.trim() !== "" ? ev.tokenNumber : "Not Issued";
 
         const item = document.createElement("div");
         item.className = "p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3";
@@ -347,7 +408,9 @@
             <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
               <span>Category: <strong>${ev.category}</strong></span>
               <span>•</span>
-              <span class="font-mono font-bold text-blue-600">Status: ${isPresent ? "PRESENT" : "NOT CHECKED IN"}</span>
+              <span class="font-mono font-bold ${isPresent ? 'text-emerald-700' : 'text-amber-700'}">
+                Status: ${isPresent ? "PRESENT" : "PENDING ENTRY"}
+              </span>
             </div>
           </div>
 
@@ -361,54 +424,71 @@
                 <i class="fa-solid fa-circle-check"></i> Present
               </span>
             ` : `
-              <div class="flex items-center gap-1.5">
-                <input 
-                  type="text" 
-                  id="tokenInput_${ev._id}" 
-                  value="${tokenDisplay}"
-                  placeholder="Enter Token (e.g. FF12)" 
-                  class="uppercase bg-white text-slate-900 text-xs font-mono font-bold px-3 py-2 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition w-36 sm:w-44"
-                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); markPresent('${ev._id}', '${ev.eventName}'); }"
-                >
-                <button 
-                  onclick="markPresent('${ev._id}', '${ev.eventName}')"
-                  class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-md tap-active transition"
-                >
-                  <i class="fa-solid fa-check"></i> Mark Present
-                </button>
-              </div>
+              <button 
+                onclick="markPresent('${ev._id}', '${ev.eventName}')"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-md tap-active transition"
+              >
+                <i class="fa-solid fa-check"></i> Generate Token &amp; Mark Present
+              </button>
             `}
           </div>
         `;
 
         eventsContainer.appendChild(item);
       });
+    }
 
-      // Automatically focus first token input box for high-speed operation
-      setTimeout(() => {
-        const firstInput = eventsContainer.querySelector("input[id^='tokenInput_']");
-        if (firstInput) {
-          firstInput.focus();
-          firstInput.select();
+    async function saveCorrectedNameOnly() {
+      if (!currentParticipant || !currentParticipant.id) return;
+      const correctedName = document.getElementById("correctedNameInput").value.trim();
+
+      try {
+        const res = await fetch("/api/desk/update-name", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            registrationId: currentParticipant.id, 
+            ticketId: currentParticipant.ticketId, 
+            correctedName 
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          currentParticipant.correctedName = data.correctedName;
+          const activeName = data.correctedName || currentParticipant.fullName;
+          document.getElementById("cardParticipantName").textContent = activeName;
+          
+          const origBadge = document.getElementById("registeredOriginalBadge");
+          if (data.correctedName && data.correctedName !== currentParticipant.fullName) {
+            origBadge.classList.remove("hidden");
+            document.getElementById("cardOriginalName").textContent = currentParticipant.fullName;
+          } else {
+            origBadge.classList.add("hidden");
+          }
+
+          alert(data.message);
+        } else {
+          alert(data.message || "Failed to save corrected name.");
         }
-      }, 50);
+      } catch (err) {
+        alert("Server error saving corrected name.");
+      }
     }
 
     async function markPresent(trackingId, eventName) {
-      const tokenInput = document.getElementById(`tokenInput_${trackingId}`);
-      const manualToken = tokenInput ? tokenInput.value.trim().toUpperCase() : "";
-
-      if (!manualToken) {
-        alert("Please enter a token number first!");
-        if (tokenInput) tokenInput.focus();
-        return;
-      }
+      const correctedName = document.getElementById("correctedNameInput").value.trim();
 
       try {
         const res = await fetch("/api/desk/mark-present", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trackingId, manualToken }),
+          body: JSON.stringify({ 
+            trackingId, 
+            correctedName,
+            registrationId: currentParticipant?.id,
+            ticketId: currentParticipant?.ticketId 
+          }),
         });
 
         const data = await res.json();
@@ -417,17 +497,61 @@
           return;
         }
 
-        // Show fast success state
-        document.getElementById("deskActiveCard").classList.add("hidden");
-        document.getElementById("deskSuccessState").classList.remove("hidden");
-        document.getElementById("successName").textContent = currentParticipant ? currentParticipant.fullName : "Participant";
-        document.getElementById("successToken").textContent = data.tokenNumber;
+        const activeName = data.correctedName || (currentParticipant ? currentParticipant.fullName : "Participant");
+        showSuccessScreen([{ eventName, token: data.tokenNumber }], activeName);
       } catch (err) {
         alert("Server error marking present.");
       }
     }
 
-    // Keyboard navigation (Press Enter / Space on success screen to reset and scan next)
+    async function markAllEventsPresent() {
+      if (!currentParticipant || !currentParticipant.id) return;
+      const correctedName = document.getElementById("correctedNameInput").value.trim();
+
+      try {
+        const res = await fetch("/api/desk/mark-all-present", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            registrationId: currentParticipant.id, 
+            ticketId: currentParticipant.ticketId, 
+            correctedName 
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.message || "Failed to check in all events");
+          return;
+        }
+
+        const activeName = data.correctedName || (currentParticipant ? currentParticipant.fullName : "Participant");
+        showSuccessScreen(data.tokens || [], activeName);
+      } catch (err) {
+        alert("Server error marking all events present.");
+      }
+    }
+
+    function showSuccessScreen(tokens, activeName) {
+      document.getElementById("deskActiveCard").classList.add("hidden");
+      document.getElementById("deskSuccessState").classList.remove("hidden");
+      document.getElementById("successName").textContent = activeName;
+      
+      const tokensContainer = document.getElementById("successTokensList");
+      tokensContainer.innerHTML = "";
+
+      if (tokens.length === 0) {
+        tokensContainer.innerHTML = `<span class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold">Already Checked In</span>`;
+      } else {
+        tokens.forEach(t => {
+          const badge = document.createElement("div");
+          badge.className = "bg-emerald-100 border border-emerald-300 text-emerald-950 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5";
+          badge.innerHTML = `<span class="text-slate-600">${t.eventName}:</span> <strong class="text-emerald-900">${t.token}</strong>`;
+          tokensContainer.appendChild(badge);
+        });
+      }
+    }
+
     document.addEventListener("keydown", (e) => {
       if ((e.key === "Enter" || e.key === " ") && !document.getElementById("deskSuccessState").classList.contains("hidden")) {
         e.preventDefault();

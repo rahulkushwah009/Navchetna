@@ -59,9 +59,9 @@
         <div class="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="font-bold text-slate-200">Super Admin</span>
-          <span class="text-slate-500 font-mono text-[10px]">(<%= staff.email %>)</span>
+          <span class="text-slate-500 font-mono text-[10px]">(<%= staff ? staff.email : 'admin' %>)</span>
         </div>
-        <a href="/manage-staff" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+        <a href="/staff" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
           <i class="fa-solid fa-user-gear"></i> <span class="hidden md:inline">Staff</span>
         </a>
         <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
@@ -71,7 +71,7 @@
     </div>
 
     <!-- ================= NAVBAR ================= -->
- <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
+    <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
       <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
         <a href="/dashboard" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
           <i class="fa-solid fa-chart-pie"></i> Admin Overview
@@ -83,17 +83,17 @@
           <i class="fa-solid fa-network-wired"></i> Contact Distribution
         </a>
         <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-  <i class="fa-solid fa-clipboard-check"></i> Master Desk
-  <% if (typeof kpis !== 'undefined' && kpis && kpis.pendingCorrections) { %>
-    <span class="bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold"><%= kpis.pendingCorrections %></span>
-  <% } %>
-</a>
+          <i class="fa-solid fa-clipboard-check"></i> Master Desk
+        </a>
+        <a href="/admin/registrations" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-list-check"></i> Registrations Table
+        </a>
       </div>
     </nav>
   </header>
 
   <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-5">
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-6">
 
     <!-- 1. TOP 6 OPERATIONAL KPI CARDS -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -135,7 +135,7 @@
           <span class="text-2xl font-extrabold text-purple-600"><%= kpis.performancesDone %></span>
           <i class="fa-solid fa-award text-purple-600/30 text-lg"></i>
         </div>
-        <span class="text-[10px] text-purple-500 font-medium mt-1">Live Coordinator feed</span>
+        <span class="text-[10px] text-purple-500 font-medium mt-1">Live Stage Feed</span>
       </div>
 
       <!-- Calls Made -->
@@ -155,97 +155,165 @@
           <span class="text-2xl font-extrabold text-green-600"><%= kpis.whatsappSent %></span>
           <i class="fa-brands fa-whatsapp text-green-600/30 text-lg"></i>
         </div>
-        <span class="text-[10px] text-emerald-500 font-medium mt-1">Confirmed delivery</span>
+        <span class="text-[10px] text-emerald-500 font-medium mt-1">Broadcasts</span>
       </div>
     </div>
 
-    <!-- 2. SPEED DESK, FOLLOW-UP HEALTH & PARTICIPANT STATS -->
-    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- ================= 2. EVENT-SPECIFIC PRESENT PARTICIPANTS DESK (NEW SECTION) ================= -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       
-      <!- Event Day Speed Access Card -->
-      <!-- <div class="bg-gradient-to-br from-slate-900 to-blue-900 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
-        <div class="relative z-10">
-          <div class="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Desk Operation
-          </div>
-          <h3 class="text-lg font-bold">Event Day Speed Desk</h3>
-          <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-            Continuous high-velocity check-in mode with automatic search input re-focus and instant pre-printed token confirmation.
-          </p>
-        </div>
-        <div class="mt-4 flex gap-2 relative z-10">
-          <a href="/desk" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md tap-active transition">
-            <i class="fa-solid fa-bolt"></i> Open Speed Desk
-          </a>
-          <a href="/distribution" class="bg-slate-800/80 hover:bg-slate-700 text-white font-semibold px-3 py-2 rounded-xl text-xs border border-slate-700 tap-active">
-            Auto Distribute
-          </a>
-        </div>
-      </div> -->
-
-      <!-- Follow-Up Coverage Bar -->
-      <!-- <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+      <!-- Filter Bar & Actions -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Follow-Up Coverage</h4>
-            <span class="text-xs font-extrabold text-blue-600"><%= kpis.followupCoveragePct %>%</span>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h2 class="text-base font-bold text-slate-900">Present Participants &amp; Performance Status</h2>
           </div>
-          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: <%= kpis.followupCoveragePct %>%"></div>
-          </div>
-          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100 text-center">
-            <div>
-              <span class="text-[10px] text-slate-400 block">Assigned</span>
-              <span class="text-sm font-bold text-slate-800"><%= kpis.assignedCount %></span>
-            </div>
-            <div>
-              <span class="text-[10px] text-slate-400 block">Contacted</span>
-              <span class="text-sm font-bold text-emerald-600"><%= kpis.contactedCount %></span>
-            </div>
-            <div>
-              <span class="text-[10px] text-slate-400 block">Pending</span>
-              <span class="text-sm font-bold text-amber-500"><%= kpis.pendingFollowups %></span>
-            </div>
-          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Filter by event to view verified attendees, assigned token sequence, and live stage status.</p>
         </div>
-        <a href="/followup" class="w-full mt-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-2 rounded-xl border border-slate-200 text-center block tap-active">
-          View Assigned Follow-Ups →
-        </a>
-      </div> -->
 
-      <!-- Category Demographics -->
-      <!-- <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
-        <div>
-          <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Participant Demographics</h4>
-          <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-100">
-            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap text-indigo-500"></i> Junior (School)</span>
-            <span class="font-bold text-slate-800"><%= kpis.juniorCount %></span>
-          </div>
-          <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-100">
-            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-user-graduate text-purple-500"></i> Senior (College/Open)</span>
-            <span class="font-bold text-slate-800"><%= kpis.seniorCount %></span>
-          </div>
-          <div class="flex items-center justify-between text-xs py-1.5">
-            <span class="text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-indian-rupee-sign text-emerald-600"></i> Paid Registrations</span>
-            <span class="font-bold text-emerald-600"><%= kpis.paidCount %></span>
-          </div>
+        <!-- Filter Form & Download Button -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <form method="GET" action="/dashboard" class="flex items-center gap-2">
+            <div class="relative">
+              <select name="eventId" onchange="this.form.submit()" class="appearance-none bg-white text-xs font-semibold text-slate-800 border border-slate-300 rounded-xl pl-3 pr-8 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                <option value="ALL" <%= selectedEventId === 'ALL' ? 'selected' : '' %>>⚡ All 12 Events (Overall)</option>
+                <% eventsList.forEach(ev => { %>
+                  <option value="<%= ev.eventId %>" <%= (selectedEventId === ev.eventId || selectedEventId === ev.eventCode) ? 'selected' : '' %>>
+                    [<%= ev.prefix %>] <%= ev.name %>
+                  </option>
+                <% }) %>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[10px] text-slate-400 pointer-events-none"></i>
+            </div>
+          </form>
+
+          <!-- Excel / CSV Export Button -->
+          <a href="/admin/dashboard/export/present?eventId=<%= selectedEventId %>" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition tap-active">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Export Present List (.CSV)</span>
+          </a>
         </div>
-        <a href="/corrections" class="w-full mt-3 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold py-2 rounded-xl border border-amber-200 flex items-center justify-center gap-1.5 tap-active">
-          <i class="fa-solid fa-bell text-amber-600"></i> Pending Corrections (<%= kpis.pendingCorrections %>)
-        </a>
       </div>
-    </div> -->
 
-    <!-- 3. EVENT-WISE LIVE TRACKER TABLE (12 EVENTS) -->
+      <!-- Present Summary Badges -->
+      <div class="px-5 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600">
+        <div>Total Present in Filter: <strong class="text-slate-900"><%= presentParticipants.length %></strong></div>
+        <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
+        <div>
+          Performed: 
+          <strong class="text-purple-600"><%= presentParticipants.filter(p => p.isPerformed).length %></strong>
+        </div>
+        <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
+        <div>
+          Waiting / Backstage: 
+          <strong class="text-amber-600"><%= presentParticipants.filter(p => !p.isPerformed).length %></strong>
+        </div>
+      </div>
+
+      <!-- Present Participants Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-700">
+          <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-3 text-center">Token</th>
+              <th class="px-4 py-3">Participant &amp; Ticket</th>
+              <th class="px-3 py-3">Event</th>
+              <th class="px-3 py-3 text-center">Category</th>
+              <th class="px-3 py-3">School / College</th>
+              <th class="px-3 py-3 text-center">Performance Status</th>
+              <th class="px-4 py-3 text-center">Check-in Time</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (presentParticipants.length === 0) { %>
+              <tr>
+                <td colspan="7" class="text-center py-10 text-slate-400">
+                  <i class="fa-solid fa-user-slash text-2xl mb-2 block"></i>
+                  No present participants checked in for this event yet.
+                </td>
+              </tr>
+            <% } else { %>
+              <% presentParticipants.forEach((p, idx) => { %>
+                <tr class="hover:bg-slate-50/80 transition">
+                  <!-- Token Sequence -->
+                  <td class="px-4 py-3 text-center">
+                    <span class="inline-block bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-extrabold px-2.5 py-1 rounded-lg">
+                      <%= p.tokenNumber %>
+                    </span>
+                  </td>
+
+                  <!-- Participant Info -->
+                  <td class="px-4 py-3">
+                    <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                      <%= p.fullName %>
+                      <% if (p.originalName && p.originalName !== p.fullName) { %>
+                        <span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono font-normal" title="Originally registered as <%= p.originalName %>">Corrected</span>
+                      <% } %>
+                    </div>
+                    <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                      <span class="font-mono text-slate-600"><%= p.ticketId %></span>
+                      <span>•</span>
+                      <span><i class="fa-solid fa-phone text-[9px] text-slate-400"></i> <%= p.mobile %></span>
+                    </div>
+                  </td>
+
+                  <!-- Event Name -->
+                  <td class="px-3 py-3">
+                    <div class="font-semibold text-slate-800"><%= p.eventName %></div>
+                    <% if (p.teamName && p.teamName !== '-' && p.teamName !== 'N/A') { %>
+                      <div class="text-[10px] text-blue-600 font-mono">Team/Slot: <%= p.teamName %></div>
+                    <% } %>
+                  </td>
+
+                  <!-- Category -->
+                  <td class="px-3 py-3 text-center">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase <%= p.category === 'JUNIOR' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700' %>">
+                      <%= p.category %>
+                    </span>
+                  </td>
+
+                  <!-- School -->
+                  <td class="px-3 py-3 text-slate-600 truncate max-w-[180px]" title="<%= p.school %>">
+                    <%= p.school %>
+                  </td>
+
+                  <!-- Performed or Not Status -->
+                  <td class="px-3 py-3 text-center">
+                    <% if (p.isPerformed) { %>
+                      <span class="inline-flex items-center gap-1 bg-purple-100 border border-purple-200 text-purple-700 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                        <i class="fa-solid fa-circle-check text-[10px]"></i> Performed
+                      </span>
+                    <% } else if (p.stageStatus === 'ON_STAGE') { %>
+                      <span class="inline-flex items-center gap-1 bg-rose-100 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-full text-[11px] font-bold animate-pulse">
+                        <i class="fa-solid fa-microphone-lines text-[10px]"></i> On Stage
+                      </span>
+                    <% } else { %>
+                      <span class="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                        <i class="fa-regular fa-clock text-[10px]"></i> Waiting Backstage
+                      </span>
+                    <% } %>
+                  </td>
+
+                  <!-- Check-in Time -->
+                  <td class="px-4 py-3 text-center text-slate-500 font-mono text-[11px]">
+                    <%= p.entryMarkedAt ? new Date(p.entryMarkedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '-' %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= 3. OVERALL 12 EVENTS MASTER TRACKER ================= -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 class="text-sm font-bold text-slate-900">Event-wise Live Tracker (12 Events)</h3>
-          <p class="text-xs text-slate-500">Live breakdown of registrations, token issuance, check-in, and stage status</p>
+          <p class="text-xs text-slate-500">Live aggregated counts across registrations, token issuance, check-in, and stage status</p>
         </div>
-        <a href="/reports" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 self-start sm:self-auto">
-          <i class="fa-solid fa-download"></i> Export Event Stats
-        </a>
       </div>
       
       <div class="overflow-x-auto">
@@ -253,14 +321,14 @@
           <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200">
             <tr>
               <th class="px-4 py-3">Event Code &amp; Name</th>
-              <th class="px-3 py-3">Prefix</th>
-              <th class="px-3 py-3 text-center">Total</th>
+              <th class="px-3 py-3 text-center">Prefix</th>
+              <th class="px-3 py-3 text-center">Total Registered</th>
               <th class="px-3 py-3 text-center">Junior</th>
               <th class="px-3 py-3 text-center">Senior</th>
-              <th class="px-3 py-3 text-center">Tokens</th>
+              <th class="px-3 py-3 text-center">Tokens Issued</th>
               <th class="px-3 py-3 text-center">Present</th>
-              <th class="px-3 py-3 text-center">Done</th>
-              <th class="px-4 py-3 text-right">Actions</th>
+              <th class="px-3 py-3 text-center">Performed</th>
+              <th class="px-4 py-3 text-right">Stage Portal</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 font-medium">
@@ -270,7 +338,7 @@
                   <div class="font-extrabold text-slate-900"><%= ev.name %></div>
                   <span class="text-[10px] text-slate-400 font-mono"><%= ev.eventCode %></span>
                 </td>
-                <td class="px-3 py-3 font-mono font-bold text-blue-600"><%= ev.prefix %></td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-blue-600"><%= ev.prefix %></td>
                 <td class="px-3 py-3 text-center font-bold text-slate-900"><%= ev.total %></td>
                 <td class="px-3 py-3 text-center text-slate-600"><%= ev.junior %></td>
                 <td class="px-3 py-3 text-center text-slate-600"><%= ev.senior %></td>
@@ -278,7 +346,7 @@
                 <td class="px-3 py-3 text-center font-bold text-emerald-600"><%= ev.present %></td>
                 <td class="px-3 py-3 text-center font-bold text-purple-600"><%= ev.done %></td>
                 <td class="px-4 py-3 text-right">
-                  <a href="/coordinator?eventId=<%= ev.eventId %>" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-[11px] inline-flex items-center gap-1 transition">
+                  <a href="/stage/dashboard" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-[11px] inline-flex items-center gap-1 transition">
                     Open Stage →
                   </a>
                 </td>

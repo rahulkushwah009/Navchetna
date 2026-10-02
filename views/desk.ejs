@@ -5,198 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Event Day Entry Desk | Navchetna 2026</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            brand: { 800: '#1e3a8a', 900: '#0f172a' }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .tap-active:active { transform: scale(0.98); }
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .tap-active:active { transform: scale(0.97); }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-fadeIn { animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-fadeIn { animation: fadeIn 0.15s ease-out forwards; }
   </style>
 </head>
 
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
 
-  <!-- ================= TOP HEADER ================= -->
-  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
-      
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/20 text-slate-950 font-black">
-          <i class="fa-solid fa-fire text-lg"></i>
+  <!-- ================= COMPACT HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow">
+    <div class="px-3.5 py-2.5 flex items-center justify-between max-w-lg mx-auto w-full">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-slate-950 font-black text-sm shadow">
+          <i class="fa-solid fa-fire"></i>
         </div>
         <div>
-          <div class="text-[10px] tracking-widest uppercase font-bold text-orange-400">Gurukul Dream Foundation</div>
-          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-            Navchetna 2026
-            <span class="hidden sm:inline-block text-[11px] font-normal text-slate-400">| Yuva Shakti Mahotsav</span>
-          </h1>
+          <h1 class="text-sm font-bold tracking-tight text-white leading-tight">Navchetna 2026</h1>
+          <span class="text-[10px] text-emerald-400 font-semibold block leading-none">Entry Desk</span>
         </div>
       </div>
 
-      <!-- Quick Role Info / Logout -->
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span class="font-bold text-slate-200"><%= staff.role === 'ADMIN' ? 'Super Admin' : 'Desk Operator' %></span>
-          <span class="text-slate-400 hidden sm:inline">(<%= staff.email %>)</span>
-        </div>
-        <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition" title="Logout">
-          <i class="fa-solid fa-key"></i>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-1 rounded font-medium max-w-[130px] truncate">
+          <%= staff.email.split('@')[0] %>
+        </span>
+        <a href="/logout" class="bg-rose-950/70 border border-rose-800 text-rose-300 w-8 h-8 rounded-lg flex items-center justify-center text-xs active:bg-rose-900 transition" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
         </a>
       </div>
     </div>
 
-    <!-- Top Quick Bar with Search Trigger -->
-    <div class="bg-slate-950 px-4 py-2 border-t border-slate-800/80">
-      <div class="max-w-7xl mx-auto flex items-center gap-2">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input 
-            type="text" 
-            id="topSearchInput" 
-            onkeydown="if(event.key === 'Enter') triggerTopSearch()"
-            placeholder="Search: Type phone, ticket, slot, or name and press Enter..."
-            class="w-full bg-slate-900 text-white placeholder-slate-400 pl-9 pr-8 py-2 rounded-xl text-xs md:text-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            autocomplete="off"
-          >
-        </div>
-        <button onclick="triggerTopSearch()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-lg shadow-emerald-900/30 tap-active transition">
-          <i class="fa-solid fa-magnifying-glass"></i> Search
-        </button>
-      </div>
-    </div>
-
-    <!-- ================= NAVBAR ================= -->
-    <nav class="bg-slate-950 border-t border-slate-800/80 px-4 overflow-x-auto">
-      <div class="max-w-7xl mx-auto flex items-center space-x-1 text-xs font-semibold whitespace-nowrap">
-        <a href="/dashboard" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie"></i> Admin Overview
-        </a>
-        <a href="/desk" class="px-4 py-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
-          <i class="fa-solid fa-id-card"></i> Event Day Desk
-        </a>
-        <a href="/distribution" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-          <i class="fa-solid fa-network-wired"></i> Contact Distribution
-        </a>
-        <a href="/corrections" class="px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
-          <i class="fa-solid fa-clipboard-check"></i> Master Desk
-        </a>
-      </div>
+    <!-- Quick Navigation Tabs (Touch Scrollable) -->
+    <nav class="flex border-t border-slate-800/80 px-2 overflow-x-auto text-xs font-semibold whitespace-nowrap bg-slate-950 no-scrollbar">
+      <a href="/desk" class="px-3.5 py-2 border-b-2 border-emerald-400 text-emerald-400 flex items-center gap-1.5">
+        <i class="fa-solid fa-id-card"></i> Desk
+      </a>
+      <a href="/dashboard" class="px-3.5 py-2 text-slate-400 hover:text-white flex items-center gap-1.5">
+        <i class="fa-solid fa-chart-pie"></i> Overview
+      </a>
+      <a href="/distribution" class="px-3.5 py-2 text-slate-400 hover:text-white flex items-center gap-1.5">
+        <i class="fa-solid fa-network-wired"></i> Contacts
+      </a>
+      <a href="/corrections" class="px-3.5 py-2 text-slate-400 hover:text-white flex items-center gap-1.5">
+        <i class="fa-solid fa-clipboard-check"></i> Master
+      </a>
     </nav>
   </header>
 
-  <!-- ================= MAIN DESK CONTAINER ================= -->
-  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-4">
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-lg mx-auto w-full p-3 space-y-3">
 
-    <!-- High Speed Desk Search Banner with Filter Option -->
-    <div class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-800">
-      
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div>
-          <div class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800 uppercase tracking-wider">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Auto-Token Speed Desk
-          </div>
-          <h2 class="text-xl font-extrabold tracking-tight mt-1 text-white">Event Day Entry Desk</h2>
-          <p class="text-xs text-slate-400">Search by complete mobile number, slot, or ticket code. Correct name option available on the spot.</p>
-        </div>
-
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-          <button onclick="toggleFilterBar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-sliders text-amber-400"></i> Filters
-          </button>
-          <span class="text-xs font-bold bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200">
-            <%= staff.email %>
-          </span>
-        </div>
-      </div>
-
-      <!-- Main Search Box -->
-      <div class="flex gap-2">
-        <div class="relative flex-1">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <i class="fa-solid fa-bolt text-amber-400 text-base"></i>
-          </div>
-          <input 
-            type="text" 
-            id="deskSearchInput" 
-            onkeydown="if(event.key === 'Enter') triggerSearch()"
-            placeholder="Enter Mobile (e.g. 9826...), Slot (6914), Ticket (NYSM26-...), or Name..." 
-            class="w-full bg-slate-800 text-white text-base sm:text-lg font-medium pl-12 pr-10 py-3.5 rounded-xl border-2 border-emerald-500/80 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 transition placeholder-slate-400"
-            autocomplete="off"
-            autofocus
-          >
-          <button 
-            id="clearDeskSearchBtn" 
-            onclick="clearDeskSearch()" 
-            class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white"
-          >
-            <i class="fa-solid fa-circle-xmark text-lg"></i>
-          </button>
-        </div>
-        <button 
-          onclick="triggerSearch()" 
-          class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm sm:text-base font-extrabold flex items-center gap-2 shadow-lg shadow-emerald-900/40 tap-active transition"
+    <!-- SEARCH BAR -->
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200 space-y-2">
+      <div class="relative flex items-center">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 text-slate-400 text-sm"></i>
+        <input 
+          type="text" 
+          id="deskSearchInput" 
+          onkeydown="if(event.key === 'Enter') triggerSearch()"
+          placeholder="Phone, Slot, or Ticket ID..." 
+          class="w-full bg-slate-50 text-slate-900 text-base font-semibold pl-9 pr-8 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition placeholder-slate-400"
+          autocomplete="off"
+          autocapitalize="off"
         >
-          <i class="fa-solid fa-magnifying-glass"></i> Search
+        <button 
+          id="clearDeskSearchBtn" 
+          onclick="clearDeskSearch()" 
+          class="hidden absolute right-2.5 text-slate-400 hover:text-slate-600 p-1"
+        >
+          <i class="fa-solid fa-circle-xmark text-base"></i>
         </button>
       </div>
 
-      <!-- Quick Search Filters Panel (Collapsible like /admin/registrations) -->
-      <div id="filterBarContainer" class="hidden mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="flex gap-2">
+        <button 
+          onclick="triggerSearch()" 
+          class="flex-1 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm tap-active transition"
+        >
+          <i class="fa-solid fa-bolt"></i> Find Participant
+        </button>
+        <button 
+          onclick="toggleFilterBar()" 
+          class="bg-slate-100 border border-slate-200 text-slate-600 px-3 py-2.5 rounded-lg text-xs font-semibold tap-active"
+        >
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+      </div>
+
+      <!-- Collapsible Filters -->
+      <div id="filterBarContainer" class="hidden pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Filter By Event</label>
-          <select id="filterEventId" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Event</label>
+          <select id="filterEventId" class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-1.5 px-2 rounded-lg focus:outline-none">
             <option value="">All Events</option>
-            <option value="esports">E-Sports Championship</option>
-            <option value="esports Free Fire">Free Fire</option>
-            <option value="esports PUBG">PUBG / BGMI</option>
-            <option value="rangotsav">Rangotsav (Drawing)</option>
-            <option value="bharatbodh">Bharat Bodh (Quiz)</option>
-            <option value="techmanthan">Tech Manthan (Hackathon)</option>
-            <option value="yuvavani">Yuva-Vani (Open Mic)</option>
-            <option value="loknritya">Loknritya (Dance)</option>
-            <option value="rangebharat">Rang-e-Bharat (Fashion)</option>
-            <option value="beyondframe">Beyond Frame (Photo/Reel)</option>
-            <option value="kalamkar">Kalamkar (Essay)</option>
-            <option value="dharmagatha">Dharmagatha (Quiz)</option>
+            <option value="esports">E-Sports</option>
+            <option value="rangotsav">Rangotsav</option>
+            <option value="bharatbodh">Bharat Bodh</option>
+            <option value="techmanthan">Tech Manthan</option>
+            <option value="yuvavani">Yuva-Vani</option>
+            <option value="loknritya">Loknritya</option>
           </select>
         </div>
-
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Category</label>
-          <select id="filterCategory" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-            <option value="">All Categories</option>
-            <option value="Junior">Junior</option>
-            <option value="Senior">Senior</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Status</label>
-          <select id="filterStatus" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Status</label>
+          <select id="filterStatus" class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-1.5 px-2 rounded-lg focus:outline-none">
             <option value="">All Statuses</option>
             <option value="PAID">PAID</option>
             <option value="COMPLIMENTARY">COMPLIMENTARY</option>
@@ -204,179 +127,131 @@
           </select>
         </div>
       </div>
-
     </div>
 
-    <!-- Ready for Next Participant State (Empty) -->
-    <div id="deskEmptyState" class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
-      <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl mb-3">
+    <!-- EMPTY PROMPT -->
+    <div id="deskEmptyState" class="bg-white rounded-xl py-10 px-4 text-center border border-slate-200 shadow-sm">
+      <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-xl mb-2">
         <i class="fa-solid fa-qrcode"></i>
       </div>
-      <h3 class="text-sm font-bold text-slate-700">Ready for Next Participant</h3>
-      <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-        Type full participant phone number or ticket ID above and click <strong>Search</strong>.
-      </p>
+      <h3 class="text-sm font-bold text-slate-700">Ready for Scan / Entry</h3>
+      <p class="text-xs text-slate-400 mt-0.5">Type phone number or ticket ID to begin check-in.</p>
     </div>
 
-    <!-- Multi-Participant Picker Strip (Shown when phone number matches multiple people) -->
-    <div id="multiParticipantStrip" class="hidden bg-white rounded-2xl p-4 border border-blue-200 shadow-md">
-      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="bg-blue-100 text-blue-800 font-extrabold text-xs px-2.5 py-1 rounded-full" id="multiCountBadge">0 Found</span>
-          <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">Multiple Participants Registered Under This Number</h4>
-        </div>
-        <span class="text-[11px] text-slate-500">Click a participant to load desk verification</span>
+    <!-- MULTI-MATCH PICKER -->
+    <div id="multiParticipantStrip" class="hidden bg-white rounded-xl p-3 border border-blue-200 shadow-sm space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold text-slate-800">Multiple Entries Found</span>
+        <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full text-[10px]" id="multiCountBadge">0</span>
       </div>
-      <div id="multiParticipantList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-        <!-- Rendered participant cards -->
+      <div id="multiParticipantList" class="space-y-1.5 max-h-48 overflow-y-auto">
+        <!-- Rendered items -->
       </div>
     </div>
 
-    <!-- Verified Participant Card -->
-    <div id="deskActiveCard" class="hidden bg-white rounded-2xl border-2 border-blue-600 shadow-xl overflow-hidden animate-fadeIn">
+    <!-- ACTIVE PARTICIPANT CARD -->
+    <div id="deskActiveCard" class="hidden bg-white rounded-xl border border-slate-200 shadow-md overflow-hidden animate-fadeIn space-y-3 p-3">
       
-      <!-- Top Dark Card Header -->
-      <div class="p-4 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Top Overview Bar -->
+      <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
         <div>
-          <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block">VERIFIED PARTICIPANT</span>
-          
-          <div class="flex items-center gap-2 flex-wrap mt-0.5">
-            <h3 id="cardParticipantName" class="text-lg sm:text-xl font-black text-white">Participant</h3>
-            <span id="registeredOriginalBadge" class="hidden text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
-              Reg: <span id="cardOriginalName"></span>
-            </span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h3 id="cardParticipantName" class="text-base font-black text-slate-900 leading-snug">Participant Name</h3>
+            <span id="cardPayment" class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">PAID</span>
           </div>
-
-          <div class="text-xs text-slate-300 font-mono flex items-center gap-2 mt-1">
+          <div class="text-xs text-slate-500 font-mono mt-0.5 flex items-center gap-2 flex-wrap">
             <span>📱 <span id="cardMobile"></span></span>
-            <span>|</span>
-            <span>Slot: <strong id="cardSlot" class="text-white"></strong></span>
-            <span>|</span>
-            <span>Ticket: <strong id="cardTicket" class="text-white"></strong></span>
+            <span>•</span>
+            <span>Slot: <strong id="cardSlot" class="text-slate-800"></strong></span>
           </div>
+          <div class="text-[11px] text-slate-400 font-mono truncate" id="cardTicket"></div>
         </div>
 
-        <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-          <button 
-            id="markAllPresentBtn"
-            onclick="markAllEventsPresent()" 
-            class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-md tap-active transition"
-          >
-            <i class="fa-solid fa-bolt"></i> Check-in All Events
-          </button>
-          <a href="/corrections" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-pen-to-square"></i> Full Corrections
-          </a>
+        <button 
+          id="markAllPresentBtn"
+          onclick="markAllEventsPresent()" 
+          class="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-xs px-3 py-2 rounded-lg shrink-0 flex items-center gap-1 tap-active shadow"
+        >
+          <i class="fa-solid fa-check-double"></i> Check-in All
+        </button>
+      </div>
+
+      <!-- Quick Inline Name Correction -->
+      <div class="bg-amber-50 rounded-lg p-2 border border-amber-200 flex items-center gap-1.5">
+        <input 
+          type="text" 
+          id="correctedNameInput" 
+          placeholder="Correct name if wrong..." 
+          class="flex-1 bg-white border border-amber-300 text-slate-900 px-2 py-1.5 rounded text-xs focus:outline-none"
+        >
+        <button 
+          onclick="saveCorrectedNameOnly()"
+          class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-2.5 py-1.5 rounded shrink-0 tap-active"
+        >
+          Save
+        </button>
+      </div>
+
+      <!-- Compact Details -->
+      <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Institution</span>
+          <span id="cardSchool" class="font-medium text-slate-700 truncate block">Not Specified</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Course / Class</span>
+          <span id="cardClass" class="font-medium text-slate-700 truncate block">N/A</span>
         </div>
       </div>
 
-      <!-- Quick Name Correction Bar -->
-      <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-user-pen text-amber-600"></i>
-          <span class="font-bold text-amber-900">Name Correction (Optional):</span>
-          <span class="text-amber-700 text-[11px]">If participant's registered name is wrong, write the correct name here:</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <input 
-            type="text" 
-            id="correctedNameInput" 
-            placeholder="Type correct name..." 
-            class="bg-white border border-amber-300 text-slate-900 px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 w-48 sm:w-60"
-          >
-          <button 
-            onclick="saveCorrectedNameOnly()"
-            class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg transition shrink-0"
-          >
-            Save Name
-          </button>
-        </div>
-      </div>
-
-      <!-- Metadata Demographic Strip -->
-      <div class="p-4 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 block">School / College</span>
-            <strong id="cardSchool" class="text-slate-800 truncate block">School Not Specified</strong>
-          </div>
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 block">Class / Course</span>
-            <strong id="cardClass" class="text-slate-800 block">Course Not Specified</strong>
-          </div>
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 block">Payment Status</span>
-            <span id="cardPayment" class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold text-[11px] mt-0.5">
-              PAID
-            </span>
-          </div>
-        </div>
-
-        <!-- Enrolled Events Strip -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Enrolled Events &amp; Auto Token Assignment</h4>
-            <span class="text-[11px] text-slate-500">Auto token format: 1 to 2000 per event</span>
-          </div>
-          <div id="enrolledEventsContainer" class="space-y-2">
-            <!-- Dynamically injected event items -->
-          </div>
+      <!-- Events List -->
+      <div class="space-y-1.5 pt-1">
+        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Enrolled Events</div>
+        <div id="enrolledEventsContainer" class="space-y-2">
+          <!-- Dynamically populated -->
         </div>
       </div>
 
     </div>
 
-    <!-- Success Feedback Overlay Card (Fast Mode) -->
-    <div id="deskSuccessState" class="hidden bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-6 text-center animate-fadeIn">
-      <div class="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg shadow-emerald-500/30 mb-3">
+    <!-- SUCCESS SCREEN -->
+    <div id="deskSuccessState" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-5 text-center animate-fadeIn">
+      <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl shadow mb-2">
         <i class="fa-solid fa-check"></i>
       </div>
-      <div class="text-xs font-bold text-emerald-800 uppercase tracking-widest">Entry Marked Successfully</div>
-      <h3 id="successName" class="text-xl font-black text-slate-900 mt-1">Participant</h3>
+      <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Checked In Successfully</div>
+      <h3 id="successName" class="text-base font-extrabold text-slate-900 mt-0.5">Participant</h3>
       
-      <div id="successTokensList" class="mt-3 flex flex-wrap items-center justify-center gap-2">
+      <div id="successTokensList" class="mt-3 flex flex-wrap items-center justify-center gap-1.5">
         <!-- Tokens rendered here -->
       </div>
       
-      <p class="text-xs text-emerald-700 mt-3">Participant is confirmed Present. Live status synced with Stage Coordinator.</p>
-      <div class="mt-5">
-        <button onclick="resetDeskForNext()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm shadow-md tap-active transition">
-          Next Entry (Press Enter / Space) →
-        </button>
-      </div>
+      <button 
+        onclick="resetDeskForNext()" 
+        class="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs tap-active transition"
+      >
+        Next Participant →
+      </button>
     </div>
 
   </main>
 
-  <!-- Client-side Logic -->
+  <!-- ================= SCRIPTS ================= -->
   <script>
     let searchResultsList = [];
     let currentParticipant = null;
     let currentEvents = [];
 
     function toggleFilterBar() {
-      const bar = document.getElementById("filterBarContainer");
-      bar.classList.toggle("hidden");
-    }
-
-    function triggerTopSearch() {
-      const topVal = document.getElementById("topSearchInput").value;
-      document.getElementById("deskSearchInput").value = topVal;
-      triggerSearch();
-    }
-
-    function focusMainSearch() {
-      const mainInput = document.getElementById("deskSearchInput");
-      mainInput.focus();
-      mainInput.select();
+      document.getElementById("filterBarContainer").classList.toggle("hidden");
     }
 
     function clearDeskSearch() {
-      document.getElementById("deskSearchInput").value = "";
-      document.getElementById("topSearchInput").value = "";
+      const input = document.getElementById("deskSearchInput");
+      input.value = "";
       document.getElementById("clearDeskSearchBtn").classList.add("hidden");
       resetToEmptyState();
-      focusMainSearch();
+      input.focus();
     }
 
     function resetToEmptyState() {
@@ -404,23 +279,17 @@
       }
       clearBtn.classList.remove("hidden");
 
-      const eventFilter = document.getElementById("filterEventId").value;
-      const categoryFilter = document.getElementById("filterCategory").value;
-      const statusFilter = document.getElementById("filterStatus").value;
+      const eventFilter = document.getElementById("filterEventId")?.value || "";
+      const statusFilter = document.getElementById("filterStatus")?.value || "";
 
-      const params = new URLSearchParams({
-        q: query,
-        eventId: eventFilter,
-        category: categoryFilter,
-        status: statusFilter
-      });
+      const params = new URLSearchParams({ q: query, eventId: eventFilter, status: statusFilter });
 
       try {
         const res = await fetch(`/api/desk/search?${params.toString()}`);
         const data = await res.json();
 
         if (!data.success || (!data.participant && (!data.participants || data.participants.length === 0))) {
-          alert("No participant found matching: " + query);
+          alert("No participant found for: " + query);
           resetToEmptyState();
           return;
         }
@@ -450,22 +319,22 @@
       const badge = document.getElementById("multiCountBadge");
 
       strip.classList.remove("hidden");
-      badge.textContent = `${list.length} Participants`;
+      badge.textContent = `${list.length} Records`;
       listContainer.innerHTML = "";
 
       list.forEach((item, index) => {
         const p = item.participant;
         const displayName = p.correctedName || p.fullName;
         const card = document.createElement("div");
-        card.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/70 hover:border-blue-300 cursor-pointer transition flex items-center justify-between";
+        card.className = "p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 active:bg-blue-100 cursor-pointer flex items-center justify-between text-xs tap-active";
         card.onclick = () => selectParticipantFromMulti(index);
 
         card.innerHTML = `
           <div>
-            <div class="font-extrabold text-xs text-slate-900">${displayName}</div>
-            <div class="text-[10px] text-slate-500 font-mono">ID: ${p.ticketId} | Slot: ${p.teamSlot}</div>
+            <div class="font-bold text-slate-900">${displayName}</div>
+            <div class="text-[10px] text-slate-500 font-mono">Slot: ${p.teamSlot} | ID: ${p.ticketId}</div>
           </div>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
             ${p.status}
           </span>
         `;
@@ -475,9 +344,7 @@
 
     function selectParticipantFromMulti(index) {
       const item = searchResultsList[index];
-      if (item) {
-        renderParticipantCard(item.participant, item.events || []);
-      }
+      if (item) renderParticipantCard(item.participant, item.events || []);
     }
 
     function renderParticipantCard(participant, events) {
@@ -488,33 +355,24 @@
       document.getElementById("deskSuccessState").classList.add("hidden");
       document.getElementById("deskActiveCard").classList.remove("hidden");
 
-      const hasCorrection = participant.correctedName && participant.correctedName.trim() !== "";
-      const activeDisplayName = hasCorrection ? participant.correctedName : participant.fullName;
+      const activeName = (participant.correctedName && participant.correctedName.trim() !== "") 
+        ? participant.correctedName 
+        : participant.fullName;
 
-      document.getElementById("cardParticipantName").textContent = activeDisplayName;
-      
-      const origBadge = document.getElementById("registeredOriginalBadge");
-      if (hasCorrection && participant.correctedName !== participant.fullName) {
-        origBadge.classList.remove("hidden");
-        document.getElementById("cardOriginalName").textContent = participant.fullName;
-      } else {
-        origBadge.classList.add("hidden");
-      }
-
+      document.getElementById("cardParticipantName").textContent = activeName;
       document.getElementById("correctedNameInput").value = participant.correctedName || "";
-
       document.getElementById("cardMobile").textContent = participant.mobile;
       document.getElementById("cardSlot").textContent = participant.teamSlot;
       document.getElementById("cardTicket").textContent = participant.ticketId;
-      document.getElementById("cardSchool").textContent = participant.school || "School Not Specified";
+      document.getElementById("cardSchool").textContent = participant.school || "Not Specified";
       document.getElementById("cardClass").textContent = participant.classCourse || "N/A";
-      document.getElementById("cardPayment").textContent = `₹${participant.amount} ${participant.status}`;
+      document.getElementById("cardPayment").textContent = `${participant.status}`;
 
       const eventsContainer = document.getElementById("enrolledEventsContainer");
       eventsContainer.innerHTML = "";
 
       if (events.length === 0) {
-        eventsContainer.innerHTML = `<div class="p-3 text-xs text-slate-400 bg-slate-50 rounded-xl">No enrolled events found for this registration.</div>`;
+        eventsContainer.innerHTML = `<div class="p-2 text-xs text-slate-400 bg-slate-50 rounded">No events registered.</div>`;
         return;
       }
 
@@ -523,46 +381,36 @@
         const tokenDisplay = ev.tokenNumber && ev.tokenNumber.trim() !== "" ? ev.tokenNumber : "Not Issued";
 
         const item = document.createElement("div");
-        item.className = "p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3";
+        item.className = "p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-2";
 
         item.innerHTML = `
           <div>
-            <div class="font-extrabold text-slate-900 text-xs sm:text-sm">${ev.eventName}</div>
-            <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
-              <span>Category: <strong>${ev.category}</strong></span>
-              <span>•</span>
-              <span class="font-mono font-bold ${isPresent ? 'text-emerald-700' : 'text-amber-700'}">
-                Status: ${isPresent ? "PRESENT" : "PENDING ENTRY"}
-              </span>
+            <div class="font-bold text-slate-900 text-xs">${ev.eventName}</div>
+            <div class="text-[10px] text-slate-500 font-mono">
+              ${isPresent ? `<span class="text-emerald-700 font-bold">TOKEN: ${tokenDisplay}</span>` : '<span class="text-amber-600">Pending</span>'}
             </div>
           </div>
-
-          <div class="flex items-center gap-2 flex-wrap">
+          <div>
             ${isPresent ? `
-              <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-900 px-3 py-1.5 rounded-lg border border-emerald-300">
-                <i class="fa-solid fa-check text-emerald-700"></i>
-                <span class="text-xs font-mono font-black">TOKEN: ${tokenDisplay}</span>
-              </div>
-              <span class="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                <i class="fa-solid fa-circle-check"></i> Present
+              <span class="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-1 rounded inline-flex items-center gap-1">
+                <i class="fa-solid fa-check"></i> Present
               </span>
             ` : `
               <button 
                 onclick="markPresent('${ev._id}', '${ev.eventName}')"
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-md tap-active transition"
+                class="bg-emerald-600 active:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-xs tap-active transition"
               >
-                <i class="fa-solid fa-check"></i> Generate Token &amp; Mark Present
+                Check In
               </button>
             `}
           </div>
         `;
-
         eventsContainer.appendChild(item);
       });
     }
 
     async function saveCorrectedNameOnly() {
-      if (!currentParticipant || !currentParticipant.id) return;
+      if (!currentParticipant?.id) return;
       const correctedName = document.getElementById("correctedNameInput").value.trim();
 
       try {
@@ -579,23 +427,13 @@
         const data = await res.json();
         if (data.success) {
           currentParticipant.correctedName = data.correctedName;
-          const activeName = data.correctedName || currentParticipant.fullName;
-          document.getElementById("cardParticipantName").textContent = activeName;
-          
-          const origBadge = document.getElementById("registeredOriginalBadge");
-          if (data.correctedName && data.correctedName !== currentParticipant.fullName) {
-            origBadge.classList.remove("hidden");
-            document.getElementById("cardOriginalName").textContent = currentParticipant.fullName;
-          } else {
-            origBadge.classList.add("hidden");
-          }
-
-          alert(data.message);
+          document.getElementById("cardParticipantName").textContent = data.correctedName || currentParticipant.fullName;
+          alert("Name updated.");
         } else {
-          alert(data.message || "Failed to save corrected name.");
+          alert(data.message || "Failed to update name.");
         }
       } catch (err) {
-        alert("Server error saving corrected name.");
+        alert("Server error.");
       }
     }
 
@@ -623,12 +461,12 @@
         const activeName = data.correctedName || (currentParticipant ? currentParticipant.fullName : "Participant");
         showSuccessScreen([{ eventName, token: data.tokenNumber }], activeName);
       } catch (err) {
-        alert("Server error marking present.");
+        alert("Server error.");
       }
     }
 
     async function markAllEventsPresent() {
-      if (!currentParticipant || !currentParticipant.id) return;
+      if (!currentParticipant?.id) return;
       const correctedName = document.getElementById("correctedNameInput").value.trim();
 
       try {
@@ -651,7 +489,7 @@
         const activeName = data.correctedName || (currentParticipant ? currentParticipant.fullName : "Participant");
         showSuccessScreen(data.tokens || [], activeName);
       } catch (err) {
-        alert("Server error marking all events present.");
+        alert("Server error.");
       }
     }
 
@@ -664,25 +502,16 @@
       tokensContainer.innerHTML = "";
 
       if (tokens.length === 0) {
-        tokensContainer.innerHTML = `<span class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold">Already Checked In</span>`;
+        tokensContainer.innerHTML = `<span class="bg-emerald-100 text-emerald-900 px-2.5 py-1 rounded text-xs font-bold">Checked In</span>`;
       } else {
         tokens.forEach(t => {
           const badge = document.createElement("div");
-          badge.className = "bg-emerald-100 border border-emerald-300 text-emerald-950 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5";
-          badge.innerHTML = `<span class="text-slate-600">${t.eventName}:</span> <strong class="text-emerald-900">${t.token}</strong>`;
+          badge.className = "bg-white border border-emerald-300 text-slate-800 px-2.5 py-1 rounded text-xs font-mono font-bold shadow-sm";
+          badge.innerHTML = `${t.eventName}: <strong class="text-emerald-700">${t.token}</strong>`;
           tokensContainer.appendChild(badge);
         });
       }
     }
-
-    document.addEventListener("keydown", (e) => {
-      if ((e.key === "Enter" || e.key === " ") && !document.getElementById("deskSuccessState").classList.contains("hidden")) {
-        e.preventDefault();
-        resetDeskForNext();
-      }
-    });
   </script>
-</body>
-</html>
 </body>
 </html>

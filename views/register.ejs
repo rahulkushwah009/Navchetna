@@ -208,13 +208,6 @@
     border-radius:var(--radius-sm); border:1px dashed #E4D9CC;
   }
 
-  .nysm-invite-box{
-    background: #FFF3E0; border: 1.5px dashed #FFA630;
-    padding: 14px 16px; border-radius: var(--radius-sm);
-    margin-top: 20px; font-size: 12.5px; color: #5a3809; line-height: 1.5;
-  }
-  .nysm-invite-box b{ color: #1B1030; }
-
   .nysm-btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     width:100%; padding:14px 18px; border:none; border-radius: var(--radius-sm);
@@ -270,23 +263,6 @@
   .nysm-summary-total span:last-child{
     font-family: var(--font-display); font-size:26px; font-weight:800; color: var(--marigold);
   }
-  .nysm-summary-total.zero span:last-child{ color: var(--ok); }
-
-  .nysm-secret-box{ margin-top:18px; }
-  .nysm-secret-row{ display:flex; gap:8px; }
-  .nysm-secret-row input{
-    flex:1; padding:11px 13px; border-radius: var(--radius-sm); border:none;
-    background: rgba(255,255,255,0.08); color: var(--cream); font-weight:600;
-    border:1.5px solid rgba(255,255,255,0.18); text-transform:uppercase; letter-spacing:.04em;
-  }
-  .nysm-secret-row input::placeholder{ color: rgba(255,248,237,0.4); text-transform:none; letter-spacing:normal; }
-  .nysm-secret-row button{
-    padding:0 18px; border-radius: var(--radius-sm); border:none; font-weight:700;
-    background: var(--marigold); color:#1B1030; cursor:pointer; font-size:13px;
-  }
-  .nysm-secret-msg{ font-size:12.5px; margin-top:8px; font-weight:600; display:none; }
-  .nysm-secret-msg.ok{ color: #7EE2B8; display:block; }
-  .nysm-secret-msg.bad{ color: #FF9AA6; display:block; }
 
   /* ---------------- Payment ---------------- */
   .nysm-payment{ text-align:center; }
@@ -304,11 +280,6 @@
   @keyframes nysm-spin{ to{ transform: rotate(360deg); } }
   .nysm-payment-status.error{ background:#FDE7E8; color:#B12B30; }
   .nysm-payment-status.error .nysm-spinner{ display:none; }
-  .nysm-complimentary{
-    text-align:center; padding: 26px 18px; border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, #E9FBF2, #FFF3E0); color:#1B6B45;
-  }
-  .nysm-complimentary .big{ font-family: var(--font-display); font-size:20px; font-weight:800; margin-bottom:4px; }
 
   /* ---------------- Ticket ---------------- */
   #nysm-ticket-render{
@@ -328,7 +299,6 @@
   .nysm-ticket-field .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#8a7a9c; font-weight:700; }
   .nysm-ticket-field .v{ font-size:14px; font-weight:700; color:#241338; margin-top:2px; }
   .nysm-ticket-field.amount .v{ font-size:18px; font-weight:800; color: var(--gulal); }
-  .nysm-ticket-field.amount .v.comp{ color: var(--ok); }
 
   .nysm-ticket-perf{
     position:relative; height:28px;
@@ -408,7 +378,6 @@
       <h2>Participant Details</h2>
       <p class="hint">Tell us who is registering.</p>
       
-
       <div class="nysm-field" data-field="fullName">
         <label>Full Name <span class="req">*</span></label>
         <input type="text" id="f-fullName" placeholder="Enter full name" autocomplete="name">
@@ -483,7 +452,7 @@
       </div>
     </section>
 
-    <!-- STEP 3 : Summary + Secret code + Payment -->
+    <!-- STEP 3 : Summary + Payment -->
     <section class="nysm-hidden" id="nysm-step-3">
       <div class="nysm-summary">
         <h2>Registration Summary</h2>
@@ -495,20 +464,9 @@
         <div style="margin-top:10px; font-size:12.5px; color:rgba(255,248,237,0.7); font-weight:700;">Selected Events & Fee:</div>
         <div class="nysm-events-breakdown" id="s-events-breakdown"></div>
 
-        <div class="nysm-summary-row nysm-hidden" id="s-code-row"><span>Secret Code</span><span id="s-code">—</span></div>
-
         <div class="nysm-summary-total" id="s-total-row">
           <span>Total Amount Payable</span>
           <span id="s-total">₹0</span>
-        </div>
-
-        <div class="nysm-secret-box">
-          <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color: var(--marigold-2);">Secret Code (Optional)</label>
-          <div class="nysm-secret-row">
-            <input type="text" id="f-secretCode" placeholder="VIP / SPONSOR / STAFF CODE">
-            <button onclick="NYSM.applySecretCode()">Apply</button>
-          </div>
-          <div class="nysm-secret-msg" id="secret-msg"></div>
         </div>
       </div>
 
@@ -526,12 +484,6 @@
         </div>
 
         <button class="nysm-btn nysm-btn-ghost nysm-hidden" id="nysm-recheck-btn" style="margin-top:10px;" onclick="NYSM.recheckStatus()">↻ I've Paid — Check Status</button>
-      </div>
-
-      <div class="nysm-panel nysm-complimentary nysm-hidden" id="nysm-comp-panel">
-        <div class="big">🎟 Complimentary Entry</div>
-        <p style="margin:0; font-size:13.5px;">Valid secret code applied — 100% discount granted.</p>
-        <button class="nysm-btn nysm-btn-dark" id="nysm-comp-confirm-btn" style="margin-top:16px;" onclick="NYSM.confirmComplimentary()">Confirm Registration →</button>
       </div>
 
       <div class="nysm-btn-row wrap" style="max-width:680px; margin:0 auto;">
@@ -589,11 +541,8 @@
     RAZORPAY_KEY_ID: "<%= process.env.RAZORPAY_KEY_ID || 'rzp_live_TM9kT7z1INgJKh' %>"
   };
 
-  /* ==========================================================================
-     EVENT CATALOGUE: E-Sports with Solo / Duo / Group / Squad
-     ========================================================================== */
   const EVENTS = [
-     { 
+    { 
       id: "rangotsav", 
       name: "रंगोत्सव : Drawing Competition", 
       junior: 20, senior: 50 
@@ -620,19 +569,16 @@
     fullName: "", mobile: "", school: "", classCourse: "", age: "",
     teamSlot: "", category: "", gender: "", reference: "",
     selectedEvents: {}, 
-    fee: 0, secretCode: "", secretValid: false,
+    fee: 0,
     ticketId: "", paymentStatus: "", orderId: ""
   };
 
   function getEventFee(ev, category, participantType, groupCount) {
     if (!category) return 0;
-
     const catKey = category === "Junior" ? 'junior' : 'senior';
 
     if (ev.dance) {
-      if (participantType === "Solo") {
-        return ev.solo[catKey];
-      }
+      if (participantType === "Solo") return ev.solo[catKey];
       if (participantType === "Group") {
         const per = ev.group[catKey];
         const n = Math.max(parseInt(groupCount, 10) || 0, 0);
@@ -641,7 +587,6 @@
       return ev.solo[catKey];
     }
     
-    // E-Sports calculation (Solo ₹50, Duo ₹100, Group/Trio ₹150, Squad ₹200)
     if (ev.isEsports) {
       if (participantType === "Duo") return ev.duo[catKey];
       if (participantType === "Group") return ev.group[catKey];
@@ -690,6 +635,7 @@
       recalcTotalFee();
     });
   });
+
   document.querySelectorAll('#f-gender .nysm-pill').forEach(p=>{
     p.addEventListener('click', ()=>{
       document.querySelectorAll('#f-gender .nysm-pill').forEach(x=>x.classList.remove('selected'));
@@ -757,12 +703,11 @@
             <div class="nysm-event-coordinators">${ev.coordinators ? 'Coordinators: ' + ev.coordinators : ''}</div>
             <div class="nysm-event-fee">${feeText}</div>
             
-            <!-- Dance Sub-options -->
             ${ev.dance && isSelected ? `
               <div class="nysm-sub-config-box" onclick="event.stopPropagation()">
                 <label style="font-size:12px; font-weight:700; color:#3d2c58;">Participation Mode:</label>
                 <div style="display:flex; gap:8px; margin:6px 0;">
-                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType || state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo</button>
+                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType \vert{}\vert{} state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo</button>
                   <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Group'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Group')">Group</button>
                 </div>
                 ${state.selectedEvents[ev.id].participantType==='Group' ? `
@@ -771,12 +716,11 @@
               </div>
             ` : ''}
 
-            <!-- E-Sports Sub-options -->
             ${ev.isEsports && isSelected ? `
               <div class="nysm-sub-config-box" onclick="event.stopPropagation()">
                 <label style="font-size:12px; font-weight:700; color:#3d2c58;">E-Sports Mode:</label>
                 <div style="display:flex; gap:6px; margin:6px 0; flex-wrap:wrap;">
-                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType || state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo (₹50)</button>
+                  <button type="button" class="nysm-pill ${(!state.selectedEvents[ev.id].participantType \vert{}\vert{} state.selectedEvents[ev.id].participantType==='Solo')?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Solo')">Solo (₹50)</button>
                   <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Duo'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Duo')">Duo (₹100)</button>
                   <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Group'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Group')">Trio/3P (₹150)</button>
                   <button type="button" class="nysm-pill ${state.selectedEvents[ev.id].participantType==='Squad'?'selected':''}" style="padding:6px; font-size:12px;" onclick="NYSM.setSubOption('${ev.id}', 'Squad')">Squad/4P (₹200)</button>
@@ -826,11 +770,7 @@
         else if(type === 'Group') state.selectedEvents[eventId].groupCount = 3;
         else if(type === 'Squad') state.selectedEvents[eventId].groupCount = 4;
       } else {
-        if(type === 'Group'){
-          state.selectedEvents[eventId].groupCount = 2;
-        } else {
-          state.selectedEvents[eventId].groupCount = 1;
-        }
+        state.selectedEvents[eventId].groupCount = type === 'Group' ? 2 : 1;
       }
       renderEvents();
     }
@@ -908,57 +848,8 @@
     });
 
     resetPaymentUI();
-    updateTotalDisplay();
-  }
-
-  function updateTotalDisplay(){
-    const total = state.secretValid ? 0 : state.fee;
-    document.getElementById('s-total').textContent = '₹' + total;
-    document.getElementById('s-total-row').classList.toggle('zero', state.secretValid);
-    document.getElementById('upi-amount-label').textContent = '₹' + total;
-
-    document.getElementById('nysm-payment-panel').classList.toggle('nysm-hidden', state.secretValid);
-    document.getElementById('nysm-comp-panel').classList.toggle('nysm-hidden', !state.secretValid);
-
-    const codeRow = document.getElementById('s-code-row');
-    if(state.secretValid){
-      codeRow.classList.remove('nysm-hidden');
-      document.getElementById('s-code').textContent = state.secretCode;
-    } else {
-      codeRow.classList.add('nysm-hidden');
-    }
-  }
-
-  async function applySecretCode(){
-    const val = document.getElementById('f-secretCode').value.trim().toUpperCase();
-    const msg = document.getElementById('secret-msg');
-    
-    if(!val){
-      msg.className = 'nysm-secret-msg bad';
-      msg.textContent = 'Enter a code to apply.';
-      return;
-    }
-
-    try{
-      const res = await backendCall('validate-secret-code', { secretCode: val }, 'POST');
-      if(res.valid){
-        state.secretCode = val;
-        state.secretValid = true;
-        msg.className = 'nysm-secret-msg ok';
-        msg.textContent = `✓ ${res.message} (${res.label})`;
-      } else {
-        state.secretValid = false;
-        state.secretCode = '';
-        msg.className = 'nysm-secret-msg bad';
-        msg.textContent = res.message || 'Invalid Secret Code.';
-      }
-    } catch(err){
-      state.secretValid = false;
-      state.secretCode = '';
-      msg.className = 'nysm-secret-msg bad';
-      msg.textContent = 'Could not validate code. Please try again.';
-    }
-    updateTotalDisplay();
+    document.getElementById('s-total').textContent = '₹' + state.fee;
+    document.getElementById('upi-amount-label').textContent = '₹' + state.fee;
   }
 
   function resetPaymentUI(){
@@ -1065,7 +956,7 @@
     }
   }
 
-  /* Safe Payment Verification Handler */
+  /* Payment Verification */
   async function verifyPayment(response){
     try{
       const eventsArray = Object.values(state.selectedEvents).map(e => ({
@@ -1133,62 +1024,7 @@
     });
   }
 
-  /* Safe Complimentary Registration Handler */
-  async function confirmComplimentary(){
-    const btn = document.getElementById('nysm-comp-confirm-btn');
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Generating Ticket…';
-    }
-
-    const eventsArray = Object.values(state.selectedEvents).map(e => ({
-      id: String(e.id || ""),
-      name: String(e.name || ""),
-      coordinators: String(e.coordinators || ""),
-      fee: 0,
-      participantType: String(e.participantType || "Solo"),
-      groupCount: parseInt(e.groupCount, 10) || 1,
-      teamName: String(e.teamName || "")
-    }));
-
-    try{
-      const result = await backendCall('record-complimentary', {
-        fullName: state.fullName,
-        mobile: state.mobile,
-        school: state.school,
-        classCourse: state.classCourse,
-        age: parseInt(state.age, 10) || 18,
-        teamSlot: state.teamSlot || "",
-        category: state.category || "Senior",
-        gender: state.gender || "Male",
-        reference: state.reference || "",
-        events: eventsArray,
-        secretCode: state.secretCode
-      }, 'POST');
-
-      if (!result || result.error) {
-        throw new Error(result ? result.error : "Server did not return ticket information.");
-      }
-
-      state.ticketId = result.ticketId;
-      state.paymentStatus = 'Complimentary Entry';
-
-      renderTicket();
-      showPanel(4);
-      toast('Registration confirmed — ticket generated!');
-
-    } catch(err){
-      console.error("Complimentary registration error:", err);
-      toast('Registration notice: ' + err.message);
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Confirm Registration →';
-      }
-    }
-  }
-
-  /* Resilient Ticket Rendering with Clean QR Payload */
+  /* Ticket Rendering */
   function renderTicket(){
     try {
       const selectedList = Object.values(state.selectedEvents || {});
@@ -1224,15 +1060,8 @@
       const amountLabel = document.getElementById('t-amount-label');
       const amountVal = document.getElementById('t-amount');
       if (amountLabel && amountVal) {
-        if (state.paymentStatus === 'Complimentary Entry') {
-          amountLabel.textContent = 'Status';
-          amountVal.textContent = 'Complimentary';
-          amountVal.classList.add('comp');
-        } else {
-          amountLabel.textContent = 'Amount Paid';
-          amountVal.textContent = '₹' + (state.fee || 0);
-          amountVal.classList.remove('comp');
-        }
+        amountLabel.textContent = 'Amount Paid';
+        amountVal.textContent = '₹' + (state.fee || 0);
       }
 
       const qrHolder = document.getElementById('nysm-ticket-qrcode');
@@ -1279,24 +1108,23 @@
   }
 
   function resetForm(){
-    ['f-fullName','f-mobile','f-school','f-classCourse','f-age','f-teamSlot','f-reference','f-secretCode'].forEach(id=>{
+    ['f-fullName','f-mobile','f-school','f-classCourse','f-age','f-teamSlot','f-reference'].forEach(id=>{
       const el = document.getElementById(id);
       if(el) el.value = '';
     });
     document.querySelectorAll('.nysm-pill.selected').forEach(p=>p.classList.remove('selected'));
-    document.getElementById('secret-msg').className = 'nysm-secret-msg';
     Object.assign(state, {
       fullName:"", mobile:"", school:"", classCourse:"", age:"",
       teamSlot:"", category:"", gender:"", reference:"",
-      selectedEvents:{}, fee:0, secretCode:"", secretValid:false,
+      selectedEvents:{}, fee:0,
       ticketId:"", paymentStatus:"", orderId:""
     });
     showPanel(1);
   }
 
   window.NYSM = {
-    goToStep, applySecretCode, startPayment, recheckStatus,
-    confirmComplimentary, printTicket, downloadTicket, resetForm,
+    goToStep, startPayment, recheckStatus,
+    printTicket, downloadTicket, resetForm,
     setSubOption, setGroupCount, setTeamName
   };
 

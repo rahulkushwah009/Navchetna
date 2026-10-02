@@ -6,6 +6,8 @@
 <title>Navchetna Yuva Shakti Mahotsav 2026 — Registration</title>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700&display=swap');
+
   :root{
     /* ---- Design tokens : "Navchetna" — night mela, marigold + gulal ---- */
     --ink:         #1B1030;
@@ -28,8 +30,6 @@
     --radius: 18px;
     --radius-sm: 12px;
   }
-
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700&display=swap');
 
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
@@ -167,9 +167,14 @@
     border:1.5px solid #E4D9CC; background:#fff; font-weight:700; font-size:13px;
     color:#3d2c58; transition: all .15s ease; user-select:none;
   }
+  .nysm-pill:hover{
+    border-color: var(--marigold);
+  }
   .nysm-pill.selected{
-    border-color: var(--gulal); background: linear-gradient(135deg, #FFE9F1, #FFF3E0);
-    color: var(--gulal); box-shadow: 0 0 0 3px rgba(230,62,124,0.12);
+    border-color: var(--gulal) !important; 
+    background: linear-gradient(135deg, #FFE9F1, #FFF3E0) !important;
+    color: var(--gulal) !important; 
+    box-shadow: 0 0 0 3px rgba(230,62,124,0.12);
   }
 
   /* ---------------- Multi Event Cards ---------------- */
@@ -419,8 +424,8 @@
       <div class="nysm-field" data-field="category">
         <label>Category <span class="req">*</span></label>
         <div class="nysm-pill-group" id="f-category">
-          <div class="nysm-pill" data-value="Junior">Junior (Up to 12th)</div>
-          <div class="nysm-pill" data-value="Senior">Senior (College / Open)</div>
+          <div class="nysm-pill" data-value="Junior" onclick="NYSM.selectCategory('Junior')">Junior (Up to 12th)</div>
+          <div class="nysm-pill" data-value="Senior" onclick="NYSM.selectCategory('Senior')">Senior (College / Open)</div>
         </div>
         <div class="err-msg">Select a category.</div>
       </div>
@@ -428,8 +433,8 @@
       <div class="nysm-field" data-field="gender">
         <label>Gender <span class="req">*</span></label>
         <div class="nysm-pill-group" id="f-gender">
-          <div class="nysm-pill" data-value="Male">Male</div>
-          <div class="nysm-pill" data-value="Female">Female</div>
+          <div class="nysm-pill" data-value="Male" onclick="NYSM.selectGender('Male')">Male</div>
+          <div class="nysm-pill" data-value="Female" onclick="NYSM.selectGender('Female')">Female</div>
         </div>
         <div class="err-msg">Select a gender.</div>
       </div>
@@ -600,6 +605,7 @@
 
   function toast(msg){
     const t = document.getElementById('nysm-toast');
+    if(!t) return;
     t.textContent = msg; t.classList.add('show');
     clearTimeout(window._nysmToastTimer);
     window._nysmToastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
@@ -615,10 +621,12 @@
 
   function showPanel(step){
     [1,2,3,4].forEach(n=>{
-      document.getElementById('nysm-step-'+n).classList.toggle('nysm-hidden', n !== step);
+      const panel = document.getElementById('nysm-step-'+n);
+      if(panel) panel.classList.toggle('nysm-hidden', n !== step);
     });
     setStepper(step);
-    document.getElementById('nysm-root').scrollIntoView({behavior:'smooth', block:'start'});
+    const root = document.getElementById('nysm-root');
+    if(root) root.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   function markInvalid(name, invalid){
@@ -626,45 +634,50 @@
     if(el) el.classList.toggle('invalid', invalid);
   }
 
-  /* Step 1 Handlers */
-  document.querySelectorAll('#f-category .nysm-pill').forEach(p=>{
-    p.addEventListener('click', ()=>{
-      document.querySelectorAll('#f-category .nysm-pill').forEach(x=>x.classList.remove('selected'));
-      p.classList.add('selected');
-      state.category = p.dataset.value;
-      markInvalid('category', false);
-      recalcTotalFee();
-    });
-  });
+  /* Reliable Category & Gender Selectors */
+  function selectCategory(catVal){
+    const group = document.getElementById('f-category');
+    if(group){
+      group.querySelectorAll('.nysm-pill').forEach(x => {
+        x.classList.toggle('selected', x.getAttribute('data-value') === catVal);
+      });
+    }
+    state.category = catVal;
+    markInvalid('category', false);
+    recalcTotalFee();
+  }
 
-  document.querySelectorAll('#f-gender .nysm-pill').forEach(p=>{
-    p.addEventListener('click', ()=>{
-      document.querySelectorAll('#f-gender .nysm-pill').forEach(x=>x.classList.remove('selected'));
-      p.classList.add('selected');
-      state.gender = p.dataset.value;
-      markInvalid('gender', false);
-    });
-  });
+  function selectGender(genVal){
+    const group = document.getElementById('f-gender');
+    if(group){
+      group.querySelectorAll('.nysm-pill').forEach(x => {
+        x.classList.toggle('selected', x.getAttribute('data-value') === genVal);
+      });
+    }
+    state.gender = genVal;
+    markInvalid('gender', false);
+  }
 
   function validateStep1(){
     let ok = true;
-    state.fullName = document.getElementById('f-fullName').value.trim();
-    state.mobile = document.getElementById('f-mobile').value.trim();
-    state.school = document.getElementById('f-school').value.trim();
-    state.classCourse = document.getElementById('f-classCourse').value.trim();
+    state.fullName = (document.getElementById('f-fullName') ? document.getElementById('f-fullName').value : '').trim();
+    state.mobile = (document.getElementById('f-mobile') ? document.getElementById('f-mobile').value : '').trim();
+    state.school = (document.getElementById('f-school') ? document.getElementById('f-school').value : '').trim();
+    state.classCourse = (document.getElementById('f-classCourse') ? document.getElementById('f-classCourse').value : '').trim();
     
-    const ageVal = parseInt(document.getElementById('f-age').value.trim(), 10);
+    const ageRaw = document.getElementById('f-age') ? document.getElementById('f-age').value.trim() : '';
+    const ageVal = parseInt(ageRaw, 10);
     state.age = isNaN(ageVal) ? "" : ageVal;
     
-    state.teamSlot = document.getElementById('f-teamSlot').value.trim();
-    state.reference = document.getElementById('f-reference').value.trim();
+    state.teamSlot = (document.getElementById('f-teamSlot') ? document.getElementById('f-teamSlot').value : '').trim();
+    state.reference = (document.getElementById('f-reference') ? document.getElementById('f-reference').value : '').trim();
 
     const checks = [
       ['fullName', state.fullName.length >= 2],
       ['mobile', /^[6-9]\d{9}$/.test(state.mobile)],
       ['school', state.school.length >= 2],
       ['classCourse', state.classCourse.length >= 1],
-      ['age', state.age !== "" && state.age >= 4 && state.age <= 40],
+      ['age', state.age !== "" && state.age >= 10 && state.age <= 30],
       ['category', !!state.category],
       ['gender', !!state.gender],
     ];
@@ -678,7 +691,9 @@
   /* Step 2 Multi-Event Render */
   function renderEvents(){
     const list = document.getElementById('nysm-event-list');
-    document.getElementById('f-category-echo').textContent = state.category ? (' — ' + state.category) : '';
+    const echo = document.getElementById('f-category-echo');
+    if(echo) echo.textContent = state.category ? (' — ' + state.category) : '';
+    if(!list) return;
     list.innerHTML = '';
 
     EVENTS.forEach(ev=>{
@@ -856,21 +871,29 @@
   }
 
   function resetPaymentUI(){
-    document.getElementById('nysm-pay-btn').disabled = false;
-    document.getElementById('nysm-pay-btn').classList.remove('nysm-hidden');
-    document.getElementById('nysm-pay-btn').textContent = '🔒 Pay Now';
+    const payBtn = document.getElementById('nysm-pay-btn');
+    if(payBtn){
+      payBtn.disabled = false;
+      payBtn.classList.remove('nysm-hidden');
+      payBtn.textContent = '🔒 Pay Now';
+    }
     const statusBox = document.getElementById('nysm-payment-status');
-    statusBox.classList.add('nysm-hidden');
-    statusBox.classList.remove('error');
-    document.getElementById('nysm-recheck-btn').classList.add('nysm-hidden');
+    if(statusBox){
+      statusBox.classList.add('nysm-hidden');
+      statusBox.classList.remove('error');
+    }
+    const recheckBtn = document.getElementById('nysm-recheck-btn');
+    if(recheckBtn) recheckBtn.classList.add('nysm-hidden');
     state.orderId = "";
   }
 
   function setStatusMessage(text, isError){
     const statusBox = document.getElementById('nysm-payment-status');
-    statusBox.classList.remove('nysm-hidden');
-    statusBox.classList.toggle('error', !!isError);
-    document.getElementById('nysm-payment-status-text').textContent = text;
+    if(statusBox){
+      statusBox.classList.remove('nysm-hidden');
+      statusBox.classList.toggle('error', !!isError);
+      document.getElementById('nysm-payment-status-text').textContent = text;
+    }
   }
 
   async function backendCall(action, payload, method){
@@ -899,8 +922,10 @@
       return;
     }
     const payBtn = document.getElementById('nysm-pay-btn');
-    payBtn.disabled = true;
-    payBtn.textContent = 'Preparing secure order…';
+    if(payBtn){
+      payBtn.disabled = true;
+      payBtn.textContent = 'Preparing secure order…';
+    }
     document.getElementById('nysm-recheck-btn').classList.add('nysm-hidden');
 
     try{
@@ -911,7 +936,7 @@
       if(order.error) throw new Error(order.error);
 
       state.orderId = order.orderId;
-      payBtn.classList.add('nysm-hidden');
+      if(payBtn) payBtn.classList.add('nysm-hidden');
       setStatusMessage('Opening secure Razorpay checkout…', false);
 
       const rzp = new Razorpay({
@@ -934,9 +959,11 @@
           ondismiss: function(){
             setStatusMessage('Payment window closed. Click below once you\'ve paid, or try again.', true);
             document.getElementById('nysm-recheck-btn').classList.remove('nysm-hidden');
-            payBtn.classList.remove('nysm-hidden');
-            payBtn.disabled = false;
-            payBtn.textContent = '🔒 Try Payment Again';
+            if(payBtn){
+              payBtn.classList.remove('nysm-hidden');
+              payBtn.disabled = false;
+              payBtn.textContent = '🔒 Try Payment Again';
+            }
           }
         }
       });
@@ -944,18 +971,22 @@
       rzp.on('payment.failed', function(response){
         setStatusMessage('Payment failed: ' + (response.error && response.error.description || 'please try again.'), true);
         document.getElementById('nysm-recheck-btn').classList.remove('nysm-hidden');
-        payBtn.classList.remove('nysm-hidden');
-        payBtn.disabled = false;
-        payBtn.textContent = '🔒 Try Payment Again';
+        if(payBtn){
+          payBtn.classList.remove('nysm-hidden');
+          payBtn.disabled = false;
+          payBtn.textContent = '🔒 Try Payment Again';
+        }
       });
 
       rzp.open();
 
     } catch(err){
       setStatusMessage('Could not start payment: ' + err.message, true);
-      payBtn.classList.remove('nysm-hidden');
-      payBtn.disabled = false;
-      payBtn.textContent = '🔒 Pay Now';
+      if(payBtn){
+        payBtn.classList.remove('nysm-hidden');
+        payBtn.disabled = false;
+        payBtn.textContent = '🔒 Pay Now';
+      }
     }
   }
 
@@ -1063,7 +1094,6 @@
       if (amountLabel && amountVal) {
         amountLabel.textContent = 'Amount Paid';
         amountVal.textContent = '₹' + (state.fee || 0);
-        amountVal.classList.remove('comp');
       }
 
       const qrHolder = document.getElementById('nysm-ticket-qrcode');
@@ -1101,7 +1131,7 @@
 
   function goToStep(step){
     if(step === 2 && !validateStep1()){
-      toast('Please fill out all required fields with a valid age (4-40).');
+      toast('Please fill out all required fields with a valid age (10-30).');
       return;
     }
     if(step === 2){ renderEvents(); }
@@ -1127,7 +1157,8 @@
   window.NYSM = {
     goToStep, startPayment, recheckStatus,
     printTicket, downloadTicket, resetForm,
-    setSubOption, setGroupCount, setTeamName
+    setSubOption, setGroupCount, setTeamName,
+    selectCategory, selectGender
   };
 
 })();

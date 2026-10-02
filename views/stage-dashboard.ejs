@@ -186,14 +186,6 @@ All the best!
                           Performed
                         </button>
                       </form>
-                    <% } else { %>
-                      <form action="/stage/update-status" method="POST" class="inline">
-                        <input type="hidden" name="trackingId" value="<%= p.trackingId %>">
-                        <input type="hidden" name="stageStatus" value="WAITING_BACKSTAGE">
-                        <button type="submit" class="px-2 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
-                          Undo
-                        </button>
-                      </form>
                     <% } %>
                   </div>
                 </td>

@@ -1477,25 +1477,16 @@ app.get("/desk", requireAuth, async (req, res) => {
 app.get("/api/desk/search", requireAuth, async (req, res) => {
   try {
     const q = (req.query.q || "").trim();
-    if (!q) {
-      return res.json({ success: true, participant: null });
-    }
+    if (!q) return res.json({ success: true, participant: null });
 
     const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escaped, "i");
 
     const registration = await Registration.findOne({
-      $or: [
-        { mobile: regex },
-        { ticketId: regex },
-        { teamSlot: regex },
-        { fullName: regex },
-      ],
+      $or: [{ mobile: regex }, { ticketId: regex }, { teamSlot: regex }, { fullName: regex }],
     }).lean();
 
-    if (!registration) {
-      return res.json({ success: true, participant: null });
-    }
+    if (!registration) return res.json({ success: true, participant: null });
 
     if (Array.isArray(registration.events) && registration.events.length > 0) {
       for (const ev of registration.events) {
@@ -1518,9 +1509,15 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
       }
     }
 
-    const trackings = await EventTracking.find({
-      registrationId: registration._id,
-    }).lean();
+    const trackings = await EventTracking.find({ registrationId: registration._id }).lean();
+
+    // Map both trackingId and id so desk.ejs never gets undefined
+    const formattedEvents = trackings.map((t) => ({
+      ...t,
+      id: t._id,
+      trackingId: t._id,
+      _id: t._id,
+    }));
 
     return res.json({
       success: true,
@@ -1536,7 +1533,7 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
         amount: registration.amount,
         status: registration.status,
       },
-      events: trackings,
+      events: formattedEvents,
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -1545,48 +1542,69 @@ app.get("/api/desk/search", requireAuth, async (req, res) => {
 
 app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
   try {
-    const { trackingId, manualToken } = req.body;
+    // Support all possible key names coming from desk.ejs
+    const trackingId = req.body.trackingId || req.body.id || req.body._id || req.body.eventTrackingId;
+    const rawToken = req.body.manualToken || req.body.token || req.body.tokenNumber || req.body.tokenVal || "";
+    const tokenVal = String(rawToken).trim().toUpperCase();
     const operatorName = req.session?.staff?.email || "Volunteer Desk #1";
 
-    if (!trackingId || !mongoose.Types.ObjectId.isValid(trackingId)) {
-      return res.status(400).json({ success: false, message: "Invalid tracking ID provided." });
-    }
-
-    const tracking = await EventTracking.findById(trackingId);
-    if (!tracking) {
-      return res.status(404).json({ success: false, message: "Tracking record not found." });
-    }
-
-    const tokenVal = (manualToken || "").trim().toUpperCase();
     if (!tokenVal) {
       return res.status(400).json({ success: false, message: "Token number is required to mark entry." });
     }
 
-    tracking.tokenNumber = tokenVal;
-    tracking.entryStatus = "PRESENT";
-    tracking.entryMarkedAt = new Date();
-    tracking.entryMarkedBy = operatorName;
-
-    if (tracking.stageStatus === "NOT_PRESENT") {
-      tracking.stageStatus = "WAITING_BACKSTAGE";
+    // Flexible lookup: by ObjectId, or fallback to ticketId / registrationId
+    let tracking = null;
+    if (trackingId && mongoose.Types.ObjectId.isValid(trackingId)) {
+      tracking = await EventTracking.findById(trackingId);
     }
 
-    await tracking.save();
+    if (!tracking && (req.body.ticketId || req.body.registrationId)) {
+      const query = {};
+      if (req.body.registrationId) query.registrationId = req.body.registrationId;
+      if (req.body.ticketId) query.ticketId = req.body.ticketId;
+      if (req.body.eventId) query.eventId = req.body.eventId;
+      tracking = await EventTracking.findOne(query);
+    }
 
-    if (ActivityLog) {
+    if (!tracking) {
+      return res.status(404).json({ success: false, message: "Tracking record not found." });
+    }
+
+    // Update using findByIdAndUpdate to bypass full-schema validation errors
+    const updatedTracking = await EventTracking.findByIdAndUpdate(
+      tracking._id,
+      {
+        $set: {
+          tokenNumber: tokenVal,
+          entryStatus: "PRESENT",
+          entryMarkedAt: new Date(),
+          entryMarkedBy: operatorName,
+          stageStatus: tracking.stageStatus === "NOT_PRESENT" ? "WAITING_BACKSTAGE" : tracking.stageStatus,
+        },
+      },
+      { new: true }
+    );
+
+    // Log check-in activity safely
+    if (typeof ActivityLog !== "undefined" && ActivityLog) {
       try {
+        const allowedTypes = ActivityLog.schema?.path("activityType")?.enumValues || [];
+        const chosenType = allowedTypes.includes("DESK_CHECKIN")
+          ? "DESK_CHECKIN"
+          : allowedTypes[0] || "STAGE_STATUS_CHANGE";
+
         await ActivityLog.create({
-          trackingId: tracking._id,
-          registrationId: tracking.registrationId,
-          ticketId: tracking.ticketId,
-          eventId: tracking.eventId,
+          trackingId: updatedTracking._id,
+          registrationId: updatedTracking.registrationId,
+          ticketId: updatedTracking.ticketId,
+          eventId: updatedTracking.eventId,
           performedBy: {
             memberId: req.session?.staff?.id ? String(req.session.staff.id) : "DESK",
             name: operatorName,
             role: req.session?.staff?.role || "DESK",
           },
-          activityType: "DESK_CHECKIN",
-          remarks: `Manual Token ${tracking.tokenNumber} assigned and marked present at desk`,
+          activityType: chosenType,
+          remarks: `Manual Token ${tokenVal} assigned and marked present at desk`,
         });
       } catch (logErr) {
         console.warn("ActivityLog write skipped:", logErr.message);
@@ -1596,13 +1614,15 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
     return res.json({
       success: true,
       message: "Check-in successful",
-      tokenNumber: tracking.tokenNumber,
-      tracking,
+      tokenNumber: updatedTracking.tokenNumber,
+      tracking: updatedTracking,
     });
   } catch (err) {
+    console.error("Desk Check-in Error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 // Coordinator Dashboard Routes
 app.get("/coordinator", requireAuth, async (req, res) => {
@@ -1895,6 +1915,278 @@ app.get("/rules", requireAuth, async (req, res) => {
     pageTitle: "Navchetna Yuva Mahotsav - Event Rules & Schedule",
   });
 });
+
+/// done new 
+
+// ======================================
+// Event Stage Access Configuration
+// ======================================
+const EVENT_STAGE_PORTAL = [
+  {
+    eventId: "ev_8",
+    eventCode: "DANCE",
+    aliases: ["loknritya", "dance", "ev_8", "DANCE"],
+    name: "Loknritya : Dance Competition",
+    prefix: "D",
+    secretCode: "DANCE@NYSM26",
+  },
+  {
+    eventId: "ev_4",
+    eventCode: "DRAWING",
+    aliases: ["rangotsav", "drawing", "ev_4", "DRAWING"],
+    name: "Rangotsav : Drawing Competition",
+    prefix: "DR",
+    secretCode: "DRAW@NYSM26",
+  },
+  {
+    eventId: "ev_11",
+    eventCode: "ESSAY",
+    aliases: ["kalamkar", "essay", "ev_11", "ESSAY"],
+    name: "Kalamkar : Essay Competition",
+    prefix: "E",
+    secretCode: "ESSAY@NYSM26",
+  },
+  {
+    eventId: "ev_1",
+    eventCode: "ESPORTS",
+    aliases: ["esports", "ev_1", "ESPORTS"],
+    name: "E-Sports Championship",
+    prefix: "ESP",
+    secretCode: "ESP@NYSM26",
+  },
+  {
+    eventId: "ev_2",
+    eventCode: "FREEFIRE",
+    aliases: ["esports Free Fire", "freefire", "ev_2", "FREEFIRE"],
+    name: "E-Sports Free Fire Championship",
+    prefix: "FF",
+    secretCode: "FF@NYSM26",
+  },
+  {
+    eventId: "ev_3",
+    eventCode: "PUBG",
+    aliases: ["esports PUBG", "pubg", "ev_3", "PUBG"],
+    name: "E-Sports PUBG Championship",
+    prefix: "BG",
+    secretCode: "PUBG@NYSM26",
+  },
+  {
+    eventId: "ev_5",
+    eventCode: "QUIZ",
+    aliases: ["bharatbodh", "quiz", "ev_5", "QUIZ"],
+    name: "Bharat Bodh : Quiz Competition",
+    prefix: "Q",
+    secretCode: "QUIZ@NYSM26",
+  },
+  {
+    eventId: "ev_6",
+    eventCode: "HACKATHON",
+    aliases: ["techmanthan", "hackathon", "ev_6", "HACKATHON"],
+    name: "Tech Manthan Hackathon",
+    prefix: "TM",
+    secretCode: "TECH@NYSM26",
+  },
+  {
+    eventId: "ev_7",
+    eventCode: "OPENMIC",
+    aliases: ["yuvavani", "openmic", "ev_7", "OPENMIC"],
+    name: "Yuva-Vani : Open Mic",
+    prefix: "OM",
+    secretCode: "MIC@NYSM26",
+  },
+  {
+    eventId: "ev_9",
+    eventCode: "FASHION",
+    aliases: ["rangebharat", "fashion", "ev_9", "FASHION"],
+    name: "Rang-e-Bharat : Cultural Fashion Show",
+    prefix: "FS",
+    secretCode: "FASHION@NYSM26",
+  },
+  {
+    eventId: "ev_10",
+    eventCode: "PHOTO",
+    aliases: ["beyondframe", "photo", "ev_10", "PHOTO"],
+    name: "Beyond the Frame : Photography & Reel",
+    prefix: "PH",
+    secretCode: "PHOTO@NYSM26",
+  },
+  {
+    eventId: "ev_12",
+    eventCode: "DHARMA",
+    aliases: ["dharmagatha", "dharma", "ev_12", "DHARMA"],
+    name: "Dharmagatha : Ramayan - Mahabharat Gyan Quiz",
+    prefix: "DG",
+    secretCode: "DHARMA@NYSM26",
+  },
+];
+
+// ----------------------------------------------------
+// Coordinator Stage Auth Middleware
+// ----------------------------------------------------
+function requireStageAuth(req, res, next) {
+  if (!req.session || !req.session.stageEvent) {
+    return res.redirect("/stage/login?error=" + encodeURIComponent("Please enter your event access code first."));
+  }
+  next();
+}
+
+// ----------------------------------------------------
+// 1. Stage Login Routes
+// ----------------------------------------------------
+app.get("/stage/login", (req, res) => {
+  if (req.session && req.session.stageEvent) {
+    return res.redirect("/stage/dashboard");
+  }
+  res.render("stage-login", { error: req.query.error || null });
+});
+app.post("/stage/login", (req, res) => {
+  const { secretCode } = req.body;
+  if (!secretCode || !secretCode.trim()) {
+    return res.redirect("/stage/login?error=" + encodeURIComponent("Secret code is required."));
+  }
+
+  const cleanCode = secretCode.trim().toUpperCase();
+  const matchedEvent = EVENT_STAGE_PORTAL.find((e) => e.secretCode.toUpperCase() === cleanCode);
+
+  if (!matchedEvent) {
+    return res.redirect("/stage/login?error=" + encodeURIComponent("Invalid event access code."));
+  }
+
+  req.session.stageEvent = {
+    eventId: matchedEvent.eventId,
+    eventCode: matchedEvent.eventCode,
+    name: matchedEvent.name,
+    prefix: matchedEvent.prefix,
+    aliases: matchedEvent.aliases || [matchedEvent.eventId, matchedEvent.eventCode],
+  };
+
+  res.redirect("/stage/dashboard");
+});
+app.get("/stage/logout", (req, res) => {
+  delete req.session.stageEvent;
+  res.redirect("/stage/login");
+});
+
+// ----------------------------------------------------
+// 2. Stage Dashboard: View Present Participants & Tokens
+// ----------------------------------------------------
+app.get("/stage/dashboard", requireStageAuth, async (req, res) => {
+  try {
+    const activeEvent = req.session.stageEvent;
+    const aliases = activeEvent.aliases || [activeEvent.eventId, activeEvent.eventCode];
+
+    // Create a flexible name regex (handles English, Hindi, and partial names)
+    const baseKeyword = activeEvent.eventCode.toLowerCase(); // e.g. "drawing" or "dance"
+    const nameRegex = new RegExp(baseKeyword, "i");
+
+    // Match by eventId aliases, exact name, or partial keyword match
+    const trackings = await EventTracking.find({
+      $and: [
+        {
+          $or: [
+            { eventId: { $in: aliases } },
+            { eventId: new RegExp(`^${activeEvent.eventId}$`, "i") },
+            { eventId: new RegExp(`^${activeEvent.eventCode}$`, "i") },
+            { eventName: new RegExp(activeEvent.name, "i") },
+            { eventName: nameRegex },
+          ],
+        },
+        { entryStatus: "PRESENT" },
+      ],
+    })
+      .sort({ entryMarkedAt: 1, createdAt: 1 })
+      .lean();
+
+    const regIds = trackings.map((t) => t.registrationId).filter(Boolean);
+    const registrations = await Registration.find({ _id: { $in: regIds } }).lean();
+    const regMap = new Map(registrations.map((r) => [String(r._id), r]));
+
+    const participants = trackings.map((t, idx) => {
+      const reg = regMap.get(String(t.registrationId)) || {};
+      const displayToken =
+        t.tokenNumber && t.tokenNumber.trim() !== ""
+          ? t.tokenNumber
+          : `${activeEvent.prefix}${idx + 1}`;
+
+      return {
+        trackingId: t._id,
+        ticketId: t.ticketId || reg.ticketId || "N/A",
+        tokenNumber: displayToken,
+        fullName: reg.fullName || "Participant",
+        mobile: reg.mobile || "N/A",
+        school: reg.school || "School / College Not Specified",
+        category: t.category || reg.category || "OPEN",
+        teamName: t.teamName || reg.teamSlot || "-",
+        participantType: t.participantType || "Solo",
+        stageStatus: t.stageStatus || "WAITING_BACKSTAGE",
+        performanceStartedAt: t.performanceStartedAt,
+        performanceDoneAt: t.performanceDoneAt,
+        entryMarkedAt: t.entryMarkedAt,
+      };
+    });
+
+    const waitingCount = participants.filter((p) => p.stageStatus === "WAITING_BACKSTAGE").length;
+    const onStageCount = participants.filter((p) => p.stageStatus === "ON_STAGE").length;
+    const performedCount = participants.filter((p) => p.stageStatus === "PERFORMANCE_DONE").length;
+
+    res.render("stage-dashboard", {
+      event: activeEvent,
+      participants,
+      stats: {
+        totalPresent: participants.length,
+        waitingCount,
+        onStageCount,
+        performedCount,
+      },
+      error: req.query.error || null,
+      success: req.query.success || null,
+    });
+  } catch (err) {
+    res.status(500).send("Stage Dashboard Error: " + err.message);
+  }
+});
+
+// ----------------------------------------------------
+// 3. Stage Action: Mark On Stage / Performed
+// ----------------------------------------------------
+app.post("/stage/update-status", requireStageAuth, async (req, res) => {
+  try {
+    const { trackingId, stageStatus } = req.body;
+    const activeEvent = req.session.stageEvent;
+
+    if (!trackingId || !mongoose.Types.ObjectId.isValid(trackingId)) {
+      return res.redirect("/stage/dashboard?error=" + encodeURIComponent("Invalid tracking ID."));
+    }
+
+    const validStatuses = ["WAITING_BACKSTAGE", "ON_STAGE", "PERFORMANCE_DONE", "DISQUALIFIED"];
+    if (!validStatuses.includes(stageStatus)) {
+      return res.redirect("/stage/dashboard?error=" + encodeURIComponent("Invalid stage status."));
+    }
+
+    const updateDoc = { stageStatus };
+    if (stageStatus === "ON_STAGE") {
+      updateDoc.performanceStartedAt = new Date();
+    } else if (stageStatus === "PERFORMANCE_DONE") {
+      updateDoc.performanceDoneAt = new Date();
+    }
+
+    const updated = await EventTracking.findByIdAndUpdate(trackingId, { $set: updateDoc });
+
+    if (!updated) {
+      return res.redirect("/stage/dashboard?error=" + encodeURIComponent("Participant record not found."));
+    }
+
+    const msg = stageStatus === "PERFORMANCE_DONE"
+      ? `Marked ${updated.ticketId} as Performed!`
+      : `Updated status to ${stageStatus.replace(/_/g, " ")}`;
+
+    return res.redirect("/stage/dashboard?success=" + encodeURIComponent(msg));
+  } catch (err) {
+    return res.redirect("/stage/dashboard?error=" + encodeURIComponent(err.message));
+  }
+});
+
+
 
 // 404 Handler & Server Startup
 app.use((req, res) => res.status(404).render("404"));

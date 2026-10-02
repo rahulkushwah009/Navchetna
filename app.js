@@ -216,7 +216,6 @@ const counterSchema = new mongoose.Schema({
 });
 const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSchema);
 
-// New Dedicated Schema for Name Corrections (No changes to existing schemas)
 const participantCorrectionSchema = new mongoose.Schema(
   {
     registrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Registration", required: true, unique: true, index: true },
@@ -397,7 +396,6 @@ const EVENT_PREFIXES = {
   dharma: "DG",
 };
 
-// Automatic Atomic Token Generator per event: 1 to 2000
 async function getNextEventToken(rawEventId, eventName) {
   let matchedKey = (rawEventId || "").trim();
   let prefix = EVENT_PREFIXES[matchedKey];
@@ -565,7 +563,6 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// Helper: Ensure EventTracking Sync
 async function ensureEventTrackingPopulated() {
   const registrations = await Registration.find({
     status: { $in: ["PAID", "COMPLIMENTARY", "PENDING"] },
@@ -2195,81 +2192,139 @@ app.get("/desk", requireAuth, async (req, res) => {
   });
 });
 
-// Search participant by Ticket ID, Phone, Slot, or Name (Check ParticipantCorrection as well)
+// Search participant by Ticket ID, Phone, Slot, or Name (Supports Multiple Participants and Filters)
 app.get("/api/desk/search", requireAuth, async (req, res) => {
   try {
     const q = (req.query.q || "").trim();
-    if (!q) return res.json({ success: true, participant: null });
+    const eventFilter = (req.query.eventId || "").trim();
+    const categoryFilter = (req.query.category || "").trim();
+    const statusFilter = (req.query.status || "").trim();
+
+    if (!q) return res.json({ success: true, participant: null, participants: [] });
 
     const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escaped, "i");
 
-    const matchedCorrection = await ParticipantCorrection.findOne({ correctedName: regex }).lean();
+    const matchedCorrections = await ParticipantCorrection.find({ correctedName: regex }).lean();
+    const correctionRegIds = matchedCorrections.map((c) => c.registrationId);
 
-    let registration = null;
-    if (matchedCorrection) {
-      registration = await Registration.findById(matchedCorrection.registrationId).lean();
+    const baseOr = [
+      { mobile: regex },
+      { ticketId: regex },
+      { teamSlot: regex },
+      { fullName: regex },
+    ];
+    if (correctionRegIds.length > 0) {
+      baseOr.push({ _id: { $in: correctionRegIds } });
     }
 
-    if (!registration) {
-      registration = await Registration.findOne({
-        $or: [{ mobile: regex }, { ticketId: regex }, { teamSlot: regex }, { fullName: regex }],
-      }).lean();
+    const mongoFilter = { $or: baseOr };
+
+    if (categoryFilter) {
+      mongoFilter.category = new RegExp(`^${categoryFilter}$`, "i");
+    }
+    if (statusFilter) {
+      mongoFilter.status = statusFilter.toUpperCase();
+    }
+    if (eventFilter) {
+      mongoFilter.$and = mongoFilter.$and || [];
+      mongoFilter.$and.push({
+        $or: [
+          { eventId: eventFilter },
+          { "events.id": eventFilter },
+          { eventName: new RegExp(eventFilter, "i") },
+        ],
+      });
     }
 
-    if (!registration) return res.json({ success: true, participant: null });
+    const registrations = await Registration.find(mongoFilter).sort({ createdAt: -1 }).limit(50).lean();
 
-    if (Array.isArray(registration.events) && registration.events.length > 0) {
-      for (const ev of registration.events) {
-        await EventTracking.updateOne(
-          { registrationId: registration._id, eventId: ev.id },
-          {
-            $setOnInsert: {
-              ticketId: registration.ticketId,
-              eventName: ev.name,
-              category: registration.category ? registration.category.toUpperCase() : "OPEN",
-              participantType: ev.participantType || "Solo",
-              teamName: ev.teamName || registration.teamSlot || "",
-              followupStatus: "PENDING",
-              entryStatus: "PENDING",
-              stageStatus: "NOT_PRESENT",
+    if (!registrations || registrations.length === 0) {
+      return res.json({ success: true, participant: null, participants: [] });
+    }
+
+    const regIds = registrations.map((r) => r._id);
+
+    // Ensure all enrolled events have EventTracking documents initialized
+    const trackingOps = [];
+    for (const r of registrations) {
+      if (Array.isArray(r.events) && r.events.length > 0) {
+        for (const ev of r.events) {
+          trackingOps.push({
+            updateOne: {
+              filter: { registrationId: r._id, eventId: ev.id },
+              update: {
+                $setOnInsert: {
+                  ticketId: r.ticketId,
+                  eventName: ev.name,
+                  category: r.category ? r.category.toUpperCase() : "OPEN",
+                  participantType: ev.participantType || "Solo",
+                  teamName: ev.teamName || r.teamSlot || "",
+                  followupStatus: "PENDING",
+                  entryStatus: "PENDING",
+                  stageStatus: "NOT_PRESENT",
+                },
+              },
+              upsert: true,
             },
-          },
-          { upsert: true }
-        );
+          });
+        }
       }
     }
+    if (trackingOps.length > 0) {
+      await EventTracking.bulkWrite(trackingOps, { ordered: false });
+    }
 
-    const trackings = await EventTracking.find({ registrationId: registration._id }).lean();
+    const [allTrackings, allCorrections] = await Promise.all([
+      EventTracking.find({ registrationId: { $in: regIds } }).lean(),
+      ParticipantCorrection.find({ registrationId: { $in: regIds } }).lean(),
+    ]);
 
-    const formattedEvents = trackings.map((t) => ({
-      ...t,
-      id: t._id,
-      trackingId: t._id,
-      _id: t._id,
-    }));
+    const trackingMap = {};
+    allTrackings.forEach((t) => {
+      const key = String(t.registrationId);
+      if (!trackingMap[key]) trackingMap[key] = [];
+      trackingMap[key].push({
+        ...t,
+        id: t._id,
+        trackingId: t._id,
+        _id: t._id,
+      });
+    });
 
-    // Find if an optional override name exists in ParticipantCorrection
-    const correctionDoc = await ParticipantCorrection.findOne({
-      $or: [{ registrationId: registration._id }, { ticketId: registration.ticketId }],
-    }).lean();
+    const correctionMap = {};
+    allCorrections.forEach((c) => {
+      correctionMap[String(c.registrationId)] = c.correctedName;
+    });
+
+    const participantsList = registrations.map((registration) => {
+      const regIdStr = String(registration._id);
+      const formattedEvents = trackingMap[regIdStr] || [];
+      const correctedName = correctionMap[regIdStr] || "";
+
+      return {
+        participant: {
+          id: registration._id,
+          fullName: registration.fullName,
+          correctedName: correctedName,
+          mobile: registration.mobile,
+          school: registration.school,
+          classCourse: registration.classCourse,
+          category: registration.category,
+          teamSlot: registration.teamSlot || "N/A",
+          ticketId: registration.ticketId,
+          amount: registration.amount,
+          status: registration.status,
+        },
+        events: formattedEvents,
+      };
+    });
 
     return res.json({
       success: true,
-      participant: {
-        id: registration._id,
-        fullName: registration.fullName,
-        correctedName: correctionDoc ? correctionDoc.correctedName : "",
-        mobile: registration.mobile,
-        school: registration.school,
-        classCourse: registration.classCourse,
-        category: registration.category,
-        teamSlot: registration.teamSlot || "N/A",
-        ticketId: registration.ticketId,
-        amount: registration.amount,
-        status: registration.status,
-      },
-      events: formattedEvents,
+      participant: participantsList[0].participant,
+      events: participantsList[0].events,
+      participants: participantsList,
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -2345,7 +2400,6 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
       return res.status(404).json({ success: false, message: "Tracking record not found." });
     }
 
-    // Auto-generate sequential token if not already assigned
     let tokenVal = tracking.tokenNumber;
     if (!tokenVal || tokenVal.trim() === "") {
       tokenVal = await getNextEventToken(tracking.eventId, tracking.eventName);
@@ -2365,7 +2419,6 @@ app.post("/api/desk/mark-present", requireAuth, async (req, res) => {
       { returnDocument: "after" }
     );
 
-    // Save correction in ParticipantCorrection if provided
     if (optionalCorrectedName) {
       const reg = await Registration.findById(tracking.registrationId);
       if (reg) {
@@ -2468,7 +2521,6 @@ app.post("/api/desk/mark-all-present", requireAuth, async (req, res) => {
       issuedTokens.push({ eventName: tracking.eventName, token: tokenVal });
     }
 
-    // Save correction in ParticipantCorrection if provided
     if (optionalCorrectedName) {
       const reg = await Registration.findById(registrationId);
       if (reg) {

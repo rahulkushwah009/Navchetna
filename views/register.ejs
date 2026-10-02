@@ -434,9 +434,9 @@
           <div class="err-msg">Required.</div>
         </div>
         <div class="nysm-field" data-field="age">
-          <label>Age (4 - 40 Years) <span class="req">*</span></label>
-          <input type="number" id="f-age" min="4" max="40" placeholder="e.g. 19">
-          <div class="err-msg">Please enter a valid age between 4 and 40.</div>
+          <label>Age (10 - 30 Years) <span class="req">*</span></label>
+          <input type="number" id="f-age" min="10" max="30" placeholder="e.g. 19">
+          <div class="err-msg">Please enter a valid age between 10 and 30.</div>
         </div>
       </div>
 
@@ -503,12 +503,7 @@
         </div>
 
         <div class="nysm-secret-box">
-          <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color: var(--marigold-2);">Secret Code (Optional)</label>
-          <div class="nysm-secret-row">
-            <input type="text" id="f-secretCode" placeholder="VIP / SPONSOR / STAFF CODE">
-            <button onclick="NYSM.applySecretCode()">Apply</button>
-          </div>
-          <div class="nysm-secret-msg" id="secret-msg"></div>
+          
         </div>
       </div>
 
@@ -605,13 +600,10 @@
       junior: 20, senior: 50 
     },
    
-   
-    { 
-      id: "loknritya", 
-      name: "लोकनृत्य : Dance Competition", 
-      dance: true,
-      solo: { junior: 49, senior: 99 }, 
-      group: { junior: 20, senior: 50 } 
+   { 
+      id: "kalamkar", 
+      name: "कलमकार : Essay Competition", 
+      junior: 20, senior: 50 
     },
     { 
       id: "dharmagatha", 
@@ -1293,7 +1285,6 @@
     Object.assign(state, {
       fullName:"", mobile:"", school:"", classCourse:"", age:"",
       teamSlot:"", category:"", gender:"", reference:"",
-      selectedEvents:{}, fee:0, secretCode:"", secretValid:false,
       ticketId:"", paymentStatus:"", orderId:""
     });
     showPanel(1);

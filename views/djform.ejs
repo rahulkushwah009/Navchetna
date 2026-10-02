@@ -240,12 +240,6 @@ body.theme-dj .hero-art-dj { opacity: 1; transform: scale(1); }
             <input type="text" id="course" required placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
             <label for="course" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Course &amp; Year</label>
           </div>
-
-          <!-- Text College ID Input for DJ Night -->
-          <div class="relative z-0 w-full group md:col-span-2 hidden" id="idCardField">
-            <input type="text" id="collegeIdNumber" placeholder=" " class="floating-input block py-2.5 px-0 w-full text-base bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer" />
-            <label for="collegeIdNumber" class="floating-label peer-focus:font-medium absolute text-base duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">College Roll / ID Card Number (Required for DJ Night)</label>
-          </div>
         </div>
 
         <div id="addMemberRow" class="pt-2 hidden">
@@ -288,7 +282,6 @@ body.theme-dj .hero-art-dj { opacity: 1; transform: scale(1); }
         <div class="flex justify-between"><span class="opacity-75">Full Name</span><strong id="s-name" class="font-semibold">—</strong></div>
         <div class="flex justify-between"><span class="opacity-75">Mobile Number</span><strong id="s-mobile" class="font-semibold">—</strong></div>
         <div class="flex justify-between"><span class="opacity-75">College</span><strong id="s-college" class="font-semibold">—</strong></div>
-        <div class="flex justify-between hidden" id="s-idCardRow"><span class="opacity-75">ID Number</span><strong id="s-idNumber" class="font-semibold">—</strong></div>
         <div class="flex justify-between hidden" id="s-member2Row"><span class="opacity-75">Member 2</span><strong id="s-member2" class="font-semibold">—</strong></div>
         <div class="flex justify-between hidden" id="s-codeRow"><span class="opacity-75">Applied Code</span><strong id="s-code" class="text-emerald-500 font-semibold">—</strong></div>
         <div class="flex justify-between text-lg pt-3 border-t border-gray-400/20"><span class="font-semibold">Payable Amount</span><strong id="s-amount" class="text-2xl font-bold text-amber-500">₹99</strong></div>
@@ -329,7 +322,7 @@ body.theme-dj .hero-art-dj { opacity: 1; transform: scale(1); }
       <div class="text-center mb-6">
         <div class="text-5xl mb-2" id="successIcon">🪔</div>
         <h2 class="text-3xl font-bold mb-1">You're on the list!</h2>
-        <p class="text-sm opacity-80">Show this ticket ID and your ID card at the entry gate.</p>
+        <p class="text-sm opacity-80">Show this ticket ID at the entry gate.</p>
       </div>
 
       <div class="ticket-container max-w-md mx-auto mb-6" id="ticketCard">
@@ -381,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const body = document.body;
   const eventCards = document.querySelectorAll('.event-card');
-  const idCardField = document.getElementById('idCardField');
   const addMemberRow = document.getElementById('addMemberRow');
   const addMemberBtn = document.getElementById('addMemberBtn');
   const member2Block = document.getElementById('member2Block');
@@ -412,11 +404,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (currentEvent === 'dj') {
       body.classList.add('theme-dj');
-      idCardField.classList.remove('hidden');
       if (!hasMember2) addMemberRow.classList.remove('hidden');
     } else {
       body.classList.remove('theme-dj');
-      idCardField.classList.add('hidden');
       addMemberRow.classList.add('hidden');
       hasMember2 = false;
       member2Block.classList.add('hidden');
@@ -453,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = document.getElementById('email').value.trim();
     const college = document.getElementById('college').value.trim();
     const course = document.getElementById('course').value.trim();
-    const idNum = document.getElementById('collegeIdNumber').value.trim();
 
     if (!name || name.length < 2) return showError('Please enter a valid full name.');
     if (!/^[6-9]\d{9}$/.test(mobile)) return showError('Enter a valid 10-digit mobile number.');
@@ -462,7 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!course) return showError('Please enter your course details.');
 
     if (currentEvent === 'dj') {
-      if (!idNum) return showError('College Roll / ID Card number is required for DJ Night.');
       if (hasMember2) {
         const n2 = document.getElementById('name2').value.trim();
         const m2 = document.getElementById('mobile2').value.trim();
@@ -477,14 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('s-name').textContent = name;
     document.getElementById('s-mobile').textContent = mobile;
     document.getElementById('s-college').textContent = `${college} (${course})`;
-
-    const idRow = document.getElementById('s-idCardRow');
-    if (currentEvent === 'dj') {
-      idRow.classList.remove('hidden');
-      document.getElementById('s-idNumber').textContent = idNum;
-    } else {
-      idRow.classList.add('hidden');
-    }
 
     const m2Row = document.getElementById('s-member2Row');
     if (hasMember2 && currentEvent === 'dj') {
@@ -577,7 +557,6 @@ document.addEventListener('DOMContentLoaded', () => {
       email: document.getElementById('email').value.trim(),
       college: document.getElementById('college').value.trim(),
       course: document.getElementById('course').value.trim(),
-      collegeIdNumber: currentEvent === 'dj' ? document.getElementById('collegeIdNumber').value.trim() : '',
       hasMember2: currentEvent === 'dj' && hasMember2,
       name2: hasMember2 ? document.getElementById('name2').value.trim() : '',
       mobile2: hasMember2 ? document.getElementById('mobile2').value.trim() : '',
@@ -589,7 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('payNowBtn').addEventListener('click', async () => {
     const payBtn = document.getElementById('payNowBtn');
     const statusMsg = document.getElementById('payStatusMsg');
-    const originalText = document.getElementById('payBtnLabel').textContent;
 
     payBtn.disabled = true;
     statusMsg.classList.remove('hidden');

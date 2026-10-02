@@ -111,7 +111,7 @@
   <!-- ================= MAIN DESK CONTAINER ================= -->
   <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-4">
 
-    <!-- High Speed Desk Search Banner -->
+    <!-- High Speed Desk Search Banner with Filter Option -->
     <div class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-800">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -124,14 +124,16 @@
         </div>
 
         <div class="flex items-center gap-2 self-start sm:self-auto">
-          <span class="text-xs text-slate-400">Desk Operator:</span>
+          <button onclick="toggleFilterBar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-sliders text-amber-400"></i> Filters
+          </button>
           <span class="text-xs font-bold bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-200">
             <%= staff.email %>
           </span>
         </div>
       </div>
 
-      <!-- Main Search Box (Triggered on Enter or Button Click) -->
+      <!-- Main Search Box -->
       <div class="flex gap-2">
         <div class="relative flex-1">
           <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -162,6 +164,47 @@
         </button>
       </div>
 
+      <!-- Quick Search Filters Panel (Collapsible like /admin/registrations) -->
+      <div id="filterBarContainer" class="hidden mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Filter By Event</label>
+          <select id="filterEventId" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="">All Events</option>
+            <option value="esports">E-Sports Championship</option>
+            <option value="esports Free Fire">Free Fire</option>
+            <option value="esports PUBG">PUBG / BGMI</option>
+            <option value="rangotsav">Rangotsav (Drawing)</option>
+            <option value="bharatbodh">Bharat Bodh (Quiz)</option>
+            <option value="techmanthan">Tech Manthan (Hackathon)</option>
+            <option value="yuvavani">Yuva-Vani (Open Mic)</option>
+            <option value="loknritya">Loknritya (Dance)</option>
+            <option value="rangebharat">Rang-e-Bharat (Fashion)</option>
+            <option value="beyondframe">Beyond Frame (Photo/Reel)</option>
+            <option value="kalamkar">Kalamkar (Essay)</option>
+            <option value="dharmagatha">Dharmagatha (Quiz)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Category</label>
+          <select id="filterCategory" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="">All Categories</option>
+            <option value="Junior">Junior</option>
+            <option value="Senior">Senior</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Status</label>
+          <select id="filterStatus" class="w-full bg-slate-800 border border-slate-700 text-white py-2 px-3 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="">All Statuses</option>
+            <option value="PAID">PAID</option>
+            <option value="COMPLIMENTARY">COMPLIMENTARY</option>
+            <option value="PENDING">PENDING</option>
+          </select>
+        </div>
+      </div>
+
     </div>
 
     <!-- Ready for Next Participant State (Empty) -->
@@ -173,6 +216,20 @@
       <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
         Type full participant phone number or ticket ID above and click <strong>Search</strong>.
       </p>
+    </div>
+
+    <!-- Multi-Participant Picker Strip (Shown when phone number matches multiple people) -->
+    <div id="multiParticipantStrip" class="hidden bg-white rounded-2xl p-4 border border-blue-200 shadow-md">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="bg-blue-100 text-blue-800 font-extrabold text-xs px-2.5 py-1 rounded-full" id="multiCountBadge">0 Found</span>
+          <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">Multiple Participants Registered Under This Number</h4>
+        </div>
+        <span class="text-[11px] text-slate-500">Click a participant to load desk verification</span>
+      </div>
+      <div id="multiParticipantList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+        <!-- Rendered participant cards -->
+      </div>
     </div>
 
     <!-- Verified Participant Card -->
@@ -213,7 +270,7 @@
         </div>
       </div>
 
-      <!-- Quick Name Correction Bar (Stored in separate ParticipantCorrection schema) -->
+      <!-- Quick Name Correction Bar -->
       <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-user-pen text-amber-600"></i>
@@ -293,8 +350,14 @@
 
   <!-- Client-side Logic -->
   <script>
+    let searchResultsList = [];
     let currentParticipant = null;
     let currentEvents = [];
+
+    function toggleFilterBar() {
+      const bar = document.getElementById("filterBarContainer");
+      bar.classList.toggle("hidden");
+    }
 
     function triggerTopSearch() {
       const topVal = document.getElementById("topSearchInput").value;
@@ -319,7 +382,9 @@
     function resetToEmptyState() {
       document.getElementById("deskActiveCard").classList.add("hidden");
       document.getElementById("deskSuccessState").classList.add("hidden");
+      document.getElementById("multiParticipantStrip").classList.add("hidden");
       document.getElementById("deskEmptyState").classList.remove("hidden");
+      searchResultsList = [];
       currentParticipant = null;
       currentEvents = [];
     }
@@ -339,20 +404,79 @@
       }
       clearBtn.classList.remove("hidden");
 
+      const eventFilter = document.getElementById("filterEventId").value;
+      const categoryFilter = document.getElementById("filterCategory").value;
+      const statusFilter = document.getElementById("filterStatus").value;
+
+      const params = new URLSearchParams({
+        q: query,
+        eventId: eventFilter,
+        category: categoryFilter,
+        status: statusFilter
+      });
+
       try {
-        const res = await fetch(`/api/desk/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/desk/search?${params.toString()}`);
         const data = await res.json();
 
-        if (!data.success || !data.participant) {
+        if (!data.success || (!data.participant && (!data.participants || data.participants.length === 0))) {
           alert("No participant found matching: " + query);
           resetToEmptyState();
           return;
         }
 
-        renderParticipantCard(data.participant, data.events || []);
+        const list = Array.isArray(data.participants) && data.participants.length > 0 
+          ? data.participants 
+          : (data.participant ? [{ participant: data.participant, events: data.events || [] }] : []);
+
+        searchResultsList = list;
+
+        if (list.length === 1) {
+          document.getElementById("multiParticipantStrip").classList.add("hidden");
+          renderParticipantCard(list[0].participant, list[0].events || []);
+        } else {
+          renderMultiParticipantSelector(list);
+          renderParticipantCard(list[0].participant, list[0].events || []);
+        }
       } catch (err) {
         console.error("Search error:", err);
         alert("Search request failed.");
+      }
+    }
+
+    function renderMultiParticipantSelector(list) {
+      const strip = document.getElementById("multiParticipantStrip");
+      const listContainer = document.getElementById("multiParticipantList");
+      const badge = document.getElementById("multiCountBadge");
+
+      strip.classList.remove("hidden");
+      badge.textContent = `${list.length} Participants`;
+      listContainer.innerHTML = "";
+
+      list.forEach((item, index) => {
+        const p = item.participant;
+        const displayName = p.correctedName || p.fullName;
+        const card = document.createElement("div");
+        card.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/70 hover:border-blue-300 cursor-pointer transition flex items-center justify-between";
+        card.onclick = () => selectParticipantFromMulti(index);
+
+        card.innerHTML = `
+          <div>
+            <div class="font-extrabold text-xs text-slate-900">${displayName}</div>
+            <div class="text-[10px] text-slate-500 font-mono">ID: ${p.ticketId} | Slot: ${p.teamSlot}</div>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
+            ${p.status}
+          </span>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    function selectParticipantFromMulti(index) {
+      const item = searchResultsList[index];
+      if (item) {
+        renderParticipantCard(item.participant, item.events || []);
       }
     }
 
@@ -364,7 +488,6 @@
       document.getElementById("deskSuccessState").classList.add("hidden");
       document.getElementById("deskActiveCard").classList.remove("hidden");
 
-      // Display corrected name if present from ParticipantCorrection
       const hasCorrection = participant.correctedName && participant.correctedName.trim() !== "";
       const activeDisplayName = hasCorrection ? participant.correctedName : participant.fullName;
 
@@ -485,7 +608,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             trackingId, 
-            correctedName,
+            correctedName, 
             registrationId: currentParticipant?.id,
             ticketId: currentParticipant?.ticketId 
           }),
@@ -559,5 +682,7 @@
       }
     });
   </script>
+</body>
+</html>
 </body>
 </html>

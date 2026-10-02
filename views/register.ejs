@@ -8,18 +8,18 @@
 <style>
   :root{
     /* ---- Design tokens : "Navchetna" — night mela, marigold + gulal ---- */
-    --ink:         #1B1030;
-    --ink-2:       #2A1B49;
-    --marigold:    #FFA630;
-    --marigold-2:  #FFC15E;
-    --gulal:       #E63E7C;
-    --gulal-2:     #FF6FA5;
-    --cream:       #FFF8ED;
-    --cream-2:     #FFEFD6;
-    --ok:          #2E9E6B;
-    --err:         #E5484D;
-    --line:        rgba(255,255,255,0.14);
-    --shadow:      0 20px 50px -20px rgba(15,5,35,0.55);
+    --ink:          #1B1030;
+    --ink-2:        #2A1B49;
+    --marigold:     #FFA630;
+    --marigold-2:   #FFC15E;
+    --gulal:        #E63E7C;
+    --gulal-2:      #FF6FA5;
+    --cream:        #FFF8ED;
+    --cream-2:      #FFEFD6;
+    --ok:           #2E9E6B;
+    --err:          #E5484D;
+    --line:         rgba(255,255,255,0.14);
+    --shadow:       0 20px 50px -20px rgba(15,5,35,0.55);
 
     --font-display: 'Baloo 2', 'Poppins', sans-serif;
     --font-body:    'Inter', sans-serif;
@@ -541,6 +541,9 @@
     RAZORPAY_KEY_ID: "<%= process.env.RAZORPAY_KEY_ID || 'rzp_live_TM9kT7z1INgJKh' %>"
   };
 
+  /* ==========================================================================
+     EVENT CATALOGUE: E-Sports with Solo / Duo / Group / Squad
+     ========================================================================== */
   const EVENTS = [
     { 
       id: "rangotsav", 
@@ -575,10 +578,13 @@
 
   function getEventFee(ev, category, participantType, groupCount) {
     if (!category) return 0;
+
     const catKey = category === "Junior" ? 'junior' : 'senior';
 
     if (ev.dance) {
-      if (participantType === "Solo") return ev.solo[catKey];
+      if (participantType === "Solo") {
+        return ev.solo[catKey];
+      }
       if (participantType === "Group") {
         const per = ev.group[catKey];
         const n = Math.max(parseInt(groupCount, 10) || 0, 0);
@@ -587,6 +593,7 @@
       return ev.solo[catKey];
     }
     
+    // E-Sports calculation (Solo ₹50, Duo ₹100, Group/Trio ₹150, Squad ₹200)
     if (ev.isEsports) {
       if (participantType === "Duo") return ev.duo[catKey];
       if (participantType === "Group") return ev.group[catKey];
@@ -635,7 +642,6 @@
       recalcTotalFee();
     });
   });
-
   document.querySelectorAll('#f-gender .nysm-pill').forEach(p=>{
     p.addEventListener('click', ()=>{
       document.querySelectorAll('#f-gender .nysm-pill').forEach(x=>x.classList.remove('selected'));
@@ -703,6 +709,7 @@
             <div class="nysm-event-coordinators">${ev.coordinators ? 'Coordinators: ' + ev.coordinators : ''}</div>
             <div class="nysm-event-fee">${feeText}</div>
             
+            <!-- Dance Sub-options -->
             ${ev.dance && isSelected ? `
               <div class="nysm-sub-config-box" onclick="event.stopPropagation()">
                 <label style="font-size:12px; font-weight:700; color:#3d2c58;">Participation Mode:</label>
@@ -716,6 +723,7 @@
               </div>
             ` : ''}
 
+            <!-- E-Sports Sub-options -->
             ${ev.isEsports && isSelected ? `
               <div class="nysm-sub-config-box" onclick="event.stopPropagation()">
                 <label style="font-size:12px; font-weight:700; color:#3d2c58;">E-Sports Mode:</label>
@@ -770,7 +778,11 @@
         else if(type === 'Group') state.selectedEvents[eventId].groupCount = 3;
         else if(type === 'Squad') state.selectedEvents[eventId].groupCount = 4;
       } else {
-        state.selectedEvents[eventId].groupCount = type === 'Group' ? 2 : 1;
+        if(type === 'Group'){
+          state.selectedEvents[eventId].groupCount = 2;
+        } else {
+          state.selectedEvents[eventId].groupCount = 1;
+        }
       }
       renderEvents();
     }
@@ -848,6 +860,10 @@
     });
 
     resetPaymentUI();
+    updateTotalDisplay();
+  }
+
+  function updateTotalDisplay(){
     document.getElementById('s-total').textContent = '₹' + state.fee;
     document.getElementById('upi-amount-label').textContent = '₹' + state.fee;
   }
@@ -956,7 +972,7 @@
     }
   }
 
-  /* Payment Verification */
+  /* Safe Payment Verification Handler */
   async function verifyPayment(response){
     try{
       const eventsArray = Object.values(state.selectedEvents).map(e => ({
@@ -1024,7 +1040,7 @@
     });
   }
 
-  /* Ticket Rendering */
+  /* Resilient Ticket Rendering with Clean QR Payload */
   function renderTicket(){
     try {
       const selectedList = Object.values(state.selectedEvents || {});
@@ -1062,6 +1078,7 @@
       if (amountLabel && amountVal) {
         amountLabel.textContent = 'Amount Paid';
         amountVal.textContent = '₹' + (state.fee || 0);
+        amountVal.classList.remove('comp');
       }
 
       const qrHolder = document.getElementById('nysm-ticket-qrcode');

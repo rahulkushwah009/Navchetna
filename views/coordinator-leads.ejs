@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NYSM26 Calling Desk | Gurukul Dream Foundation</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { 800: '#1e3a8a', 900: '#0f172a' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    .tap-active:active { transform: scale(0.97); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-black shrink-0">
+          <i class="fa-solid fa-headset text-lg"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[10px] tracking-widest uppercase font-bold text-emerald-400 truncate">Gurukul Dream Foundation</div>
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5 truncate">
+            Navchetna 2026
+            <span class="hidden sm:inline-block text-[11px] font-normal text-slate-400">| Calling Desk</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-slate-200 hidden sm:inline">Coordinator</span>
+          <span class="text-slate-400 font-mono text-[10px] truncate max-w-[120px] sm:max-w-none"><%= staff.email %></span>
+        </div>
+        <a href="/logout" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 space-y-4 overflow-x-hidden">
+
+    <!-- Header Stats Banner -->
+    <div class="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800 uppercase tracking-wider">
+          <i class="fa-solid fa-phone-volume"></i> Tele-Calling Operations
+        </span>
+        <h2 class="text-lg sm:text-2xl font-black text-white mt-1">Calling Queue</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Manage calls and coordinator logs seamlessly on any device.</p>
+      </div>
+
+      <!-- Quick Metrics Counters -->
+      <%
+        const pendingCount = leads.filter(l => l.callStatus === 'PENDING').length;
+        const willComeCount = leads.filter(l => l.callStatus === 'WILL_COME').length;
+        const completedCount = leads.filter(l => l.callStatus === 'COMPLETED').length;
+      %>
+      <div class="grid grid-cols-4 sm:flex items-center gap-2 sm:gap-3">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 sm:px-3.5 py-2 text-center">
+          <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">Total</div>
+          <div class="text-sm sm:text-lg font-black text-white"><%= leads.length %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 sm:px-3.5 py-2 text-center">
+          <div class="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-400">Will Come</div>
+          <div class="text-sm sm:text-lg font-black text-emerald-400"><%= willComeCount %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 sm:px-3.5 py-2 text-center">
+          <div class="text-[9px] sm:text-[10px] uppercase font-bold text-amber-400">Pending</div>
+          <div class="text-sm sm:text-lg font-black text-amber-400"><%= pendingCount %></div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 sm:px-3.5 py-2 text-center">
+          <div class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-400">Done</div>
+          <div class="text-sm sm:text-lg font-black text-blue-400"><%= completedCount %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Search & Filter Bar -->
+    <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+      <div class="relative w-full md:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="sheetSearchInput" 
+          onkeyup="filterCards()" 
+          placeholder="Search Name, Phone, Token, College..." 
+          class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+        >
+      </div>
+
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <select id="statusFilter" onchange="filterCards()" class="w-full md:w-48 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs">
+          <option value="ALL">All Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="CALLED">Called</option>
+          <option value="WILL_COME">Will Come</option>
+          <option value="NOT_REACHABLE">Not Reachable</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
+      </div>
+    </div>
+
+    <% if (leads.length === 0) { %>
+      <div class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+        <i class="fa-regular fa-folder-open text-3xl text-slate-300 mb-2"></i>
+        <p class="text-xs text-slate-500">No participants currently allocated. Check with the Admin.</p>
+      </div>
+    <% } %>
+
+    <!-- ================= CARDS GRID (1 Col Phone, 2 Col Tablet, 3 Col Laptop) ================= -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="cardsGridContainer">
+      <% leads.forEach((r, i) => { 
+          const cleanPhone = (r.mobile && r.mobile !== '-') ? r.mobile.toString().replace(/\D/g, '') : '';
+      %>
+        <div id="card-<%= r._id %>" 
+             class="lead-card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col justify-between space-y-3 animate-fadeIn"
+             data-search="<%= ((r.fullName || '') + ' ' + (r.originalName || '') + ' ' + (r.mobile || '') + ' ' + (r.tokenNumber || '') + ' ' + (r.ticketId || '') + ' ' + (r.schoolCollege || '')).toLowerCase() %>">
+          
+          <!-- Card Header: Serial, Name & Token -->
+          <div class="border-b border-slate-100 pb-2.5 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] font-bold text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                #<%= r.sNo || (i + 1) %>
+              </span>
+
+              <% if (r.tokenNumber && r.tokenNumber !== '-') { %>
+                <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg">
+                  <i class="fa-solid fa-ticket text-[10px]"></i> <%= r.tokenNumber %>
+                </span>
+              <% } else { %>
+                <span class="text-[10px] bg-slate-100 text-slate-400 font-medium px-2 py-0.5 rounded">No Token</span>
+              <% } %>
+            </div>
+
+            <div class="pt-0.5">
+              <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+                <%= (r.fullName && r.fullName !== '-') ? r.fullName : (r.originalName && r.originalName !== '-' ? r.originalName : 'Participant') %>
+              </h3>
+              <% if (r.originalName && r.originalName !== '-' && r.originalName !== r.fullName) { %>
+                <p class="text-[10px] text-slate-400">Orig: <%= r.originalName %></p>
+              <% } %>
+              <% if (r.ticketId && r.ticketId !== '-') { %>
+                <span class="text-[10px] font-mono font-medium text-slate-400">Ticket: <%= r.ticketId %></span>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Event & Institution Details -->
+          <div class="space-y-1.5 text-xs text-slate-600">
+            <div class="flex items-center gap-1.5 truncate" title="<%= r.schoolCollege %>">
+              <i class="fa-solid fa-graduation-cap text-slate-400 text-[11px] shrink-0"></i>
+              <span class="truncate"><%= (r.schoolCollege && r.schoolCollege !== '-') ? r.schoolCollege : '-' %></span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-slate-800 flex items-center gap-1 truncate" title="<%= r.eventName %>">
+                <i class="fa-solid fa-trophy text-amber-500 text-[10px] shrink-0"></i>
+                <span class="truncate"><%= r.eventName || 'Event' %></span>
+              </span>
+              <span class="text-[9px] uppercase font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded shrink-0">
+                <%= r.category || 'General' %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Connect Action Strip -->
+          <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl flex items-center justify-between gap-2">
+            <div class="font-mono text-xs font-bold text-slate-800 truncate">
+              <%= cleanPhone ? ('📞 ' + r.mobile) : 'No Mobile' %>
+            </div>
+            <% if (cleanPhone) { %>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <!-- Direct Call -->
+                <a href="tel:<%= cleanPhone %>" 
+                   title="Call <%= cleanPhone %>"
+                   class="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center tap-active shadow-xs text-xs transition">
+                  <i class="fa-solid fa-phone"></i>
+                </a>
+                <!-- WhatsApp Blank Message -->
+                <a href="https://wa.me/91<%= cleanPhone %>" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   title="Chat on WhatsApp"
+                   class="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 flex items-center justify-center tap-active text-sm transition">
+                  <i class="fa-brands fa-whatsapp"></i>
+                </a>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Status Dropdown & Notes Section -->
+          <div class="space-y-2 pt-1 border-t border-slate-100">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Call Status</label>
+              <select id="status-<%= r._id %>" class="w-full text-xs font-semibold border border-slate-300 rounded-xl p-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="PENDING" <%= r.callStatus === 'PENDING' ? 'selected' : '' %>>⏳ PENDING</option>
+                <option value="CALLED" <%= r.callStatus === 'CALLED' ? 'selected' : '' %>>📞 CALLED</option>
+                <option value="WILL_COME" <%= r.callStatus === 'WILL_COME' ? 'selected' : '' %>>✅ WILL COME</option>
+                <option value="NOT_REACHABLE" <%= r.callStatus === 'NOT_REACHABLE' ? 'selected' : '' %>>🚫 NOT REACHABLE</option>
+                <option value="COMPLETED" <%= r.callStatus === 'COMPLETED' ? 'selected' : '' %>>🎉 COMPLETED</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Coordinator Remark</label>
+              <input type="text" id="notes-<%= r._id %>" value="<%= r.staffNotes || '' %>" placeholder="Type quick remarks..." 
+                     class="w-full text-xs border border-slate-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 focus:bg-white placeholder:text-slate-400">
+            </div>
+
+            <button id="btn-<%= r._id %>" onclick="saveLead('<%= r._id %>')" 
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-floppy-disk text-xs"></i>
+              <span>Save Record</span>
+            </button>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+
+  </main>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    async function saveLead(id) {
+      const callStatus = document.getElementById(`status-${id}`).value;
+      const staffNotes = document.getElementById(`notes-${id}`).value;
+      const btn = document.getElementById(`btn-${id}`);
+      const card = document.getElementById(`card-${id}`);
+
+      const originalBtnHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Saving...</span>`;
+
+      try {
+        const res = await fetch('/api/coordinator/update-lead-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ leadId: id, callStatus, staffNotes })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          btn.classList.replace('bg-emerald-600', 'bg-slate-900');
+          btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 text-xs"></i> <span>Saved Successfully</span>`;
+          card.classList.add('ring-2', 'ring-emerald-500');
+
+          setTimeout(() => {
+            btn.classList.replace('bg-slate-900', 'bg-emerald-600');
+            btn.innerHTML = originalBtnHTML;
+            btn.disabled = false;
+            card.classList.remove('ring-2', 'ring-emerald-500');
+          }, 1200);
+        } else {
+          alert("Error: " + (data.error || data.message || "Failed to update"));
+          btn.innerHTML = originalBtnHTML;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+        btn.innerHTML = originalBtnHTML;
+        btn.disabled = false;
+      }
+    }
+
+    // Client-side instant filter across all 3-column cards
+    function filterCards() {
+      const query = document.getElementById('sheetSearchInput').value.toLowerCase().trim();
+      const status = document.getElementById('statusFilter').value;
+
+      document.querySelectorAll('.lead-card').forEach(card => {
+        const searchPool = card.getAttribute('data-search') || '';
+        const select = card.querySelector('select[id^="status-"]');
+        const cardStatus = select ? select.value : '';
+
+        const matchesQuery = query === '' || searchPool.includes(query);
+        const matchesStatus = (status === 'ALL' || cardStatus === status);
+
+        if (matchesQuery && matchesStatus) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

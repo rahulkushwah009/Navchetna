@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Excel Lead Distributor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <!-- Top Navigation Bar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="h-9 w-9 bg-emerald-500/20 border border-emerald-500/40 rounded-lg flex items-center justify-center text-emerald-400 font-black text-lg">
+        ⚡
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-slate-100 leading-tight">Lead Distribution Center</h1>
+        <p class="text-xs text-slate-400">Equal Auto-Allocation & Live Calling Tracker</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <a href="/staff" class="text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg font-medium transition">
+        👥 Manage Staff
+      </a>
+      <a href="/logout" class="text-xs sm:text-sm bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-2 rounded-lg font-semibold transition">
+        Logout
+      </a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-6 sm:p-8 space-y-6">
+
+    <!-- Toast Alerts -->
+    <% if (error) { %>
+      <div class="p-4 bg-rose-500/15 border border-rose-500/40 text-rose-300 rounded-xl text-sm flex items-center gap-3">
+        <span class="text-lg">❌</span>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <% if (success) { %>
+      <div class="p-4 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 rounded-xl text-sm flex items-center gap-3">
+        <span class="text-lg">✅</span>
+        <span><%= success %></span>
+      </div>
+    <% } %>
+
+    <!-- KPI Metric Cards -->
+    <% 
+      const totalAllocated = (leadStats || []).reduce((acc, curr) => acc + (curr.total || 0), 0);
+      const totalCompleted = (leadStats || []).reduce((acc, curr) => acc + (curr.completed || 0), 0);
+      const totalContacted = (leadStats || []).reduce((acc, curr) => acc + (curr.contacted || 0), 0);
+    %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm">
+        <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Total Distributed Leads</p>
+        <p class="text-3xl font-extrabold text-emerald-400 mt-2"><%= totalAllocated %></p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm">
+        <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Active Coordinators</p>
+        <p class="text-3xl font-extrabold text-blue-400 mt-2"><%= (activeStaff || []).length %></p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm">
+        <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Calls In Progress</p>
+        <p class="text-3xl font-extrabold text-amber-400 mt-2"><%= totalContacted %></p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm">
+        <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Completed Follow-ups</p>
+        <p class="text-3xl font-extrabold text-teal-400 mt-2"><%= totalCompleted %></p>
+      </div>
+    </div>
+
+    <!-- Upload & Replace Card -->
+    <div class="bg-slate-800 p-6 sm:p-7 rounded-2xl border border-slate-700 shadow-md space-y-5">
+      <div class="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl text-amber-300">
+        <span class="text-2xl mt-0.5">⚠️</span>
+        <div class="text-xs sm:text-sm">
+          <p class="font-bold">Automated Database Overwrite Notice</p>
+          <p class="text-amber-200/80 mt-1">
+            Uploading a new CSV file automatically wipes out all previous leads and remarks in the database.
+          </p>
+        </div>
+      </div>
+
+      <form action="/admin/upload-distribute" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-slate-200">
+            Upload Exported Participant Sheet (.csv)
+          </label>
+          <input 
+            type="file" 
+            name="sheetFile" 
+            accept=".csv" 
+            required 
+            class="block w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 bg-slate-950 p-2.5 rounded-xl border border-slate-700 cursor-pointer focus:outline-none focus:border-emerald-500 transition"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition duration-150 flex items-center justify-center gap-2"
+        >
+          <span>🚀</span>
+          <span>Upload, Overwrite & Distribute Equally</span>
+        </button>
+      </form>
+
+      <!-- Clear Action -->
+      <div class="pt-3 border-t border-slate-700/80 flex justify-between items-center">
+        <p class="text-xs text-slate-400">Want to start fresh without uploading a new file?</p>
+        <form action="/admin/clear-all-leads" method="POST" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete all distributed leads and staff remarks?');">
+          <button type="submit" class="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 py-2 px-3 rounded-lg border border-rose-800/50 transition font-medium">
+            🗑️ Clear All Existing Leads
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Live Staff Workload Allocation Table -->
+    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-md space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-700">
+        <h2 class="text-base sm:text-lg font-bold text-slate-200">Staff Workload & Live Status</h2>
+        <span class="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full font-mono">
+          Round-Robin Active
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 border-b border-slate-700 text-xs uppercase font-semibold">
+            <tr>
+              <th class="p-3.5">Coordinator Email</th>
+              <th class="p-3.5">Secret Code</th>
+              <th class="p-3.5 text-center">Assigned Leads</th>
+              <th class="p-3.5 text-center">Contacted</th>
+              <th class="p-3.5 text-center">Completed</th>
+              <th class="p-3.5 text-center">Completion Rate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700">
+            <% if (!activeStaff || activeStaff.length === 0) { %>
+              <tr>
+                <td colspan="6" class="p-6 text-center text-slate-500">
+                  No active coordinators found. Add staff members in 
+                  <a href="/staff" class="text-emerald-400 underline font-medium hover:text-emerald-300">Manage Staff</a>.
+                </td>
+              </tr>
+            <% } %>
+
+            <% (activeStaff || []).forEach(s => { 
+                const stat = (leadStats || []).find(l => l._id === s.email) || { total: 0, contacted: 0, completed: 0 };
+                const pct = stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
+            %>
+              <tr class="hover:bg-slate-750 transition-colors">
+                <td class="p-3.5 font-medium text-emerald-300">
+                  <%= s.email %>
+                </td>
+                <td class="p-3.5 font-mono text-xs text-slate-400">
+                  <%= s.secretCode %>
+                </td>
+                <td class="p-3.5 font-bold text-white text-center">
+                  <%= stat.total %>
+                </td>
+                <td class="p-3.5 text-amber-400 font-semibold text-center">
+                  <%= stat.contacted %>
+                </td>
+                <td class="p-3.5 text-emerald-400 font-semibold text-center">
+                  <%= stat.completed %>
+                </td>
+                <td class="p-3.5 text-center">
+                  <div class="inline-flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-300"><%= pct %>%</span>
+                    <div class="w-16 bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                      <div class="bg-emerald-500 h-1.5 rounded-full" style="width: <%= pct %>%"></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>
